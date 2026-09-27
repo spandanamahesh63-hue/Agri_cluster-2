@@ -1,0 +1,3066 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Agri Cluster</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+body{
+font-family:Arial,Helvetica,sans-serif;
+background:#f4f8f5;
+color:#173524;
+}
+
+button{
+cursor:pointer;
+}
+
+.app{
+display:flex;
+min-height:100vh;
+}
+
+.sidebar{
+width:250px;
+background:#103c27;
+color:white;
+position:fixed;
+left:0;
+top:0;
+bottom:0;
+padding:20px;
+overflow:auto;
+}
+
+.logo{
+display:flex;
+gap:10px;
+align-items:center;
+margin-bottom:25px;
+}
+
+.logoIcon{
+width:44px;
+height:44px;
+background:#dff4a8;
+border-radius:13px;
+display:grid;
+place-items:center;
+font-size:25px;
+}
+
+.logo h1{
+font-size:20px;
+}
+
+.logo small{
+color:#a8c8b5;
+}
+
+.navTitle{
+font-size:10px;
+color:#8eb49d;
+text-transform:uppercase;
+margin:20px 8px 8px;
+}
+
+.navBtn{
+width:100%;
+border:0;
+background:transparent;
+color:#dbece1;
+padding:11px;
+border-radius:10px;
+text-align:left;
+margin-bottom:3px;
+}
+
+.navBtn:hover,
+.navBtn.active{
+background:#1c6540;
+color:white;
+}
+
+.main{
+margin-left:250px;
+width:calc(100% - 250px);
+}
+
+.topbar{
+height:70px;
+background:white;
+border-bottom:1px solid #e0e9e2;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 30px;
+}
+
+.status{
+font-size:12px;
+color:#68766d;
+}
+
+.status span{
+display:inline-block;
+width:9px;
+height:9px;
+background:#2aa95c;
+border-radius:50%;
+margin-right:7px;
+}
+
+.content{
+padding:30px;
+max-width:1500px;
+margin:auto;
+}
+
+.section{
+display:none;
+}
+
+.section.active{
+display:block;
+}
+
+.hero{
+background:linear-gradient(135deg,#0c6938,#20944f);
+color:white;
+padding:38px;
+border-radius:25px;
+margin-bottom:18px;
+position:relative;
+overflow:hidden;
+}
+
+.hero:after{
+content:"🌾";
+font-size:150px;
+position:absolute;
+right:40px;
+bottom:-40px;
+opacity:.12;
+}
+
+.hero small{
+color:#cce6d4;
+text-transform:uppercase;
+letter-spacing:1px;
+}
+
+.hero h2{
+font-size:37px;
+max-width:700px;
+margin:12px 0;
+}
+
+.hero p{
+max-width:700px;
+line-height:1.6;
+color:#dcefe3;
+}
+
+.actions{
+display:flex;
+gap:10px;
+margin-top:22px;
+flex-wrap:wrap;
+}
+
+.btn{
+border:0;
+padding:11px 16px;
+border-radius:10px;
+font-weight:bold;
+}
+
+.green{
+background:#dff4a8;
+color:#183d26;
+}
+
+.white{
+background:white;
+color:#126638;
+}
+
+.dark{
+background:#163e29;
+color:white;
+}
+
+.grid{
+display:grid;
+gap:16px;
+}
+
+.g2{
+grid-template-columns:repeat(2,1fr);
+}
+
+.g3{
+grid-template-columns:repeat(3,1fr);
+}
+
+.g4{
+grid-template-columns:repeat(4,1fr);
+}
+
+.card{
+background:white;
+border:1px solid #e0e9e2;
+border-radius:18px;
+padding:20px;
+box-shadow:0 8px 25px rgba(20,50,30,.04);
+}
+
+.card h3{
+margin-bottom:8px;
+}
+
+.card p{
+font-size:13px;
+line-height:1.6;
+color:#68766d;
+}
+
+.quick{
+cursor:pointer;
+transition:.2s;
+}
+
+.quick:hover{
+transform:translateY(-3px);
+}
+
+.icon{
+font-size:28px;
+margin-bottom:12px;
+}
+
+.sectionHead{
+margin:30px 0 15px;
+}
+
+.sectionHead h2{
+font-size:23px;
+}
+
+.sectionHead p{
+font-size:13px;
+color:#68766d;
+margin-top:4px;
+}
+
+.snapshot{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+background:white;
+border:1px solid #e0e9e2;
+border-radius:18px;
+overflow:hidden;
+margin-bottom:25px;
+}
+
+.snap{
+padding:18px;
+border-right:1px solid #e0e9e2;
+}
+
+.snap:last-child{
+border:0;
+}
+
+.snap small{
+display:block;
+color:#68766d;
+margin-bottom:5px;
+}
+
+.snap strong{
+font-size:16px;
+}
+
+.badge{
+display:inline-block;
+padding:5px 9px;
+border-radius:20px;
+font-size:10px;
+font-weight:bold;
+margin:3px;
+}
+
+.bg{
+background:#e5f7eb;
+color:#168447;
+}
+
+.by{
+background:#fff5d9;
+color:#806300;
+}
+
+.bb{
+background:#e6f1ff;
+color:#286cc0;
+}
+
+.bp{
+background:#eee9ff;
+color:#6b50c7;
+}
+
+.form{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:14px;
+}
+
+.field{
+display:flex;
+flex-direction:column;
+gap:6px;
+}
+
+.field.full{
+grid-column:1/-1;
+}
+
+.field label{
+font-size:12px;
+font-weight:bold;
+}
+
+.field input,
+.field select,
+.field textarea{
+border:1px solid #dce6df;
+border-radius:10px;
+padding:11px;
+outline:none;
+background:#fbfdfb;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+border-color:#168447;
+}
+
+.stat{
+font-size:30px;
+font-weight:bold;
+color:#126638;
+margin:12px 0;
+}
+
+.progress{
+height:8px;
+background:#e9efeb;
+border-radius:20px;
+overflow:hidden;
+margin:10px 0;
+}
+
+.progress div{
+height:100%;
+background:#168447;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:14px 0;
+border-bottom:1px solid #edf1ed;
+}
+
+.row:last-child{
+border-bottom:0;
+}
+
+.notice{
+padding:13px;
+border-radius:12px;
+font-size:12px;
+line-height:1.5;
+margin-top:12px;
+}
+
+.info{
+background:#eaf4ff;
+color:#245d92;
+}
+
+.warning{
+background:#fff5dc;
+color:#745800;
+}
+
+.success{
+background:#eaf8ee;
+color:#176b39;
+}
+
+.journey{
+display:grid;
+grid-template-columns:repeat(9,1fr);
+gap:6px;
+}
+
+.step{
+background:white;
+border:1px solid #dfe8e1;
+border-radius:12px;
+padding:15px 5px;
+text-align:center;
+font-size:10px;
+font-weight:bold;
+}
+
+.step.done{
+background:#e9f8ee;
+}
+
+.step.current{
+border:2px solid #168447;
+}
+
+.step div{
+font-size:21px;
+margin-bottom:6px;
+}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.5);
+align-items:center;
+justify-content:center;
+padding:20px;
+z-index:100;
+}
+
+.modal.show{
+display:flex;
+}
+
+.modalBox{
+background:white;
+border-radius:20px;
+padding:25px;
+width:min(550px,100%);
+max-height:90vh;
+overflow:auto;
+}
+
+.modalTop{
+display:flex;
+justify-content:space-between;
+margin-bottom:18px;
+}
+
+.close{
+border:0;
+background:#edf2ee;
+width:30px;
+height:30px;
+border-radius:50%;
+}
+
+.toast{
+position:fixed;
+right:25px;
+bottom:25px;
+background:#173d28;
+color:white;
+padding:13px 18px;
+border-radius:10px;
+opacity:0;
+transform:translateY(10px);
+transition:.3s;
+z-index:200;
+}
+
+.toast.show{
+opacity:1;
+transform:translateY(0);
+}
+
+@media(max-width:1000px){
+
+.sidebar{
+display:none;
+}
+
+.main{
+margin-left:0;
+width:100%;
+}
+
+.g4{
+grid-template-columns:repeat(2,1fr);
+}
+
+.snapshot{
+grid-template-columns:repeat(2,1fr);
+}
+
+.journey{
+grid-template-columns:repeat(3,1fr);
+}
+
+}
+
+@media(max-width:650px){
+
+.content{
+padding:15px;
+}
+
+.topbar{
+padding:0 15px;
+}
+
+.hero{
+padding:25px;
+}
+
+.hero h2{
+font-size:28px;
+}
+
+.g2,
+.g3,
+.g4,
+.form{
+grid-template-columns:1fr;
+}
+
+.field.full{
+grid-column:auto;
+}
+
+.snapshot{
+grid-template-columns:1fr 1fr;
+}
+
+.journey{
+grid-template-columns:repeat(3,1fr);
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<div class="app">
+
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<div class="logoIcon">🌱</div>
+
+<div>
+<h1>Agri Cluster</h1>
+<small>Smart Farming Platform</small>
+</div>
+
+</div>
+
+
+<div class="navTitle">
+Main
+</div>
+
+
+<button class="navBtn active"
+onclick="show('home',this)">
+🏠 Dashboard
+</button>
+
+
+<button class="navBtn"
+onclick="show('profile',this)">
+👨‍🌾 My Farm
+</button>
+
+
+<button class="navBtn"
+onclick="show('analysis',this)">
+🌍 Analyse Farm
+</button>
+
+
+<button class="navBtn"
+onclick="show('methods',this)">
+🌾 Farming Paths
+</button>
+
+
+<button class="navBtn"
+onclick="show('market',this)">
+🛒 Market
+</button>
+
+
+<button class="navBtn"
+onclick="show('investment',this)">
+💰 Investment
+</button>
+
+
+<div class="navTitle">
+Farm Journey
+</div>
+
+
+<button class="navBtn"
+onclick="show('journey',this)">
+🗓 Farming Journey
+</button>
+
+
+<button class="navBtn"
+onclick="show('services',this)">
+🛠 Agri Services
+</button>
+
+
+<button class="navBtn"
+onclick="show('expert',this)">
+👨‍🔬 Expert Support
+</button>
+
+
+<button class="navBtn"
+onclick="show('harvest',this)">
+🧺 Harvest & Sell
+</button>
+
+
+<button class="navBtn"
+onclick="show('economics',this)">
+📊 Farm Economics
+</button>
+
+</aside>
+
+
+<main class="main">
+
+
+<header class="topbar">
+
+<div class="status">
+
+<span></span>
+
+Backend connected
+
+</div>
+
+<div>
+
+<button class="btn dark"
+onclick="checkBackend()">
+
+⚙ System
+
+</button>
+
+</div>
+
+</header>
+
+
+<div class="content">
+
+
+<!-- HOME -->
+
+<section id="home" class="section active">
+
+
+<div class="hero">
+
+<small>
+SMART FARMING PLATFORM
+</small>
+
+<h2>
+What do you want to do with your farm?
+</h2>
+
+<p>
+
+Agri Cluster helps smallholder farmers understand their farm,
+choose suitable farming methods, optimise investment,
+access shared technology and experts, and move produce
+from farm to market.
+
+</p>
+
+
+<div class="actions">
+
+<button class="btn green"
+onclick="show('analysis')">
+
+🌍 Analyse My Farm
+
+</button>
+
+
+<button class="btn white"
+onclick="show('methods')">
+
+🌾 Explore Farming Paths
+
+</button>
+
+
+<button class="btn white"
+onclick="show('market')">
+
+🛒 Find Market
+
+</button>
+
+</div>
+
+</div>
+
+
+<div class="snapshot">
+
+<div class="snap">
+
+<small>Farmer</small>
+
+<strong id="dashName">
+Ravi
+</strong>
+
+</div>
+
+
+<div class="snap">
+
+<small>Location</small>
+
+<strong id="dashLocation">
+Chamarajanagara
+</strong>
+
+</div>
+
+
+<div class="snap">
+
+<small>Current Crop</small>
+
+<strong id="dashCrop">
+Tomato
+</strong>
+
+</div>
+
+
+<div class="snap">
+
+<small>Investment</small>
+
+<strong>
+₹75,000
+</strong>
+
+</div>
+
+</div>
+
+
+<div class="sectionHead">
+
+<h2>
+Quick Actions
+</h2>
+
+<p>
+Start from where you are today.
+</p>
+
+</div>
+
+
+<div class="grid g4">
+
+
+<div class="card quick"
+onclick="show('profile')">
+
+<div class="icon">
+👨‍🌾
+</div>
+
+<h3>
+My Farm
+</h3>
+
+<p>
+Update your land, crop, soil, water and investment.
+</p>
+
+</div>
+
+
+<div class="card quick"
+onclick="show('analysis')">
+
+<div class="icon">
+🔍
+</div>
+
+<h3>
+Analyse Farm
+</h3>
+
+<p>
+Understand suitable farming methods.
+</p>
+
+</div>
+
+
+<div class="card quick"
+onclick="show('investment')">
+
+<div class="icon">
+💰
+</div>
+
+<h3>
+Investment
+</h3>
+
+<p>
+Plan how available investment could be allocated.
+</p>
+
+</div>
+
+
+<div class="card quick"
+onclick="show('services')">
+
+<div class="icon">
+🚜
+</div>
+
+<h3>
+Agri Services
+</h3>
+
+<p>
+Access machinery, drones, experts and testing.
+</p>
+
+</div>
+
+
+</div>
+
+
+<div class="sectionHead">
+
+<h2>
+Today's Farm Focus
+</h2>
+
+<p>
+Small actions can improve farm resource efficiency.
+</p>
+
+</div>
+
+
+<div class="grid g3">
+
+
+<div class="card">
+
+<span class="badge bg">
+WATER
+</span>
+
+<h3>
+Reduce water wastage
+</h3>
+
+<p>
+Review irrigation timing and consider suitable water-saving systems.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<span class="badge by">
+CROP HEALTH
+</span>
+
+<h3>
+Check crop health
+</h3>
+
+<p>
+Monitor leaves, pests, disease symptoms and soil moisture.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<span class="badge bb">
+MARKET
+</span>
+
+<h3>
+Prepare your market
+</h3>
+
+<p>
+Explore buyers and transport options before harvest.
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- PROFILE -->
+
+<section id="profile" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+👨‍🌾 My Farm
+</h2>
+
+<p>
+Your farm information powers the decision-support system.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<div class="form">
+
+
+<div class="field">
+
+<label>
+Farmer Name
+</label>
+
+<input
+id="farmerName"
+value="Ravi">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Location
+</label>
+
+<input
+id="farmerLocation"
+value="Chamarajanagara, Karnataka">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Land
+</label>
+
+<input
+id="farmerLand"
+value="1 acre">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Current Crop
+</label>
+
+<input
+id="farmerCrop"
+value="Tomato">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Soil
+</label>
+
+<select id="farmerSoil">
+
+<option>Red soil</option>
+<option>Black soil</option>
+<option>Alluvial soil</option>
+<option>Sandy soil</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Water
+</label>
+
+<select id="farmerWater">
+
+<option>Moderate</option>
+<option>Low</option>
+<option>High</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Electricity
+</label>
+
+<select id="farmerElectricity">
+
+<option>Part-time</option>
+<option>Most of the day</option>
+<option>Limited</option>
+<option>Not available</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Investment ₹
+</label>
+
+<input
+id="farmerInvestment"
+type="number"
+value="75000">
+
+</div>
+
+
+</div>
+
+
+<br>
+
+
+<button
+class="btn green"
+onclick="saveFarmer()">
+
+Save Farm Profile
+
+</button>
+
+</div>
+
+</section>
+
+
+<!-- ANALYSIS -->
+
+<section id="analysis" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+🌍 Farm Analysis
+</h2>
+
+<p>
+Understand your farm before investing.
+</p>
+
+</div>
+
+
+<div class="grid g3">
+
+
+<div class="card">
+
+<div style="font-size:12px;color:#68766d">
+Suitability
+</div>
+
+<div class="stat"
+id="score">
+
+82%
+
+</div>
+
+<div class="progress">
+
+<div
+id="scoreBar"
+style="width:82%">
+</div>
+
+</div>
+
+<p>
+Illustrative result based on your farm profile.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Farm Conditions
+</h3>
+
+<div class="row">
+<span>Soil</span>
+<strong id="analysisSoil">
+Red soil
+</strong>
+</div>
+
+<div class="row">
+<span>Water</span>
+<strong id="analysisWater">
+Moderate
+</strong>
+</div>
+
+<div class="row">
+<span>Land</span>
+<strong id="analysisLand">
+1 acre
+</strong>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Resource Focus
+</h3>
+
+<p>
+Prioritise water efficiency, careful energy use and technologies that match available investment.
+</p>
+
+<div class="notice success">
+Start with suitability before purchasing technology.
+</div>
+
+</div>
+
+
+</div>
+
+
+<div class="sectionHead">
+
+<h2>
+Recommended Farming Paths
+</h2>
+
+</div>
+
+
+<div
+id="methodResults"
+class="grid g3">
+
+</div>
+
+</section>
+
+
+<!-- METHODS -->
+
+<section id="methods" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+🌾 Farming Paths
+</h2>
+
+<p>
+Understand the method before investing.
+</p>
+
+</div>
+
+
+<div
+id="methodsList"
+class="grid g3">
+
+</div>
+
+
+</section>
+
+
+<!-- MARKET -->
+
+<section id="market" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+🛒 Market Access
+</h2>
+
+<p>
+Explore possible customer channels.
+</p>
+
+</div>
+
+
+<div class="grid g2">
+
+
+<div class="card">
+
+<h3>
+Tomato Market Snapshot
+</h3>
+
+
+<div class="row">
+<span>Local Market</span>
+<strong>₹18–25/kg</strong>
+</div>
+
+
+<div class="row">
+<span>Urban Retail</span>
+<strong>₹25–35/kg</strong>
+</div>
+
+
+<div class="row">
+<span>Wholesale</span>
+<strong>₹16–24/kg</strong>
+</div>
+
+
+<div class="notice info">
+Demo market data only. Production should use verified live market data.
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Potential Customer Channels
+</h3>
+
+
+<div class="row">
+
+<span>
+🏪 Local Retailers
+</span>
+
+<button
+class="btn green"
+onclick="findBuyer('Local Retailers')">
+
+Find
+
+</button>
+
+</div>
+
+
+<div class="row">
+
+<span>
+🍽 Restaurants
+</span>
+
+<button
+class="btn green"
+onclick="findBuyer('Restaurants')">
+
+Find
+
+</button>
+
+</div>
+
+
+<div class="row">
+
+<span>
+🏭 Processors
+</span>
+
+<button
+class="btn green"
+onclick="findBuyer('Processors')">
+
+Find
+
+</button>
+
+</div>
+
+
+<div class="row">
+
+<span>
+🤝 FPO / Institutions
+</span>
+
+<button
+class="btn green"
+onclick="findBuyer('FPO / Institutions')">
+
+Find
+
+</button>
+
+</div>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- INVESTMENT -->
+
+<section id="investment" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+💰 Investment Optimiser
+</h2>
+
+<p>
+Plan the use of available investment.
+</p>
+
+</div>
+
+
+<div class="grid g2">
+
+
+<div class="card">
+
+<h3>
+Available Investment
+</h3>
+
+<input
+id="investmentAmount"
+type="number"
+value="75000"
+style="
+width:100%;
+padding:15px;
+font-size:24px;
+font-weight:bold;
+border:1px solid #dce6df;
+border-radius:10px;
+margin:15px 0;
+">
+
+<button
+class="btn green"
+onclick="optimise()">
+
+Optimise Allocation
+
+</button>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Illustrative Allocation
+</h3>
+
+<div id="allocation">
+
+<div class="row">
+<span>Inputs</span>
+<strong>₹18,000</strong>
+</div>
+
+<div class="row">
+<span>Water / Irrigation</span>
+<strong>₹20,000</strong>
+</div>
+
+<div class="row">
+<span>Technology</span>
+<strong>₹12,000</strong>
+</div>
+
+<div class="row">
+<span>Labour</span>
+<strong>₹15,000</strong>
+</div>
+
+<div class="row">
+<span>Contingency</span>
+<strong>₹10,000</strong>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- JOURNEY -->
+
+<section id="journey" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+🗓 Farming Journey
+</h2>
+
+<p>
+From planning to selling.
+</p>
+
+</div>
+
+
+<div class="journey">
+
+
+<div class="step done">
+<div>📋</div>
+PLAN
+</div>
+
+<div class="step done">
+<div>🧰</div>
+PREPARE
+</div>
+
+<div class="step current">
+<div>🌱</div>
+PLANT
+</div>
+
+<div class="step">
+<div>🌿</div>
+GROW
+</div>
+
+<div class="step">
+<div>📡</div>
+MONITOR
+</div>
+
+<div class="step">
+<div>🩺</div>
+SOLVE
+</div>
+
+<div class="step">
+<div>🧺</div>
+HARVEST
+</div>
+
+<div class="step">
+<div>🚚</div>
+TRANSPORT
+</div>
+
+<div class="step">
+<div>🛒</div>
+SELL
+</div>
+
+</div>
+
+
+<div class="grid g2" style="margin-top:20px">
+
+
+<div class="card">
+
+<h3>
+Today's Tasks
+</h3>
+
+<div class="row">
+<span>Check soil moisture</span>
+<span class="badge bg">Pending</span>
+</div>
+
+<div class="row">
+<span>Inspect tomato leaves</span>
+<span class="badge bg">Pending</span>
+</div>
+
+<div class="row">
+<span>Record farm activity</span>
+<span class="badge bg">Pending</span>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Crop Cycle Progress
+</h3>
+
+<div class="stat">
+32%
+</div>
+
+<div class="progress">
+<div style="width:32%"></div>
+</div>
+
+<p>
+Continue monitoring crop health and resource usage.
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- SERVICES -->
+
+<section id="services" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+🛠 Agri Services
+</h2>
+
+<p>
+Farmers don't need to own every technology. They need access to the right technology at the right time.
+</p>
+
+</div>
+
+
+<div
+id="servicesList"
+class="grid g3">
+
+</div>
+
+
+</section>
+
+
+<!-- EXPERT -->
+
+<section id="expert" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+👨‍🔬 Expert Support
+</h2>
+
+<p>
+Technology supports decisions; professionals can validate important decisions.
+</p>
+
+</div>
+
+
+<div class="grid g2">
+
+
+<div class="card">
+
+<h3>
+Ask an Agriculture Expert
+</h3>
+
+<br>
+
+<div class="field">
+
+<label>
+Your Question
+</label>
+
+<textarea
+id="expertQuestion"
+rows="7"
+placeholder="Example: My tomato leaves have spots...">
+</textarea>
+
+</div>
+
+<br>
+
+<button
+class="btn green"
+onclick="askExpert()">
+
+Send Question
+
+</button>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Organic / Natural Crop Support
+</h3>
+
+<div class="row">
+<span>🌿 Neem-based inputs</span>
+<span class="badge bg">Explore</span>
+</div>
+
+<div class="row">
+<span>🦠 Trichoderma</span>
+<span class="badge bb">Bio-input</span>
+</div>
+
+<div class="row">
+<span>🧪 Soil testing</span>
+<span class="badge bp">Service</span>
+</div>
+
+<div class="notice warning">
+Always verify products and follow agricultural expert guidance. Natural does not automatically mean risk-free.
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- HARVEST -->
+
+<section id="harvest" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+🧺 Harvest → Transport → Sell
+</h2>
+
+<p>
+Plan the last mile before your produce leaves the farm.
+</p>
+
+</div>
+
+
+<div class="grid g3">
+
+
+<div class="card">
+
+<div class="icon">
+🧺
+</div>
+
+<h3>
+Harvest Plan
+</h3>
+
+<p>
+Plan quantity, timing and handling.
+</p>
+
+<br>
+
+<button
+class="btn green"
+onclick="toast('Harvest plan created')">
+
+Create Plan
+
+</button>
+
+</div>
+
+
+<div class="card">
+
+<div class="icon">
+🚚
+</div>
+
+<h3>
+Transport
+</h3>
+
+<p>
+Request transport from farm to buyer.
+</p>
+
+<br>
+
+<button
+class="btn green"
+onclick="requestService('Farm Transport')">
+
+Request Vehicle
+
+</button>
+
+</div>
+
+
+<div class="card">
+
+<div class="icon">
+🛒
+</div>
+
+<h3>
+List Harvest
+</h3>
+
+<p>
+Publish produce for potential buyer enquiries.
+</p>
+
+<br>
+
+<button
+class="btn green"
+onclick="openHarvest()">
+
+List Harvest
+
+</button>
+
+</div>
+
+
+</div>
+
+
+<div class="card" style="margin-top:20px">
+
+<h3>
+Current Harvest
+</h3>
+
+<div id="harvestList">
+
+No harvest listing yet.
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- ECONOMICS -->
+
+<section id="economics" class="section">
+
+
+<div class="sectionHead">
+
+<h2>
+📊 Farm Economics
+</h2>
+
+<p>
+Understand investment, expenses, production and revenue.
+</p>
+
+</div>
+
+
+<div class="grid g4">
+
+
+<div class="card">
+
+<small>
+Investment
+</small>
+
+<div class="stat">
+₹75,000
+</div>
+
+</div>
+
+
+<div class="card">
+
+<small>
+Expenses
+</small>
+
+<div class="stat">
+₹48,200
+</div>
+
+</div>
+
+
+<div class="card">
+
+<small>
+Produce Sold
+</small>
+
+<div class="stat">
+380 kg
+</div>
+
+</div>
+
+
+<div class="card">
+
+<small>
+Revenue
+</small>
+
+<div class="stat">
+₹62,500
+</div>
+
+</div>
+
+
+</div>
+
+
+<div class="grid g2" style="margin-top:20px">
+
+
+<div class="card">
+
+<h3>
+Expense Breakdown
+</h3>
+
+<div class="row">
+<span>Inputs</span>
+<strong>₹18,000</strong>
+</div>
+
+<div class="row">
+<span>Labour</span>
+<strong>₹12,000</strong>
+</div>
+
+<div class="row">
+<span>Water / Energy</span>
+<strong>₹8,200</strong>
+</div>
+
+<div class="row">
+<span>Services</span>
+<strong>₹10,000</strong>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Learn for Next Cycle
+</h3>
+
+<div class="row">
+<span>Reduce water loss</span>
+<span>✓</span>
+</div>
+
+<div class="row">
+<span>Monitor pests earlier</span>
+<span>✓</span>
+</div>
+
+<div class="row">
+<span>Compare buyers</span>
+<span>✓</span>
+</div>
+
+<div class="row">
+<span>Track transport cost</span>
+<span>✓</span>
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+</div>
+
+</main>
+
+</div>
+
+
+<!-- MODAL -->
+
+<div
+id="modal"
+class="modal">
+
+<div class="modalBox">
+
+<div class="modalTop">
+
+<h2 id="modalTitle">
+Agri Cluster
+</h2>
+
+<button
+class="close"
+onclick="closeModal()">
+
+×
+
+</button>
+
+</div>
+
+<div id="modalContent">
+</div>
+
+</div>
+
+</div>
+
+
+<div
+id="toast"
+class="toast">
+</div>
+
+
+<script>
+
+// ==================================================
+// NAVIGATION
+// ==================================================
+
+function show(id, button) {
+
+    document
+        .querySelectorAll(".section")
+        .forEach(s => s.classList.remove("active"));
+
+    const section = document.getElementById(id);
+
+    if (section) {
+        section.classList.add("active");
+    }
+
+    document
+        .querySelectorAll(".navBtn")
+        .forEach(b => b.classList.remove("active"));
+
+    if (button) {
+        button.classList.add("active");
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+// ==================================================
+// TOAST
+// ==================================================
+
+let toastTimer;
+
+function toast(message) {
+
+    const element =
+        document.getElementById("toast");
+
+    element.textContent = message;
+
+    element.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
+
+        element.classList.remove("show");
+
+    }, 3000);
+
+}
+
+
+// ==================================================
+// BACKEND CHECK
+// ==================================================
+
+async function checkBackend() {
+
+    try {
+
+        const response =
+            await fetch("/api/health");
+
+        const data =
+            await response.json();
+
+        toast(
+            data.message
+        );
+
+    } catch (error) {
+
+        toast(
+            "Backend is not connected"
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// SAVE FARMER
+// ==================================================
+
+async function saveFarmer() {
+
+    const data = {
+
+        name:
+            document.getElementById("farmerName").value,
+
+        location:
+            document.getElementById("farmerLocation").value,
+
+        land:
+            document.getElementById("farmerLand").value,
+
+        crop:
+            document.getElementById("farmerCrop").value,
+
+        soil:
+            document.getElementById("farmerSoil").value,
+
+        water:
+            document.getElementById("farmerWater").value,
+
+        electricity:
+            document.getElementById("farmerElectricity").value,
+
+        investment:
+            document.getElementById("farmerInvestment").value
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/farmer",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(data)
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (result.success) {
+
+            document.getElementById("dashName")
+                .textContent = data.name;
+
+            document.getElementById("dashLocation")
+                .textContent = data.location;
+
+            document.getElementById("dashCrop")
+                .textContent = data.crop;
+
+            toast(
+                "Farm profile saved successfully"
+            );
+
+        }
+
+    } catch (error) {
+
+        toast(
+            "Could not connect to backend"
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// LOAD FARMER
+// ==================================================
+
+async function loadFarmer() {
+
+    try {
+
+        const response =
+            await fetch("/api/farmer");
+
+        const result =
+            await response.json();
+
+        if (!result.success) return;
+
+        const farmer =
+            result.farmer;
+
+        document.getElementById("farmerName")
+            .value = farmer.name;
+
+        document.getElementById("farmerLocation")
+            .value = farmer.location;
+
+        document.getElementById("farmerLand")
+            .value = farmer.land;
+
+        document.getElementById("farmerCrop")
+            .value = farmer.crop;
+
+        document.getElementById("farmerSoil")
+            .value = farmer.soil;
+
+        document.getElementById("farmerWater")
+            .value = farmer.water;
+
+        document.getElementById("farmerInvestment")
+            .value = farmer.investment;
+
+        document.getElementById("dashName")
+            .textContent = farmer.name;
+
+        document.getElementById("dashLocation")
+            .textContent = farmer.location;
+
+        document.getElementById("dashCrop")
+            .textContent = farmer.crop;
+
+    } catch (error) {
+
+        console.log(
+            "Backend unavailable"
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// FARM ANALYSIS
+// ==================================================
+
+async function analyseFarm() {
+
+    const data = {
+
+        soil:
+            document.getElementById("farmerSoil").value,
+
+        water:
+            document.getElementById("farmerWater").value,
+
+        land:
+            document.getElementById("farmerLand").value,
+
+        investment:
+            document.getElementById("farmerInvestment").value
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/analyse",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(data)
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        document.getElementById("score")
+            .textContent =
+            result.score + "%";
+
+        document.getElementById("scoreBar")
+            .style.width =
+            result.score + "%";
+
+
+        document.getElementById("analysisSoil")
+            .textContent =
+            data.soil;
+
+        document.getElementById("analysisWater")
+            .textContent =
+            data.water;
+
+        document.getElementById("analysisLand")
+            .textContent =
+            data.land;
+
+
+        renderMethods(
+            result.methods
+        );
+
+
+    } catch (error) {
+
+        toast(
+            "Backend unavailable"
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// LOAD METHODS
+// ==================================================
+
+async function loadMethods() {
+
+    try {
+
+        const response =
+            await fetch("/api/methods");
+
+        const result =
+            await response.json();
+
+        renderMethods(
+            result.methods
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+}
+
+
+function renderMethods(methods) {
+
+    const analysis =
+        document.getElementById("methodResults");
+
+    const list =
+        document.getElementById("methodsList");
+
+
+    const html =
+        methods.map(method => `
+
+        <div class="card">
+
+            <div class="icon">
+                ${method.icon}
+            </div>
+
+            <span class="badge bg">
+                ${method.suitability || "Explore"}
+            </span>
+
+            <h3>
+                ${method.name}
+            </h3>
+
+            <p>
+                ${method.description || method.reason || ""}
+            </p>
+
+            <br>
+
+            <span class="badge bb">
+                Water: ${method.water || "Variable"}
+            </span>
+
+            <span class="badge by">
+                Investment: ${method.investment || "Variable"}
+            </span>
+
+            <br><br>
+
+            <button
+                class="btn green"
+                onclick="openMethod('${method.name}')">
+
+                Understand
+
+            </button>
+
+        </div>
+
+    `).join("");
+
+
+    if (analysis) {
+        analysis.innerHTML = html;
+    }
+
+    if (list) {
+        list.innerHTML = html;
+    }
+
+}
+
+
+// ==================================================
+// METHOD MODAL
+// ==================================================
+
+function openMethod(name) {
+
+    document.getElementById("modalTitle")
+        .textContent = name;
+
+
+    document.getElementById("modalContent")
+        .innerHTML = `
+
+        <div class="card">
+
+            <h3>
+                👀 Understand Before Investing
+            </h3>
+
+            <p>
+                Agri Cluster helps farmers understand a farming method
+                before spending money on equipment or inputs.
+            </p>
+
+        </div>
+
+        <br>
+
+        <div class="row">
+            <span>Water requirement</span>
+            <strong>Depends on method</strong>
+        </div>
+
+        <div class="row">
+            <span>Investment</span>
+            <strong>Depends on farm</strong>
+        </div>
+
+        <div class="row">
+            <span>Skill requirement</span>
+            <strong>Medium</strong>
+        </div>
+
+        <div class="row">
+            <span>Expert support</span>
+            <strong>Available</strong>
+        </div>
+
+        <div class="notice warning">
+
+            Suitability and economics should be verified
+            for the individual farm before investment.
+
+        </div>
+
+        `;
+
+
+    document
+        .getElementById("modal")
+        .classList.add("show");
+
+}
+
+
+function closeModal() {
+
+    document
+        .getElementById("modal")
+        .classList.remove("show");
+
+}
+
+
+// ==================================================
+// INVESTMENT
+// ==================================================
+
+async function optimise() {
+
+    const amount =
+        Number(
+            document.getElementById(
+                "investmentAmount"
+            ).value
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/investment",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            amount
+                        })
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+        const a =
+            result.allocation;
+
+
+        document.getElementById("allocation")
+            .innerHTML = `
+
+            <div class="row">
+                <span>Inputs</span>
+                <strong>₹${a.inputs.toLocaleString()}</strong>
+            </div>
+
+            <div class="row">
+                <span>Water / Irrigation</span>
+                <strong>₹${a.irrigation.toLocaleString()}</strong>
+            </div>
+
+            <div class="row">
+                <span>Technology</span>
+                <strong>₹${a.technology.toLocaleString()}</strong>
+            </div>
+
+            <div class="row">
+                <span>Labour</span>
+                <strong>₹${a.labour.toLocaleString()}</strong>
+            </div>
+
+            <div class="row">
+                <span>Contingency</span>
+                <strong>₹${a.contingency.toLocaleString()}</strong>
+            </div>
+
+            `;
+
+
+        toast(
+            "Investment allocation generated"
+        );
+
+    } catch (error) {
+
+        toast(
+            "Backend unavailable"
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// SERVICES
+// ==================================================
+
+async function loadServices() {
+
+    try {
+
+        const response =
+            await fetch("/api/services");
+
+        const result =
+            await response.json();
+
+
+        const container =
+            document.getElementById(
+                "servicesList"
+            );
+
+
+        container.innerHTML =
+            result.services.map(service => `
+
+            <div class="card">
+
+                <div class="icon">
+                    ${service.icon}
+                </div>
+
+                <h3>
+                    ${service.name}
+                </h3>
+
+                <p>
+                    Shared access to ${service.name}.
+                </p>
+
+                <br>
+
+                <span class="badge bg">
+                    ${service.price}
+                </span>
+
+                <br><br>
+
+                <button
+                    class="btn green"
+                    onclick="requestService('${service.name}')">
+
+                    Request Service
+
+                </button>
+
+            </div>
+
+        `).join("");
+
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+}
+
+
+async function requestService(service) {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/services",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            farmerName:
+                                document.getElementById(
+                                    "farmerName"
+                                ).value,
+
+                            service,
+
+                            location:
+                                document.getElementById(
+                                    "farmerLocation"
+                                ).value
+
+                        })
+
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        toast(
+            result.message
+        );
+
+    } catch (error) {
+
+        toast(
+            "Could not create service request"
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// EXPERT
+// ==================================================
+
+async function askExpert() {
+
+    const question =
+        document.getElementById(
+            "expertQuestion"
+        ).value.trim();
+
+
+    if (!question) {
+
+        toast(
+            "Please enter your question"
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/expert",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            farmer:
+                                document.getElementById(
+                                    "farmerName"
+                                ).value,
+
+                            question
+
+                        })
+
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        toast(
+            result.message
+        );
+
+
+        document.getElementById(
+            "expertQuestion"
+        ).value = "";
+
+
+    } catch (error) {
+
+        toast(
+            "Could not send question"
+        );
+
+    }
+
+}
+
+
+// ==================================================
+// HARVEST
+// ==================================================
+
+function openHarvest() {
+
+    document.getElementById(
+        "modalTitle"
+    ).textContent =
+        "🧺 List Harvest";
+
+
+    document.getElementById(
+        "modalContent"
+    ).innerHTML = `
+
+        <div class="field">
+
+            <label>
+                Crop
+            </label>
+
+            <input
+                id="harvestCrop"
+                value="Tomato">
+
+        </div>
+
+        <br>
+
+        <div class="field">
+
+            <label>
+                Quantity kg
+            </label>
+
+            <input
+                id="harvestQuantity"
+                type="number"
+                value="450">
+
+        </div>
+
+        <br>
+
+        <div class="field">
+
+            <label>
+                Expected price/kg
+            </label>
+
+            <input
+                id="harvestPrice"
+                type="number"
+                value="25">
+
+        </div>
+
+        <br>
+
+        <button
+            class="btn green"
+            onclick="saveHarvest()">
+
+            Publish Harvest
+
+        </button>
+
+    `;
+
+
+    document
+        .getElementById("modal")
+        .classList.add("show");
+
+}
+
+
+async function saveHarvest() {
+
+    const data = {
+
+        crop:
+            document.getElementById(
+                "harvestCrop"
+            ).value,
+
+        quantity:
+            document.getElementById(
+                "harvestQuantity"
+            ).value,
+
+        price:
+            document.getElementById(
+                "harvestPrice"
+            ).value
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/harvest",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(data)
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        closeModal();
+
+        toast(
+            result.message
+        );
+
+        loadHarvests();
+
+
+    } catch (error) {
+
+        toast(
+            "Could not save harvest"
+        );
+
+    }
+
+}
+
+
+async function loadHarvests() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/harvest"
+            );
+
+        const result =
+            await response.json();
+
+
+        const container =
+            document.getElementById(
+                "harvestList"
+            );
+
+
+        if (!result.harvests.length) {
+
+            container.innerHTML =
+                "No harvest listing yet.";
+
+            return;
+
+        }
+
+
+        container.innerHTML =
+            result.harvests
+            .map(h => `
+
+                <div class="row">
+
+                    <span>
+                        ${h.crop}
+                        ·
+                        ${h.quantity} kg
+                    </span>
+
+                    <strong>
+                        ₹${h.price}/kg
+                    </strong>
+
+                </div>
+
+            `)
+            .join("");
+
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+}
+
+
+// ==================================================
+// BUYER
+// ==================================================
+
+function findBuyer(type) {
+
+    toast(
+        `Searching for ${type} · Demo buyer data`
+    );
+
+}
+
+
+// ==================================================
+// STARTUP
+// ==================================================
+
+window.addEventListener(
+    "load",
+    async () => {
+
+        await loadFarmer();
+
+        await loadMethods();
+
+        await loadServices();
+
+        await loadHarvests();
+
+        await analyseFarm();
+
+    }
+);
+
+</script>
+
+</body>
+</html>

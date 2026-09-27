@@ -1,0 +1,13 @@
+{
+  "name": "agri-cluster",
+  "version": "1.0.0",
+  "description": "Agri Cluster - Smart Farming Full Stack Hackathon Prototype",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

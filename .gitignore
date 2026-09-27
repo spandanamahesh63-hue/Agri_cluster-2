@@ -1,0 +1,7 @@
+node_modules/
+dist/
+dist-single/
+release/
+_backup/
+public/node_modules/
+*.log

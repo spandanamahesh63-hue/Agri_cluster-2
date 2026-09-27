@@ -1,0 +1,66 @@
+import type { LabourProfile, LabourSkill } from "../../types";
+
+export const skillLabels: Record<LabourSkill, string> = {
+  harvesting: "Harvesting",
+  transplanting: "Transplanting",
+  weeding: "Weeding",
+  spraying: "Spraying",
+  "grading-packing": "Grading & packing",
+  irrigation: "Irrigation",
+};
+
+// Labour crews who chose to list themselves in the cluster (fictional).
+export const labourProfiles: LabourProfile[] = [
+  {
+    id: "lp-1",
+    userId: "u-labour-1",
+    label: "Harvest crew · Hootagalli",
+    leadName: "Nagaraj B.",
+    skills: ["harvesting", "grading-packing"],
+    crewSize: 6,
+    village: "Hootagalli",
+    dailyWage: 550,
+    availableFrom: "2026-10-01",
+    availability: "available",
+    source: "demo",
+  },
+  {
+    id: "lp-2",
+    userId: "u-labour-2",
+    label: "Field crew · Yelwala",
+    leadName: "Savitha M.",
+    skills: ["transplanting", "weeding", "harvesting"],
+    crewSize: 4,
+    village: "Yelwala",
+    dailyWage: 500,
+    availableFrom: "2026-09-28",
+    availability: "available",
+    source: "demo",
+  },
+  {
+    id: "lp-3",
+    userId: "u-labour-3",
+    label: "Spray & irrigation team · Varuna",
+    leadName: "Prakash D.",
+    skills: ["spraying", "irrigation"],
+    crewSize: 2,
+    village: "Varuna",
+    dailyWage: 650,
+    availableFrom: "2026-09-29",
+    availability: "limited",
+    source: "demo",
+  },
+  {
+    id: "lp-4",
+    userId: "u-labour-4",
+    label: "Harvest crew · Bilikere",
+    leadName: "Manju K.",
+    skills: ["harvesting", "weeding"],
+    crewSize: 8,
+    village: "Bilikere",
+    dailyWage: 520,
+    availableFrom: "2026-10-06",
+    availability: "booked",
+    source: "demo",
+  },
+];

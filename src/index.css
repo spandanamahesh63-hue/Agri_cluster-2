@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* AgriCluster design tokens.
+   Neutral, warm-grey canvas with a single deep field-green brand colour.
+   Domain colours (water, energy, crop, market, resource) are muted and always
+   paired with an icon + text label so status never relies on colour alone. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-canvas: #f6f6f3;
+  --color-surface: #ffffff;
+  --color-sunken: #f0f1ed;
+  --color-line: #e3e5df;
+  --color-line-strong: #cfd3cb;
+  --color-ink: #17201b;
+  --color-ink-muted: #56615a;
+  --color-ink-subtle: #636c65; /* ≥ 4.5:1 on surface, canvas and sunken */
+
+  --color-brand-50: #eef5f0;
+  --color-brand-100: #d6e8dc;
+  --color-brand-200: #afd1bb;
+  --color-brand-500: #2f7d57;
+  --color-brand-600: #226845;
+  --color-brand-700: #1b5538;
+  --color-brand-800: #15422c;
+  --color-brand-900: #0f3021;
+
+  --color-water: #0f6a9c;
+  --color-water-soft: #e7f1f8;
+  --color-energy: #8a5a00;
+  --color-energy-soft: #fbf1dc;
+  --color-crop: #2f7d57;
+  --color-crop-soft: #e8f3ec;
+  --color-market: #5a47ad;
+  --color-market-soft: #efecfa;
+  --color-resource: #1e6b73;
+  --color-resource-soft: #e4f1f2;
+
+  --color-danger: #b3261e;
+  --color-danger-soft: #fcebea;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #fdf3dc;
+  --color-success: #1f7a4a;
+  --color-success-soft: #e6f4ec;
+  --color-info: #245f8f;
+  --color-info-soft: #e8f1f9;
+
+  --shadow-card: 0 1px 2px rgb(23 32 27 / 0.04), 0 1px 1px rgb(23 32 27 / 0.03);
+  --shadow-pop: 0 12px 32px rgb(23 32 27 / 0.12), 0 2px 6px rgb(23 32 27 / 0.06);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
