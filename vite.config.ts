@@ -13,7 +13,11 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     publicDir: "static",
-    server: { port: 5173 },
+    server: {
+      port: 5173,
+      // Folders outside the app. Office/browser temp files there lock up the watcher on Windows.
+      watch: { ignored: ["**/deck/**", "**/release/**", "**/_backup/**", "**/dist/**", "**/dist-single/**"] },
+    },
     build: single
       ? {
           outDir: "dist-single",

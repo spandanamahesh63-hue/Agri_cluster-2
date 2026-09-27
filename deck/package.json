@@ -1,0 +1,12 @@
+{
+  "name": "agricluster-deck",
+  "private": true,
+  "type": "module",
+  "description": "Generates the AgriCluster pitch deck (PowerPoint) from app screenshots and demo figures.",
+  "scripts": {
+    "build": "node build-deck.mjs"
+  },
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}

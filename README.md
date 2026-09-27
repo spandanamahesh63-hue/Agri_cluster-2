@@ -43,6 +43,16 @@ Everything you do is stored in your browser only. **Reset demo** (sidebar or Pro
 
 The single-file build routes with the URL hash (`#/farmer/market`), so it works from `file://` and inside a hosted page. Everything is inlined except the Inter web font, which falls back to a system font offline.
 
+## Pitch deck
+
+`deck/AgriCluster-pitch.pptx` (plus `AgriCluster-pitch.pdf`) is the 12-slide deck from spec §71. It has speaker notes, sized for about 7 minutes. It is generated from app screenshots and demo figures:
+
+```bash
+cd deck && npm install && npm run build   # rewrites AgriCluster-pitch.pptx
+```
+
+To refresh screenshots after UI changes, recapture them into `deck/assets/` at 1440×810, 2× scale, then rebuild.
+
 ## Presenting the demo
 
 Click **Guided demo** on the login screen, or the presentation icon in the app header. The panel walks through the 12-step demo order from the spec (§72). Each step shows a one-line talking point, and the panel switches roles automatically:
