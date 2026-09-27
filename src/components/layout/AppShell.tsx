@@ -11,6 +11,7 @@ import { Logo } from "./Logo";
 import { Badge } from "../ui/Badge";
 import { PageSkeleton } from "../ui/states";
 import { PageErrorBoundary } from "./PageErrorBoundary";
+import { NotificationBell } from "./NotificationBell";
 import { DemoGuideButton } from "../../features/demo/DemoGuide";
 
 export function AppShell({ role }: { role: Role }) {
@@ -66,6 +67,7 @@ export function AppShell({ role }: { role: Role }) {
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-surface/95 px-4 backdrop-blur lg:hidden">
         <Logo subtitle={false} />
         <div className="flex items-center gap-1">
+          <NotificationBell compact />
           <DemoGuideButton compact />
           <button
           type="button"
@@ -88,6 +90,7 @@ export function AppShell({ role }: { role: Role }) {
         </div>
         <div className="flex items-center gap-4">
           <DemoClock />
+          <NotificationBell />
           <DemoGuideButton />
         </div>
       </div>

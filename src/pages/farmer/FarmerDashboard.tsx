@@ -14,7 +14,7 @@ import { EmptyState, ErrorState, PageSkeleton } from "../../components/ui/states
 import { DEMO_NOW } from "../../data/mock/clock";
 import { objectives } from "../../data/mock/planning";
 import { orderForObjective } from "../../features/farmer/objective";
-import { formatHour, formatTime, greeting } from "../../utils/format";
+import { formatAcres, formatHour, formatTime, greeting } from "../../utils/format";
 
 const MAX_ON_DASHBOARD = 3;
 
@@ -35,7 +35,7 @@ export function FarmerDashboard() {
   return (
     <>
       <PageHeader
-        eyebrow={`${farm.label} · ${farm.village} · ${farm.totalAcres} acres`}
+        eyebrow={`${farm.label} · ${farm.village} · ${formatAcres(farm.totalAcres)}`}
         title={`${greeting(DEMO_NOW)}, ${firstName}`}
         description="Here is what the data suggests today. You decide what to do."
       />

@@ -27,6 +27,7 @@ import {
   formatDateRange,
   formatHour,
   formatINR,
+  formatKg,
   formatLitres,
   formatTime,
   hoursBetween,
@@ -231,37 +232,63 @@ function cropHealthRules(s: FarmSnapshot): Recommendation[] {
   return out;
 }
 
+/** One harvest per crop and grade: fields of the same crop are one harvest, not separate ones. */
+export interface HarvestGroup {
+  crop: string;
+  grade: CropCycle["expectedGrade"];
+  window: { start: string; end: string };
+  tonnes: number;
+  cycleIds: string[];
+  fieldIds: string[];
+  fieldNames: string[];
+}
+
+export function harvestGroups(cycles: CropCycle[], fields: Field[]): HarvestGroup[] {
+  const groups = new Map<string, HarvestGroup>();
+  for (const c of cycles) {
+    const key = `${c.crop}|${c.expectedGrade}`;
+    const g = groups.get(key) ?? { crop: c.crop, grade: c.expectedGrade, window: { ...c.harvestWindow }, tonnes: 0, cycleIds: [], fieldIds: [], fieldNames: [] };
+    g.cycleIds.push(c.id);
+    g.window.start = c.harvestWindow.start < g.window.start ? c.harvestWindow.start : g.window.start;
+    g.window.end = c.harvestWindow.end > g.window.end ? c.harvestWindow.end : g.window.end;
+    g.tonnes = Math.round((g.tonnes + c.expectedYieldTonnes) * 10) / 10;
+    g.fieldIds.push(c.fieldId);
+    g.fieldNames.push(fields.find((f) => f.id === c.fieldId)?.name ?? c.fieldId);
+    groups.set(key, g);
+  }
+  return [...groups.values()];
+}
+
+const whereLabel = (g: HarvestGroup) => (g.fieldNames.length > 1 ? `${g.fieldNames.join(" and ")}` : g.fieldNames[0]);
+
 function harvestRules(s: FarmSnapshot): Recommendation[] {
   const out: Recommendation[] = [];
-  for (const cycle of s.cycles) {
-    const start = new Date(cycle.harvestWindow.start);
-    const daysToHarvest = daysBetween(s.now, start);
+  for (const g of harvestGroups(s.cycles, s.fields)) {
+    const daysToHarvest = daysBetween(s.now, new Date(g.window.start));
     if (daysToHarvest < 0 || daysToHarvest > 10) continue;
-    const field = s.fields.find((f) => f.id === cycle.fieldId);
-    const transport = s.resourceDemand.find(
-      (d) => d.kind === "transport" && d.date >= cycle.harvestWindow.start && d.date <= cycle.harvestWindow.end,
-    );
+    const transport = s.resourceDemand.find((d) => d.kind === "transport" && d.date >= g.window.start && d.date <= g.window.end);
     const constrained = transport && transport.requested > transport.available;
     out.push({
-      id: `harvest-plan-${cycle.id}`,
+      id: `harvest-plan-${g.crop.toLowerCase()}`,
       domain: "resource",
       priority: constrained ? "medium" : "low",
       title: constrained
-        ? `Consider booking harvest transport early for ${field?.name ?? cycle.crop}`
-        : `${cycle.crop} harvest window opens in ${daysToHarvest} days`,
-      situation: `${field?.name ?? "Your"} ${cycle.crop.toLowerCase()} harvest window is ${formatDateRange(cycle.harvestWindow.start, cycle.harvestWindow.end)} (in ${daysToHarvest} days), with about ${cycle.expectedYieldTonnes} t expected.`,
+        ? `Consider booking harvest transport early for your ${g.crop.toLowerCase()}`
+        : `${g.crop} harvest window opens in ${daysToHarvest} days`,
+      situation: `Your ${g.crop.toLowerCase()} harvest (${whereLabel(g)}) is due ${formatDateRange(g.window.start, g.window.end)}, in ${daysToHarvest} days, with about ${formatKg(g.tonnes)} expected.`,
       whyItMatters: constrained
         ? `Many farms in the cluster harvest in the same window, so transport is already over-requested. Booking early reduces the risk of produce waiting in the field.`
         : `Planning labour, crates and transport ahead of the window helps avoid post-harvest loss.`,
       evidence: [
-        { label: "Harvest window", value: formatDateRange(cycle.harvestWindow.start, cycle.harvestWindow.end), source: "demo" },
-        { label: "Expected harvest", value: `${cycle.expectedYieldTonnes} t, Grade ${cycle.expectedGrade}`, source: "indicative" },
+        { label: "Harvest window", value: formatDateRange(g.window.start, g.window.end), source: "demo" },
+        { label: "Expected harvest", value: `${formatKg(g.tonnes)}, Grade ${g.grade}`, source: "indicative" },
         ...(transport
           ? [{ label: `Cluster transport on ${formatDate(transport.date)}`, value: `${transport.requested} requests · ${transport.available} vehicles`, source: "demo" as const }]
           : []),
       ],
       action: { label: "Request transport", to: "/farmer/resources?tab=machinery&kind=transport" },
-      fieldId: cycle.fieldId,
+      fieldId: g.fieldIds[0],
+      fieldIds: g.fieldIds,
       farmId: s.farm.id,
     });
   }
@@ -270,27 +297,28 @@ function harvestRules(s: FarmSnapshot): Recommendation[] {
 
 function marketRules(s: FarmSnapshot): Recommendation[] {
   const out: Recommendation[] = [];
-  for (const cycle of s.cycles) {
+  for (const g of harvestGroups(s.cycles, s.fields)) {
     for (const req of s.buyerRequirements) {
-      if (req.status !== "open" || req.crop !== cycle.crop || req.grade !== cycle.expectedGrade) continue;
-      if (!overlaps(cycle.harvestWindow, req.window)) continue;
+      if (req.status !== "open" || req.crop !== g.crop || req.grade !== g.grade) continue;
+      if (!overlaps(g.window, req.window)) continue;
       const [lo, hi] = req.indicativePricePerKg;
-      const kg = cycle.expectedYieldTonnes * 1000;
+      const kg = g.tonnes * 1000;
       out.push({
-        id: `market-${req.id}-${cycle.id}`,
+        id: `market-${req.id}-${g.crop.toLowerCase()}`,
         domain: "market",
         priority: "medium",
         title: `Buyer demand for Grade ${req.grade} ${req.crop.toLowerCase()} matches your harvest`,
-        situation: `A ${req.buyerLabel.toLowerCase()} is looking for ${req.quantityTonnes} t of Grade ${req.grade} ${req.crop.toLowerCase()} for ${formatDateRange(req.window.start, req.window.end)} — the same window as your expected harvest.`,
+        situation: `A ${req.buyerLabel.toLowerCase()} is looking for ${req.quantityTonnes} t of Grade ${req.grade} ${req.crop.toLowerCase()} for ${formatDateRange(req.window.start, req.window.end)}, the same window as your expected harvest.`,
         whyItMatters: `Listing expected produce before harvest lets the cluster pool supply for larger buyers and plan transport together.`,
         evidence: [
           { label: "Buyer requirement", value: `${req.quantityTonnes} t · Grade ${req.grade} · ${formatDateRange(req.window.start, req.window.end)}`, source: req.source },
           { label: "Indicative price", value: `₹${lo}–${hi}/kg`, source: "indicative" },
-          { label: "Your expected harvest", value: `${cycle.expectedYieldTonnes} t, Grade ${cycle.expectedGrade}`, source: "indicative" },
+          { label: "Your expected harvest", value: `${formatKg(g.tonnes)}, Grade ${g.grade} (${whereLabel(g)})`, source: "indicative" },
         ],
         impact: `Indicative value ${formatINR(kg * lo)}–${formatINR(kg * hi)}. Not a confirmed sale.`,
         action: { label: "View buyer request", to: "/farmer/market" },
-        fieldId: cycle.fieldId,
+        fieldId: g.fieldIds[0],
+        fieldIds: g.fieldIds,
         farmId: s.farm.id,
       });
     }

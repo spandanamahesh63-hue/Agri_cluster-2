@@ -3,14 +3,14 @@ import { MapPin, Package, Upload } from "lucide-react";
 import type { CropListing } from "../../types";
 import { useAppStore } from "../../store/AppStore";
 import { useFarmerOverview } from "../../features/farmer/useFarmerOverview";
-import { matchingCycle, useMarket } from "../../features/market/useMarket";
+import { matchingHarvest, useMarket } from "../../features/market/useMarket";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { Badge, InfoNote, SourceBadge } from "../../components/ui/Badge";
 import { Button, ButtonLink } from "../../components/ui/Button";
 import { EmptyState, ErrorState, PageSkeleton } from "../../components/ui/states";
 import { useToast } from "../../components/ui/Toast";
-import { formatDate, formatDateRange, formatINR } from "../../utils/format";
+import { formatDate, formatDateRange, formatINR, formatKg } from "../../utils/format";
 
 const listingStatus: Record<CropListing["status"], { label: string; tone: "neutral" | "info" | "market" | "success" }> = {
   listed: { label: "Listed · visible to buyers", tone: "info" },
@@ -70,7 +70,7 @@ export function MarketPage() {
             ) : (
               <ul className="divide-y divide-line">
                 {relevant.map((req) => {
-                  const cycle = matchingCycle(req, cycles);
+                  const harvest = matchingHarvest(req, cycles, fields);
                   const offer = myListings.find((l) => l.requirementId === req.id);
                   return (
                     <li key={req.id} className="px-5 py-4">
@@ -91,12 +91,12 @@ export function MarketPage() {
                               Indicative ₹{req.indicativePricePerKg[0]}–{req.indicativePricePerKg[1]}/kg
                             </span>
                           </div>
-                          {cycle ? (
+                          {harvest ? (
                             <p className="mt-2 text-[13px]">
                               <Badge tone="market">Matches your harvest</Badge>{" "}
                               <span className="text-ink-muted">
-                                {fields.find((f) => f.id === cycle.fieldId)?.name} · {cycle.expectedYieldTonnes} t expected{" "}
-                                {formatDateRange(cycle.harvestWindow.start, cycle.harvestWindow.end)}
+                                {harvest.fieldNames.join(" + ")} · {formatKg(harvest.tonnes)} expected{" "}
+                                {formatDateRange(harvest.window.start, harvest.window.end)}
                               </span>
                             </p>
                           ) : (
@@ -109,8 +109,8 @@ export function MarketPage() {
                               {offer.status === "agreed" ? "Agreed" : "Offer sent"} · {offer.quantityTonnes} t
                             </Badge>
                           ) : (
-                            cycle && (
-                              <ButtonLink to={`/farmer/market/upload?cycle=${cycle.id}&requirement=${req.id}`} size="sm">
+                            harvest && (
+                              <ButtonLink to={`/farmer/market/upload?cycle=${harvest.cycleIds[0]}&requirement=${req.id}`} size="sm">
                                 Offer my harvest
                               </ButtonLink>
                             )

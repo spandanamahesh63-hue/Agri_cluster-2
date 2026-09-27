@@ -3,6 +3,7 @@ import type { LabourProfile, LabourSkill } from "../../types";
 import { useAppStore } from "../../store/AppStore";
 import { useLabour } from "../../features/labour/useLabour";
 import { skillLabels } from "../../data/mock/labour";
+import { villageNames } from "../../data/mock/clusterFarms";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -79,7 +80,7 @@ function ProfileForm({ profile }: { profile: LabourProfile }) {
           <FormField label="Village">
             {(p) => (
               <SelectInput {...p} value={village} onChange={(e) => setVillage(e.target.value)}>
-                {["Hootagalli", "Yelwala", "Varuna", "Bilikere", "Jayapura", "Kadakola"].map((v) => (
+                {villageNames.map((v) => (
                   <option key={v}>{v}</option>
                 ))}
               </SelectInput>

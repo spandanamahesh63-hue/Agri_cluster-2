@@ -2,6 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useAppStore } from "../../store/AppStore";
 import { cluster } from "../../data/mock/cluster";
+import { farms } from "../../data/mock/farms";
+import { privacySummary } from "../../features/shared/privacy";
+import { formatAcres } from "../../utils/format";
 import { methods, objectives } from "../../data/mock/planning";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card, CardHeader } from "../../components/ui/Card";
@@ -24,7 +27,7 @@ export function ProfilePage() {
               ["Name", session?.name],
               ["Role", "Farmer"],
               ["Cluster", cluster.name],
-              ["Farm", "Farm #27 · Varuna"],
+              ["Farm", `${farms[0].label} · ${farms[0].village} · ${formatAcres(farms[0].totalAcres)}`],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between gap-4 py-2.5">
                 <dt className="text-ink-muted">{k}</dt>
@@ -55,6 +58,15 @@ export function ProfilePage() {
                 className="mt-1 size-4 shrink-0 accent-brand-700"
               />
             </label>
+            <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-ink-subtle">Who sees what</h3>
+            <dl className="mt-2 space-y-2 text-[13px]">
+              {privacySummary.map((p) => (
+                <div key={p.who}>
+                  <dt className="font-medium">{p.who}</dt>
+                  <dd className="text-ink-muted">{p.sees}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </Card>
 

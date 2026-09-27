@@ -40,11 +40,11 @@ export const labourProfiles: LabourProfile[] = [
   {
     id: "lp-3",
     userId: "u-labour-3",
-    label: "Spray & irrigation team · Varuna",
+    label: "Spray & irrigation team · Chamarajanagara",
     leadName: "Prakash D.",
     skills: ["spraying", "irrigation"],
     crewSize: 2,
-    village: "Varuna",
+    village: "Chamarajanagara",
     dailyWage: 650,
     availableFrom: "2026-09-29",
     availability: "limited",

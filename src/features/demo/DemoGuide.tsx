@@ -15,14 +15,14 @@ interface Step {
 }
 
 export const demoSteps: Step[] = [
-  { title: "Log in as a farmer", role: null, path: "/login", say: "Six roles share one cluster. Start as Manjunath, a farmer with 2.5 acres in Varuna." },
+  { title: "Log in as a farmer", role: null, path: "/login", say: "Seven roles share one cluster. Start as Spandana, who grows 1 acre of tomato near Chamarajanagara." },
   { title: "Farmer dashboard", role: "farmer", path: "/farmer", say: "The first screen answers one question: what needs my attention today?" },
   { title: "An intelligence recommendation", role: "farmer", path: "/farmer", say: "Open “Why this recommendation?” on the irrigation card — rain is 82% likely and soil moisture is already above the crop's need." },
   { title: "Water intelligence", role: "farmer", path: "/farmer/intelligence/water", say: "Today's irrigation plan, soil moisture against crop need, and last week's avoidable water use." },
   { title: "The reasoning — and the decision", role: "farmer", path: "/farmer/intelligence/water-delay-f27-1", say: "Every suggestion shows its data. The platform recommends, the farmer decides: accept to delay Field 1 by 24 hours." },
   { title: "Crops", role: "farmer", path: "/farmer/crops", say: "The cropping plan: Field 1 tomato is 7 days from harvest; Field 2's health index is falling." },
   { title: "A market opportunity", role: "farmer", path: "/farmer/market", say: "A buyer needs 35 t of Grade A tomato for 4–7 Oct — exactly when Field 1 is ready." },
-  { title: "Upload the expected harvest", role: "farmer", path: "/farmer/market/upload?cycle=cc-27-1&requirement=br-1", say: "Offer the expected 3.2 t directly against that buyer's request, before harvest." },
+  { title: "Upload the expected harvest", role: "farmer", path: "/farmer/market/upload?cycle=cc-27-1&requirement=br-1", say: "Offer the expected 2,000 kg directly against that buyer's request, before harvest." },
   { title: "The buyer match", role: "buyer", path: "/buyer/requests", say: "The buyer sees Farm #27's offer — by farm label, not name — and can accept it." },
   { title: "Request machinery", role: "farmer", path: "/farmer/resources?tab=machinery", say: "Tractors are short tomorrow: 14 requests for 9 tractors. Request one from the shared pool." },
   { title: "Switch to the cluster dashboard", role: "cluster", path: "/cluster", say: "The coordinator sees all 128 farms: who still irrigates before rain, the tractor gap, supply against demand." },

@@ -1,17 +1,19 @@
 import type { CropCycle, Farm, Field, IrrigationEvent } from "../../types";
 import { CLUSTER_ID } from "./users";
 
+// The demo farm: Spandana's 1 acre of tomato near Chamarajanagara (spec §38).
+// Figures are prototype demo values, not agricultural predictions.
 export const farms: Farm[] = [
   {
     id: "farm-27",
     label: "Farm #27",
     ownerUserId: "u-farmer-27",
     clusterId: CLUSTER_ID,
-    village: "Varuna",
-    totalAcres: 2.5,
+    village: "Chamarajanagara",
+    totalAcres: 1,
     irrigation: "drip",
     pump: { powerKw: 3.7, flowLitresPerHour: 12000, energy: "solar+grid", gridHours: [16, 22] },
-    fieldIds: ["f27-1", "f27-2", "f27-3"],
+    fieldIds: ["f27-1", "f27-2"],
   },
 ];
 
@@ -24,11 +26,12 @@ export function farmLabelForUser(userId: string): string {
 }
 
 export const fields: Field[] = [
-  { id: "f27-1", farmId: "farm-27", name: "Field 1", acres: 1.5, activeCropCycleId: "cc-27-1" },
-  { id: "f27-2", farmId: "farm-27", name: "Field 2", acres: 0.5, activeCropCycleId: "cc-27-2" },
-  { id: "f27-3", farmId: "farm-27", name: "Field 3", acres: 0.5, activeCropCycleId: "cc-27-3" },
+  { id: "f27-1", farmId: "farm-27", name: "Field 1", acres: 0.6, activeCropCycleId: "cc-27-1" },
+  { id: "f27-2", farmId: "farm-27", name: "Field 2", acres: 0.4, activeCropCycleId: "cc-27-2" },
 ];
 
+// Both fields are one tomato crop (precision farming on drip), transplanted a
+// week apart. Together they are expected to give 2,000 kg of Grade A tomato.
 export const cropCycles: CropCycle[] = [
   {
     id: "cc-27-1",
@@ -38,7 +41,7 @@ export const cropCycles: CropCycle[] = [
     sowingDate: "2026-06-28",
     stage: "fruit-development",
     harvestWindow: { start: "2026-10-04", end: "2026-10-07" },
-    expectedYieldTonnes: 3.2,
+    expectedYieldTonnes: 1.2,
     expectedGrade: "A",
   },
   {
@@ -46,26 +49,15 @@ export const cropCycles: CropCycle[] = [
     fieldId: "f27-2",
     crop: "Tomato",
     variety: "Arka Rakshak",
-    sowingDate: "2026-07-25",
-    stage: "flowering",
-    harvestWindow: { start: "2026-10-26", end: "2026-11-04" },
-    expectedYieldTonnes: 1.1,
+    sowingDate: "2026-07-05",
+    stage: "fruit-development",
+    harvestWindow: { start: "2026-10-04", end: "2026-10-07" },
+    expectedYieldTonnes: 0.8,
     expectedGrade: "A",
-  },
-  {
-    id: "cc-27-3",
-    fieldId: "f27-3",
-    crop: "Chilli",
-    variety: "Byadgi",
-    sowingDate: "2026-07-10",
-    stage: "flowering",
-    harvestWindow: { start: "2026-11-10", end: "2026-11-30" },
-    expectedYieldTonnes: 0.6,
-    expectedGrade: "B",
   },
 ];
 
 export const irrigationSchedule: IrrigationEvent[] = [
-  { id: "ir-1", fieldId: "f27-1", scheduledAt: "2026-09-27T17:00:00+05:30", durationHours: 3, status: "scheduled" },
-  { id: "ir-3", fieldId: "f27-3", scheduledAt: "2026-09-27T17:00:00+05:30", durationHours: 1, status: "scheduled" },
+  { id: "ir-1", fieldId: "f27-1", scheduledAt: "2026-09-27T17:00:00+05:30", durationHours: 1.25, status: "scheduled" },
+  { id: "ir-2", fieldId: "f27-2", scheduledAt: "2026-09-27T17:00:00+05:30", durationHours: 1, status: "scheduled" },
 ];

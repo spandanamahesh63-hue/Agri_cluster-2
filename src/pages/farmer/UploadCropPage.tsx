@@ -12,7 +12,8 @@ import { InfoNote } from "../../components/ui/Badge";
 import { ErrorState, PageSkeleton } from "../../components/ui/states";
 import { FormField, SelectInput, TextInput } from "../../components/forms/fields";
 import { useToast } from "../../components/ui/Toast";
-import { formatDateRange } from "../../utils/format";
+import { formatDateRange, formatKg } from "../../utils/format";
+import { harvestGroups } from "../../services/intelligence/engine";
 
 type Errors = Partial<Record<"quantity" | "price" | "availableFrom" | "location", string>>;
 
@@ -71,17 +72,19 @@ function UploadForm({
   const toast = useToast();
   const { addListing } = useAppStore();
 
-  const initialCycle = cycles.find((c) => c.id === params.get("cycle")) ?? cycles[0];
-  const [cycleId, setCycleId] = useState(initialCycle.id);
-  const cycle = cycles.find((c) => c.id === cycleId)!;
-  const openRequirements = requirements.filter((r) => r.status === "open" && r.crop === cycle.crop);
+  // A harvest is listed per crop: fields growing the same crop are one listing.
+  const groups = useMemo(() => harvestGroups(cycles, fields), [cycles, fields]);
+  const initial = groups.find((g) => g.cycleIds.includes(params.get("cycle") ?? "")) ?? groups[0];
+  const [groupKey, setGroupKey] = useState(`${initial.crop}|${initial.grade}`);
+  const group = groups.find((g) => `${g.crop}|${g.grade}` === groupKey)!;
+  const openRequirements = requirements.filter((r) => r.status === "open" && r.crop === group.crop);
   const [requirementId, setRequirementId] = useState(params.get("requirement") ?? "");
   const requirement = openRequirements.find((r) => r.id === requirementId);
 
-  const [quantity, setQuantity] = useState(String(initialCycle.expectedYieldTonnes));
-  const [grade, setGrade] = useState(initialCycle.expectedGrade);
-  const [harvestDate, setHarvestDate] = useState(initialCycle.harvestWindow.start);
-  const [availableFrom, setAvailableFrom] = useState(initialCycle.harvestWindow.start);
+  const [quantity, setQuantity] = useState(String(initial.tonnes));
+  const [grade, setGrade] = useState(initial.grade);
+  const [harvestDate, setHarvestDate] = useState(initial.window.start);
+  const [availableFrom, setAvailableFrom] = useState(initial.window.start);
   const [price, setPrice] = useState("24");
   const [location, setLocation] = useState(`${village} · ${farmLabel}`);
   const [photos, setPhotos] = useState<{ name: string; url: string }[]>([]);
@@ -92,13 +95,13 @@ function UploadForm({
   photosRef.current = photos;
   useEffect(() => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.url)), []);
 
-  const selectCycle = (id: string) => {
-    const c = cycles.find((x) => x.id === id)!;
-    setCycleId(id);
-    setQuantity(String(c.expectedYieldTonnes));
-    setGrade(c.expectedGrade);
-    setHarvestDate(c.harvestWindow.start);
-    setAvailableFrom(c.harvestWindow.start);
+  const selectGroup = (key: string) => {
+    const g = groups.find((x) => `${x.crop}|${x.grade}` === key)!;
+    setGroupKey(key);
+    setQuantity(String(g.tonnes));
+    setGrade(g.grade);
+    setHarvestDate(g.window.start);
+    setAvailableFrom(g.window.start);
     setRequirementId("");
   };
 
@@ -108,7 +111,7 @@ function UploadForm({
   }, [requirement]);
 
   const qty = Number(quantity);
-  const overExpected = qty > cycle.expectedYieldTonnes * 1.2;
+  const overExpected = qty > group.tonnes * 1.2;
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -123,8 +126,8 @@ function UploadForm({
     addListing({
       farmId,
       farmLabel,
-      cropCycleId: cycle.id,
-      crop: cycle.crop,
+      cropCycleId: group.cycleIds[0],
+      crop: group.crop,
       grade,
       quantityTonnes: qty,
       harvestDate,
@@ -142,12 +145,12 @@ function UploadForm({
     <form onSubmit={onSubmit} noValidate className="grid gap-6 lg:grid-cols-3">
       <Card className="space-y-5 p-5 lg:col-span-2">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Crop" hint={`Harvest window ${formatDateRange(cycle.harvestWindow.start, cycle.harvestWindow.end)}`}>
+          <FormField label="Crop" hint={`Harvest window ${formatDateRange(group.window.start, group.window.end)}`}>
             {(p) => (
-              <SelectInput {...p} value={cycleId} onChange={(e) => selectCycle(e.target.value)}>
-                {cycles.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.crop} · {fields.find((f) => f.id === c.fieldId)?.name}
+              <SelectInput {...p} value={groupKey} onChange={(e) => selectGroup(e.target.value)}>
+                {groups.map((g) => (
+                  <option key={`${g.crop}|${g.grade}`} value={`${g.crop}|${g.grade}`}>
+                    {g.crop} · {g.fieldNames.join(" + ")}
                   </option>
                 ))}
               </SelectInput>
@@ -168,7 +171,11 @@ function UploadForm({
           <FormField
             label="Quantity (tonnes)"
             error={errors.quantity}
-            hint={overExpected ? `That's more than the ${cycle.expectedYieldTonnes} t expected — double-check before listing.` : `Expected: ${cycle.expectedYieldTonnes} t`}
+            hint={
+              overExpected
+                ? `That's more than the ${formatKg(group.tonnes)} expected. Double-check before listing.`
+                : `Expected: ${formatKg(group.tonnes)} (${group.tonnes} t)`
+            }
           >
             {(p) => <TextInput {...p} type="number" inputMode="decimal" min="0" step="0.1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />}
           </FormField>
@@ -239,7 +246,7 @@ function UploadForm({
           <h2 className="text-[15px] font-semibold">What happens next</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-4 text-[13px] text-ink-muted">
             <li>Your listing joins the cluster's expected supply.</li>
-            <li>Buyers looking for {cycle.crop.toLowerCase()} can see it{requirement ? ", and this buyer is notified of your offer" : ""}.</li>
+            <li>Buyers looking for {group.crop.toLowerCase()} can see it{requirement ? ", and this buyer is notified of your offer" : ""}.</li>
             <li>You decide whether to accept any buyer interest.</li>
           </ol>
           <InfoNote className="mt-4">Buyers see “{farmLabel}”, not your name, unless you change this in Profile.</InfoNote>

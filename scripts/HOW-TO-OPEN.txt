@@ -1,0 +1,26 @@
+AgriCluster — competition prototype
+Right Crop. Right Technology. Right Resource. Right Investment. Right Support.
+
+HOW TO OPEN
+  Double-click AgriCluster.html. It opens in your web browser.
+  Nothing to install, and no internet connection needed. With internet, the
+  Inter font is used; offline, a system font is used instead.
+  Best in Chrome, Edge or Firefox, on a laptop or a phone.
+
+FASTEST WAY TO SEE IT
+  Click "Guided demo" on the first screen. It walks you through the story step
+  by step and switches between roles for you.
+
+EXPLORE FREELY
+  On the first screen, choose any role: Farmer, Cluster Manager, Buyer,
+  Machinery/Tech Owner, Labour, Expert, Community.
+  The roles are connected. For example, a tractor request made as the Farmer
+  appears for the Machinery Owner to accept.
+
+GOOD TO KNOW
+  - All data is demonstration, simulated or indicative, and is labelled that
+    way on screen. No real sensors, payments or market feeds are connected.
+  - The demo uses a fixed date (Sun 27 Sept 2026, 8:30 am) so the story stays
+    consistent.
+  - What you do is saved only in your own browser. "Reset demo" (in the menu)
+    restores the starting point.

@@ -58,7 +58,7 @@ export function CropsPage() {
         cycle,
         weeklyWaterKl: Math.round((field.acres * SQ_M_PER_ACRE * depth * IRRIGATION_EVENTS_PER_WEEK) / 1000),
         harvestWorkerDays: Math.round(field.acres * (harvestLabourPerAcre[cycle.crop] ?? 8)),
-        marketMatch: d.recommendations.find((r) => r.domain === "market" && r.fieldId === field.id),
+        marketMatch: d.recommendations.find((r) => r.domain === "market" && (r.fieldIds ?? [r.fieldId]).includes(field.id)),
         daysToHarvest: daysBetween(DEMO_NOW, new Date(cycle.harvestWindow.start)),
       },
     ];

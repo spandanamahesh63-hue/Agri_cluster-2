@@ -13,6 +13,12 @@ export function roughly(value: number): number {
 
 export const formatLitres = (litres: number) => `${formatNumber(roughly(litres))} L`;
 
+/** "1 acre", "2.5 acres". */
+export const formatAcres = (acres: number) => `${acres} acre${acres === 1 ? "" : "s"}`;
+
+/** Farm-scale harvests read better in kg: 2 → "2,000 kg". */
+export const formatKg = (tonnes: number) => `${formatNumber(Math.round(tonnes * 1000))} kg`;
+
 export function formatHour(hour: number): string {
   const h = ((hour + 11) % 12) + 1;
   return `${h}:00 ${hour < 12 ? "AM" : "PM"}`;

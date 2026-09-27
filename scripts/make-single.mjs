@@ -3,7 +3,7 @@
 //   release/artifact/agricluster.html page body only, for publishing as a hosted page
 // Run via `npm run build:single`.
 
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const dist = "dist-single";
@@ -33,7 +33,7 @@ if (full.includes('src="/assets') || full.includes('href="/assets')) throw new E
 const fonts = [...html.matchAll(/<link rel="(?:preconnect|stylesheet)"[^>]*fonts\.(?:googleapis|gstatic)[^>]*>/g)].map((m) => m[0]).join("\n");
 const fragment = [
   "<title>AgriCluster</title>",
-  '<meta name="description" content="AgriCluster — Small Farms. Shared Resources. Smarter Decisions." />',
+  '<meta name="description" content="AgriCluster — Right Crop. Right Technology. Right Resource. Right Investment. Right Support." />',
   fonts,
   `<style>${style}</style>`,
   '<div id="root"></div>',
@@ -42,6 +42,7 @@ const fragment = [
 
 mkdirSync("release/artifact", { recursive: true });
 writeFileSync("release/AgriCluster.html", full, "utf8");
+copyFileSync("scripts/HOW-TO-OPEN.txt", "release/HOW-TO-OPEN.txt");
 writeFileSync("release/artifact/agricluster.html", fragment, "utf8");
 const kb = (s) => `${Math.round(Buffer.byteLength(s) / 1024)} KB`;
 console.log(`release/AgriCluster.html (${kb(full)})\nrelease/artifact/agricluster.html (${kb(fragment)})`);

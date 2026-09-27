@@ -15,7 +15,7 @@ import { ErrorState, PageSkeleton } from "../../components/ui/states";
 import { Tabs } from "../../components/navigation/Tabs";
 import { ChoiceCards } from "../../components/forms/fields";
 import { useToast } from "../../components/ui/Toast";
-import { formatDate, formatDateRange, formatINR } from "../../utils/format";
+import { formatAcres, formatDate, formatDateRange, formatINR } from "../../utils/format";
 
 type Tab = "farm" | "approach" | "investment";
 
@@ -58,7 +58,7 @@ function FarmTab({ data }: { data: FarmerOverview }) {
   const { farmerProfile } = useAppStore();
   const facts = [
     { icon: MapPin, label: "Location", value: `${farm.village}, Mysuru` },
-    { icon: Ruler, label: "Area", value: `${farm.totalAcres} acres · ${fields.length} fields` },
+    { icon: Ruler, label: "Area", value: `${formatAcres(farm.totalAcres)} · ${fields.length} fields` },
     { icon: Droplets, label: "Irrigation", value: farm.irrigation === "drip" ? "Drip" : farm.irrigation },
     { icon: Zap, label: "Pump", value: `${farm.pump.powerKw} kW · ${farm.pump.energy.replace("+", " + ")}` },
   ];
@@ -69,7 +69,7 @@ function FarmTab({ data }: { data: FarmerOverview }) {
         <Card className="p-4 text-[13px]">
           <div className="font-medium">From your setup</div>
           <p className="mt-0.5 text-ink-muted">
-            {farmerProfile.declared.acres} acres in {farmerProfile.declared.village} · {farmerProfile.declared.crop} on{" "}
+            {formatAcres(farmerProfile.declared.acres)} in {farmerProfile.declared.village} · {farmerProfile.declared.crop} on{" "}
             {farmerProfile.declared.cropAcres} acres, sown {formatDate(farmerProfile.declared.sowingDate)}.
           </p>
           <InfoNote className="mt-2">Prototype: recommendations continue to use the demo farm (Farm #27) so the story stays coherent.</InfoNote>
@@ -100,7 +100,7 @@ function FarmTab({ data }: { data: FarmerOverview }) {
               <li key={field.id} className="grid gap-2 px-5 py-3.5 text-[13px] sm:grid-cols-[1fr_1fr_1fr]">
                 <div>
                   <div className="text-sm font-medium">{field.name}</div>
-                  <div className="text-ink-muted">{field.acres} acres</div>
+                  <div className="text-ink-muted">{formatAcres(field.acres)}</div>
                 </div>
                 <div>
                   <div className="font-medium">

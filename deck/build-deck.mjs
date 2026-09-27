@@ -28,7 +28,8 @@ const W = 13.333;
 const pres = new PptxGenJS();
 pres.layout = "LAYOUT_WIDE";
 pres.author = "AgriCluster team";
-pres.title = "AgriCluster — Small Farms. Shared Resources. Smarter Decisions.";
+const TAGLINE = "Right Crop. Right Technology. Right Resource. Right Investment. Right Support.";
+pres.title = `AgriCluster — ${TAGLINE}`;
 
 const img = (name) => `assets/${name}.png`;
 
@@ -85,7 +86,7 @@ function para(s, runs, opts) {
   s.background = { color: C.field };
   mark(s, 0.8, 0.8, 0.8);
   s.addText("AgriCluster", { x: 0.8, y: 2.1, w: 7.5, h: 1.1, fontFace: HEAD, fontSize: 60, color: "FFFFFF", margin: 0 });
-  s.addText("Small Farms. Shared Resources. Smarter Decisions.", { x: 0.8, y: 3.2, w: 7.8, h: 0.6, fontFace: HEAD, fontSize: 24, color: C.leaf, margin: 0 });
+  s.addText(TAGLINE, { x: 0.8, y: 3.2, w: 8.2, h: 0.9, fontFace: HEAD, fontSize: 22, color: C.leaf, margin: 0, valign: "top" });
   s.addText(
     "Cluster intelligence that connects neighbouring small farms, shares their machinery, labour and expertise, and coordinates their harvests with buyers.",
     { x: 0.8, y: 4.05, w: 7.2, h: 1.2, fontFace: BODY, fontSize: 17, color: C.onDark, margin: 0, valign: "top", lineSpacingMultiple: 1.1 },
@@ -465,7 +466,7 @@ function para(s, runs, opts) {
   mark(s, 0.6, 6.15, 0.55);
   s.addText(
     [
-      { text: "Small Farms. Shared Resources. Smarter Decisions.", options: { fontFace: HEAD, color: "FFFFFF", breakLine: true } },
+      { text: TAGLINE, options: { fontFace: HEAD, color: "FFFFFF", breakLine: true } },
       { text: "The platform recommends. The farmer decides.", options: { color: C.onDark } },
     ],
     { x: 1.35, y: 6.1, w: 8, h: 0.7, fontFace: BODY, fontSize: 14, margin: 0, valign: "middle" },

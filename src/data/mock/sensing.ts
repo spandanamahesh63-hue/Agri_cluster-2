@@ -7,12 +7,11 @@ export const sensorHistory: Record<string, SensorReading[]> = {
   "f27-1": series("f27-1", [
     [66, 85], [63, 86], [61, 86], [67, 87], [65, 86], [64, 86],
   ], { humidity: 72, leafWetness: 4 }),
+  // Field 2: health falling in humid, wet-leaf conditions, and soil now just
+  // below what fruiting tomato needs.
   "f27-2": series("f27-2", [
-    [60, 81], [59, 79], [61, 76], [58, 73], [59, 70], [58, 68],
+    [60, 81], [58, 79], [57, 76], [55, 73], [53, 70], [51, 68],
   ], { humidity: 88, leafWetness: 11 }),
-  "f27-3": series("f27-3", [
-    [46, 84], [44, 84], [41, 83], [39, 83], [36, 82], [34, 81],
-  ], { humidity: 70, leafWetness: 3 }),
 };
 
 export function latestReading(fieldId: string): SensorReading | undefined {

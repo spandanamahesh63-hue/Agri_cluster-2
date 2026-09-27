@@ -16,7 +16,7 @@ import { EmptyState } from "../../components/ui/states";
 import { ChoiceCards, FormField, SelectInput, TextArea, TextInput } from "../../components/forms/fields";
 import { useToast } from "../../components/ui/Toast";
 import { DEMO_TOMORROW } from "../../data/mock/clock";
-import { formatDate, formatHour, formatTime } from "../../utils/format";
+import { formatAcres, formatDate, formatHour, formatTime } from "../../utils/format";
 
 /** Open a farmer's query, see the farm context, advise, schedule and complete (spec §67). */
 export function QueryDetailPage() {
@@ -102,7 +102,7 @@ function FarmContext({ c }: { c: Consultation }) {
           <EvidenceList
             evidence={[
               { label: "Crop", value: `${cycle?.crop} · ${cycle ? stageLabel(cycle.stage) : ""}`, source: "demo" },
-              { label: "Area", value: `${field.acres} acres`, source: "demo" },
+              { label: "Area", value: formatAcres(field.acres), source: "demo" },
               { label: "Health index", value: `${first.cropHealthScore} → ${last.cropHealthScore} in 5 days`, source: "simulated" },
               { label: "Humidity", value: `${last.humidityPct}%`, source: "simulated" },
               { label: "Leaf wetness", value: `${last.leafWetnessHours} h/day`, source: "simulated" },
@@ -123,7 +123,7 @@ function FarmContext({ c }: { c: Consultation }) {
             evidence={[
               { label: "Crop", value: `${summary.crop} · ${stageLabel(summary.stage)}`, source: "demo" },
               { label: "Village", value: summary.village, source: "demo" },
-              { label: "Area", value: `${summary.acres} acres`, source: "demo" },
+              { label: "Area", value: formatAcres(summary.acres), source: "demo" },
               { label: "Health index", value: `${summary.healthScore}`, source: "simulated" },
               { label: "Soil moisture", value: `${summary.soilMoisturePct}%`, source: "simulated" },
             ]}

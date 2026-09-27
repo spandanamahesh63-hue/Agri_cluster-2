@@ -1,6 +1,6 @@
 # AgriCluster
 
-**Small Farms. Shared Resources. Smarter Decisions.**
+**Right Crop. Right Technology. Right Resource. Right Investment. Right Support.**
 
 AgriCluster connects fragmented small farms into an intelligent cluster. It combines farm, weather, sensor, resource and market data. It suggests practical actions, with the reasoning shown. It coordinates shared machinery, labour, expertise and buyers across nearby farms.
 

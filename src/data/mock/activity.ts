@@ -2,7 +2,36 @@
 // role has something to act on at the start of a demo. Records are marked
 // `seeded` so cluster totals (which already include them) don't double-count.
 
-import type { Booking, CommunityPost, CommunityReply, Consultation, CropListing, LabourRequest } from "../../types";
+import type { AppNotification, Booking, CommunityPost, CommunityReply, Consultation, CropListing, LabourRequest } from "../../types";
+
+// Starting notifications, one or two per role, matching the seeded activity below.
+export const seedNotifications: AppNotification[] = [
+  {
+    id: "ntf-seed-1",
+    userId: "u-farmer-27",
+    kind: "market",
+    title: "New buyer requirement matches your tomato",
+    body: "A retail aggregator needs 35 t of Grade A tomato for 4–7 Oct.",
+    link: "/farmer/market",
+    read: false,
+    createdAt: "2026-09-26T17:45:00+05:30",
+  },
+  {
+    id: "ntf-seed-2",
+    userId: "u-farmer-27",
+    kind: "harvest",
+    title: "Harvest date approaching",
+    body: "Your tomato harvest window opens on 4 Oct, in 7 days.",
+    link: "/farmer/crops",
+    read: false,
+    createdAt: "2026-09-27T06:00:00+05:30",
+  },
+  { id: "ntf-seed-3", userId: "u-provider-1", kind: "machinery", title: "Farm #12 requested Tractor 2 for 28 Sept", link: "/provider/bookings", read: false, createdAt: "2026-09-26T19:10:00+05:30" },
+  { id: "ntf-seed-4", userId: "u-labour-1", kind: "labour", title: "Labour request received from Farm #33", body: "6 workers for harvesting from 4 Oct.", link: "/labour/jobs", read: false, createdAt: "2026-09-27T06:50:00+05:30" },
+  { id: "ntf-seed-5", userId: "u-expert-1", kind: "expert", title: "New question from Farm #3", body: "Tomato leaves curling upward, whitefly seen.", link: "/expert/requests", read: false, createdAt: "2026-09-26T18:20:00+05:30" },
+  { id: "ntf-seed-6", userId: "u-buyer-1", kind: "buyer", title: "Farm #7 offered 1.6 t of tomato", body: "Against your 35 t Grade A requirement.", link: "/buyer/requests", read: false, createdAt: "2026-09-26T21:15:00+05:30" },
+  { id: "ntf-seed-7", userId: "u-community-1", kind: "community", title: "New question in the community", body: "Brown spots with rings on lower tomato leaves after the rain?", link: "/community/community", read: false, createdAt: "2026-09-26T17:30:00+05:30" },
+];
 
 export const seedBookings: Booking[] = [
   { id: "bk-seed-1", machineryId: "m-tractor-2", requesterUserId: "u-farmer-12", date: "2026-09-28", startHour: 7, hours: 4, purpose: "Land preparation", estimatedCost: 3600, status: "requested", createdAt: "2026-09-26T19:10:00+05:30", seeded: true },

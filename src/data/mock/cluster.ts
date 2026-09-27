@@ -7,7 +7,7 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 export const cluster: Cluster = {
   id: CLUSTER_ID,
   name: "Mysuru Vegetable Cluster",
-  region: "Mysuru district, Karnataka",
+  region: "Mysuru & Chamarajanagara districts, Karnataka",
   farmerCount: clusterFarms.length,
   cultivatedAcres: round1(clusterFarms.reduce((s, f) => s + f.acres, 0)),
   mainCrops: ["Tomato", "Chilli", "Onion", "Leafy vegetables"],

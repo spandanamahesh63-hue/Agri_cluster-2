@@ -13,7 +13,7 @@ export type DataSource = "demo" | "simulated" | "indicative" | "prototype" | "li
 // Users & roles
 // ---------------------------------------------------------------------------
 
-export type Role = "farmer" | "cluster" | "buyer" | "provider" | "labour" | "expert";
+export type Role = "farmer" | "cluster" | "buyer" | "provider" | "labour" | "expert" | "community";
 
 export interface User {
   id: string;
@@ -438,6 +438,8 @@ export interface Recommendation {
   impact?: string;
   action: { label: string; to: string };
   fieldId?: string;
+  /** All fields the suggestion covers (e.g. one harvest spread over two fields). */
+  fieldIds?: string[];
   farmId?: string;
   /** What changes if the farmer accepts. Applied only on acceptance, reverted on undo. */
   effect?: IrrigationEffect;
@@ -471,6 +473,168 @@ export interface ClusterAlert {
   evidence: Evidence[];
   action: { label: string; to: string };
   affectedFarms?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Farmer decision journey (AGRI CLUSTER master prompt §5–§18)
+// ---------------------------------------------------------------------------
+
+export type Level = "low" | "moderate" | "high";
+
+/** What the farmer tells us in the step-by-step assessment. Only fields that change a later recommendation. */
+export interface FarmAssessment {
+  name: string;
+  contact: string;
+  location: string;
+  landAcres: number;
+  tenure: "owned" | "leased";
+  currentCrop: string;
+  previousCrop: string;
+  soilType: "red" | "black" | "alluvial" | "sandy" | "laterite";
+  soilTestDone: boolean;
+  water: Level;
+  irrigation: IrrigationType;
+  electricity: "reliable" | "limited" | "none";
+  solar: boolean;
+  ownsMachinery: boolean;
+  labourAvailable: Level;
+  investment: number; // INR available
+  needsLoan: boolean;
+  experienceYears: number;
+  techFamiliarity: Level;
+}
+
+/** Starting intention (§5): A = investment, B = income goal, C = guided. */
+export type VisionMode = "investment" | "income" | "guided";
+
+export interface Vision {
+  mode: VisionMode;
+  /** ₹ available (A) or ₹ income target (B). */
+  amount?: number;
+}
+
+/** Crop catalogue entry. Indicative planning figures, not predictions. */
+export interface CropProfile {
+  id: string;
+  name: string;
+  season: string;
+  growingDays: [number, number];
+  water: Level;
+  investmentPerAcre: [number, number]; // INR, indicative range
+  labour: Level;
+  harvest: string; // "Multiple pickings over 6–8 weeks"
+  yieldPerAcreKg: [number, number]; // indicative range
+  priceRangePerKg: [number, number]; // indicative
+  markets: BuyerCategory[];
+  suitedSoils: FarmAssessment["soilType"][];
+  techSuitability: Level;
+  risks: string[];
+  demand: Level;
+  methodIds: string[];
+}
+
+export type BuyerCategory = "Retailers" | "Restaurants" | "Processors" | "Wholesalers" | "Exporters" | "Institutions";
+
+/** Farming method catalogue entry (§8). */
+export interface MethodProfile {
+  id: string;
+  name: string;
+  summary: string;
+  investment: Level;
+  waterImpact: string;
+  labourImpact: string;
+  technology: string[];
+  considerations: string[];
+  howItWorks: string[];
+  benefits: string[];
+  video: { title: string; durationSec: number };
+  /** Resource ids this method typically needs (machinery kinds / technology ids). */
+  needs: string[];
+}
+
+export type BudgetCategory =
+  | "Seeds & planting material"
+  | "Soil preparation"
+  | "Irrigation"
+  | "Inputs"
+  | "Technology"
+  | "Labour"
+  | "Machinery"
+  | "Transport"
+  | "Storage"
+  | "Reserve";
+
+export interface BudgetLine {
+  category: BudgetCategory;
+  amount: number;
+  note?: string;
+}
+
+/** The plan a farmer builds through the journey. */
+export interface FarmPlan {
+  assessment?: FarmAssessment;
+  vision?: Vision;
+  cropId?: string;
+  methodId?: string;
+  budget?: BudgetLine[];
+  /** Equipment kinds the farmer chose to rent instead of buy. */
+  rentInsteadOf?: string[];
+  confirmedAt?: ISODateTime;
+}
+
+export interface CalendarTask {
+  id: string;
+  date: ISODate;
+  title: string;
+  stage: "prepare" | "plant" | "grow" | "protect" | "harvest" | "sell";
+  resource?: string; // "Tractor", "Labour · planting", "Expert"
+}
+
+export interface MarketPoint {
+  month: string; // "Oct"
+  pricePerKg: number;
+}
+
+export interface MarketData {
+  crop: string;
+  current: [number, number];
+  history: MarketPoint[]; // last 12 months, indicative
+  seasonalNote: string;
+  demand: Level;
+  quality: string[];
+  storage: string;
+  transport: string;
+  source: DataSource;
+}
+
+export interface SupportScheme {
+  id: string;
+  name: string;
+  category: "Government scheme" | "Banking" | "Insurance" | "Training" | "Institutional";
+  summary: string;
+  relevantWhen: string; // why we are showing it
+  /** Always "Check with the official source" in the prototype. Never fabricated. */
+  eligibility: string;
+  documents: string[];
+  howToApply: string;
+  source: { label: string; url?: string };
+  lastUpdated?: ISODate;
+  verified: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+export interface AppNotification {
+  id: string;
+  userId: string; // recipient
+  title: string;
+  body?: string;
+  link?: string;
+  kind: "buyer" | "machinery" | "labour" | "expert" | "harvest" | "market" | "community" | "system";
+  read: boolean;
+  createdAt: ISODateTime;
 }
 
 // ---------------------------------------------------------------------------

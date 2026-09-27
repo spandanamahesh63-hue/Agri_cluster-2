@@ -2,7 +2,7 @@
   "name": "agricluster",
   "private": true,
   "version": "0.1.0",
-  "description": "AgriCluster — Small Farms. Shared Resources. Smarter Decisions.",
+  "description": "AgriCluster — Right Crop. Right Technology. Right Resource. Right Investment. Right Support.",
   "type": "module",
   "scripts": {
     "dev": "vite",

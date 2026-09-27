@@ -157,7 +157,7 @@ export default function App() {
                 }
               >
                 {nav.map((item) => {
-                  const element = implemented[role]?.[item.path] ?? sharedScreen(role, item.path) ?? <PlannedPage role={role} item={item} />;
+                  const element = implemented[role]?.[item.path] ?? sharedScreen(role, item.path) ?? <PlannedPage item={item} />;
                   return item.path === "" ? (
                     <Route key="index" index element={element} />
                   ) : (

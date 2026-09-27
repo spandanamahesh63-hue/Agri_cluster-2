@@ -3,8 +3,7 @@ import { Fragment, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { Logo } from "../../components/layout/Logo";
 import { cluster } from "../../data/mock/cluster";
-
-const flow = ["Connect", "Collect", "Analyze", "Recommend", "Coordinate"];
+import { JOURNEY, PRINCIPLE, TAGLINE } from "../../data/brand";
 
 /** Two-pane auth layout: product story on the left, the form on the right. */
 export function AuthLayout({ children, title }: { children: ReactNode; title: string }) {
@@ -18,20 +17,20 @@ export function AuthLayout({ children, title }: { children: ReactNode; title: st
         <Logo inverted />
 
         <div className="max-w-lg">
-          <p className="text-sm font-medium text-brand-200">Small Farms. Shared Resources. Smarter Decisions.</p>
+          <p className="text-sm font-medium text-brand-200">{TAGLINE}</p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">
-            Fragmented farms, connected into one intelligent cluster.
+            From farm information to a buyer, with the right support at every step.
           </h1>
           <p className="mt-4 text-[15px] leading-relaxed text-brand-100/80">
-            AgriCluster combines farm, weather, sensor, resource and market data to suggest practical actions — and
-            coordinates shared machinery, labour, expertise and buyers across nearby farms.
+            AgriCluster helps a farmer decide what to grow, how to grow it and how much to invest. It connects them to the
+            machinery, labour, experts and buyers they need, shared across a cluster of nearby farms.
           </p>
 
-          <ol className="mt-8 flex flex-wrap items-center gap-x-1.5 gap-y-2 text-[13px]" aria-label="How AgriCluster works">
-            {flow.map((step, i) => (
+          <ol className="mt-8 flex flex-wrap items-center gap-x-1.5 gap-y-2 text-[13px]" aria-label="The farmer's journey in AgriCluster">
+            {JOURNEY.map((step, i) => (
               <Fragment key={step}>
                 <li className="rounded-md border border-white/15 bg-white/5 px-2.5 py-1">{step}</li>
-                {i < flow.length - 1 && <ChevronRight aria-hidden className="size-3.5 text-brand-200/60" />}
+                {i < JOURNEY.length - 1 && <ChevronRight aria-hidden className="size-3.5 text-brand-200/60" />}
               </Fragment>
             ))}
           </ol>
@@ -39,7 +38,7 @@ export function AuthLayout({ children, title }: { children: ReactNode; title: st
 
         <div className="flex items-end justify-between gap-6 text-[13px] text-brand-100/70">
           <p className="max-w-xs">
-            <span className="font-medium text-white">The platform recommends. The farmer decides.</span>
+            <span className="font-medium text-white">{PRINCIPLE}</span>
           </p>
           <p className="text-right">
             Demo cluster: {cluster.name}
@@ -54,7 +53,7 @@ export function AuthLayout({ children, title }: { children: ReactNode; title: st
       <section className="flex flex-col bg-surface px-5 py-8 sm:px-10 lg:justify-center lg:px-14">
         <div className="mb-8 lg:hidden">
           <Logo />
-          <p className="mt-3 text-sm text-ink-muted">Small Farms. Shared Resources. Smarter Decisions.</p>
+          <p className="mt-3 text-sm text-ink-muted">{TAGLINE}</p>
         </div>
         <div className="mx-auto w-full max-w-md">{children}</div>
       </section>

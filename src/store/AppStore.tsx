@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 import type {
+  AppNotification,
   Booking,
+  FarmPlan,
   BuyerRequirement,
   CommunityPost,
   CommunityReply,
@@ -18,7 +20,15 @@ import type {
 } from "../types";
 import { demoUserForRole, farmers } from "../data/mock/users";
 import { DEMO_NOW } from "../data/mock/clock";
-import { seedBookings, seedConsultations, seedLabourRequests, seedListings, seedPosts, seedReplies } from "../data/mock/activity";
+import {
+  seedBookings,
+  seedConsultations,
+  seedLabourRequests,
+  seedListings,
+  seedNotifications,
+  seedPosts,
+  seedReplies,
+} from "../data/mock/activity";
 
 // Client-side state for the prototype: the simulated session and every record
 // people create or change during a demo. Roles share these records — a farmer's
@@ -43,6 +53,7 @@ export interface Collections {
   equipment: Machinery[];
   posts: CommunityPost[];
   replies: CommunityReply[];
+  notifications: AppNotification[];
 }
 export type CollectionKey = keyof Collections;
 type Item<K extends CollectionKey> = Collections[K][number];
@@ -55,6 +66,10 @@ export interface State extends Collections {
   machineryEdits: Record<string, Partial<Machinery>>;
   /** Labour profile edits (skills, availability, location). */
   labourEdits: Record<string, Partial<LabourProfile>>;
+  /** The farmer's decision journey: assessment → vision → crop → method → budget. */
+  plan: FarmPlan;
+  /** Listing ids a buyer saved. */
+  savedListings: string[];
 }
 
 type Action =
@@ -67,9 +82,13 @@ type Action =
   | { type: "update"; key: CollectionKey; id: string; patch: object }
   | { type: "editMachinery"; id: string; patch: Partial<Machinery> }
   | { type: "editLabour"; id: string; patch: Partial<LabourProfile> }
+  | { type: "updatePlan"; patch: Partial<FarmPlan> }
+  | { type: "resetPlan" }
+  | { type: "markAllRead"; userId: string }
+  | { type: "toggleSaved"; listingId: string }
   | { type: "reset" };
 
-const STORAGE_KEY = "agricluster:v3";
+const STORAGE_KEY = "agricluster:v4";
 
 const demoFarmer = farmers[0];
 const demoProfile: FarmerProfile = {
@@ -93,8 +112,11 @@ const initialState: State = {
   equipment: [],
   posts: seedPosts,
   replies: seedReplies,
+  notifications: seedNotifications,
   machineryEdits: {},
   labourEdits: {},
+  plan: {},
+  savedListings: [],
 };
 
 function reducer(state: State, action: Action): State {
@@ -135,6 +157,19 @@ function reducer(state: State, action: Action): State {
       return { ...state, machineryEdits: { ...state.machineryEdits, [action.id]: { ...state.machineryEdits[action.id], ...action.patch } } };
     case "editLabour":
       return { ...state, labourEdits: { ...state.labourEdits, [action.id]: { ...state.labourEdits[action.id], ...action.patch } } };
+    case "updatePlan":
+      return { ...state, plan: { ...state.plan, ...action.patch } };
+    case "resetPlan":
+      return { ...state, plan: {} };
+    case "markAllRead":
+      return { ...state, notifications: state.notifications.map((n) => (n.userId === action.userId ? { ...n, read: true } : n)) };
+    case "toggleSaved":
+      return {
+        ...state,
+        savedListings: state.savedListings.includes(action.listingId)
+          ? state.savedListings.filter((id) => id !== action.listingId)
+          : [...state.savedListings, action.listingId],
+      };
     case "reset":
       return initialState;
   }
@@ -168,6 +203,13 @@ interface AppStore extends State {
   update: <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => void;
   editMachinery: (id: string, patch: Partial<Machinery>) => void;
   editLabour: (id: string, patch: Partial<LabourProfile>) => void;
+  updatePlan: (patch: Partial<FarmPlan>) => void;
+  resetPlan: () => void;
+  /** Send a notification to a user. */
+  notify: (n: Omit<AppNotification, "id" | "createdAt" | "read">) => void;
+  markRead: (id: string) => void;
+  markAllRead: (userId: string) => void;
+  toggleSaved: (listingId: string) => void;
   addListing: (listing: NewRecord<CropListing>) => CropListing;
   addBooking: (booking: NewRecord<Booking>) => Booking;
   addLabourRequest: (request: NewRecord<LabourRequest>) => LabourRequest;
@@ -233,6 +275,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       update,
       editMachinery: (id, patch) => dispatch({ type: "editMachinery", id, patch }),
       editLabour: (id, patch) => dispatch({ type: "editLabour", id, patch }),
+      updatePlan: (patch) => dispatch({ type: "updatePlan", patch }),
+      resetPlan: () => dispatch({ type: "resetPlan" }),
+      notify: (n) => add("notifications", { ...n, ...meta("ntf"), read: false }),
+      markRead: (id) => update("notifications", id, { read: true }),
+      markAllRead: (userId) => dispatch({ type: "markAllRead", userId }),
+      toggleSaved: (listingId) => dispatch({ type: "toggleSaved", listingId }),
       addListing: (input) => add("listings", { ...input, ...meta("lst"), status: input.requirementId ? "offer-sent" : "listed" }),
       addBooking: (input) => add("bookings", { ...input, ...meta("bk"), status: "requested" }),
       addLabourRequest: (input) => add("labourRequests", { ...input, ...meta("lr"), status: "requested" }),

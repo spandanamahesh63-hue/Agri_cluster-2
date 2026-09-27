@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Brain,
   CalendarCheck,
+  CalendarDays,
   ClipboardList,
   Droplets,
   GraduationCap,
@@ -19,6 +20,7 @@ import {
   Tractor,
   TrendingUp,
   UserRound,
+  Users,
   Wheat,
   Zap,
 } from "lucide-react";
@@ -128,6 +130,19 @@ export const roles: Record<Role, RoleMeta> = {
       profile,
     ],
   },
+  community: {
+    role: "community",
+    label: "Community",
+    tagline: "Run farmer groups, events and local knowledge sharing.",
+    icon: Users,
+    nav: [
+      { path: "", label: "Dashboard", icon: LayoutDashboard, question: "What is happening in my farming community?", primary: true },
+      { path: "groups", label: "Groups", icon: Users, question: "Which farmer groups am I running?", primary: true },
+      { path: "events", label: "Events", icon: CalendarDays, question: "What workshops and meetings are coming up?", primary: true },
+      { ...community, label: "Questions", question: "What are farmers asking, and who has answered?", primary: true },
+      profile,
+    ],
+  },
   expert: {
     role: "expert",
     label: "Expert",
@@ -143,7 +158,7 @@ export const roles: Record<Role, RoleMeta> = {
   },
 };
 
-export const roleList: RoleMeta[] = [roles.farmer, roles.cluster, roles.buyer, roles.provider, roles.labour, roles.expert];
+export const roleList: RoleMeta[] = [roles.farmer, roles.cluster, roles.buyer, roles.provider, roles.labour, roles.expert, roles.community];
 
 export const roleHome = (role: Role) => `/${role}`;
 export const navHref = (role: Role, item: NavItem) => (item.path ? `/${role}/${item.path}` : `/${role}`);

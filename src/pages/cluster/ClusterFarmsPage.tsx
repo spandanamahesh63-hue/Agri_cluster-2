@@ -10,7 +10,7 @@ import { Button } from "../../components/ui/Button";
 import { EmptyState } from "../../components/ui/states";
 import { FilterChips } from "../../components/navigation/FilterChips";
 import { SelectInput } from "../../components/forms/fields";
-import { formatDateRange } from "../../utils/format";
+import { formatAcres, formatDateRange } from "../../utils/format";
 
 type AlertFilter = "all" | "alerts" | "stress" | "irrigation" | "inactive";
 const PAGE = 20;
@@ -186,7 +186,7 @@ function FarmStatus({ farm }: { farm: ClusterFarm }) {
 function FarmDetails({ farm }: { farm: ClusterFarm }) {
   const rows: [string, string][] = [
     ["Crop", `${farm.crop} · ${stageLabel(farm.stage).toLowerCase()}`],
-    ["Area", `${farm.acres} acres`],
+    ["Area", formatAcres(farm.acres)],
     ["Harvest window", formatDateRange(farm.harvestWindow.start, farm.harvestWindow.end)],
     ["Expected", `${farm.expectedTonnes} t · Grade ${farm.grade}`],
     ["Soil moisture", `${farm.soilMoisturePct}% (needs ≥ ${farm.minSoilMoisture}%)`],

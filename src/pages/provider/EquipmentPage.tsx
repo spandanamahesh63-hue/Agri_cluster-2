@@ -14,6 +14,7 @@ import { EmptyState } from "../../components/ui/states";
 import { FormField, SelectInput, TextArea, TextInput } from "../../components/forms/fields";
 import { useToast } from "../../components/ui/Toast";
 import { CLUSTER_ID } from "../../data/mock/users";
+import { villageNames } from "../../data/mock/clusterFarms";
 import { DEMO_TODAY, DEMO_TOMORROW } from "../../data/mock/clock";
 import { formatDate, formatHour, formatINR } from "../../utils/format";
 
@@ -185,7 +186,7 @@ function AddEquipmentDialog({ onClose }: { onClose: () => void }) {
         <FormField label="Location">
           {(p) => (
             <SelectInput {...p} value={village} onChange={(e) => setVillage(e.target.value)}>
-              {["Yelwala", "Varuna", "Hootagalli", "Bilikere", "Jayapura", "Kadakola"].map((v) => (
+              {villageNames.map((v) => (
                 <option key={v}>{v}</option>
               ))}
             </SelectInput>

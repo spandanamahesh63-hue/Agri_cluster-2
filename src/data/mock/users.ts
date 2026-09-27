@@ -7,10 +7,10 @@ export const users: User[] = [
   {
     id: "u-farmer-27",
     role: "farmer",
-    name: "Manjunath S.",
+    name: "Spandana",
     displayLabel: "Farm #27",
     clusterId: CLUSTER_ID,
-    location: "Varuna, Mysuru",
+    location: "Chamarajanagara, Karnataka",
   },
   {
     id: "u-cluster-1",
@@ -51,6 +51,14 @@ export const users: User[] = [
     displayLabel: "Horticulture specialist",
     clusterId: CLUSTER_ID,
     location: "Mysuru",
+  },
+  {
+    id: "u-community-1",
+    role: "community",
+    name: "Lakshmi N.",
+    displayLabel: "Community organiser",
+    clusterId: CLUSTER_ID,
+    location: "Chamarajanagara",
   },
 ];
 

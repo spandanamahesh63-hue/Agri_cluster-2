@@ -25,7 +25,7 @@ export const TOMATO_WINDOW = { start: "2026-10-04", end: "2026-10-07" };
 
 /** Village zones on the simulated map (not geographic). */
 export const villages = [
-  { name: "Varuna", x: 30, y: 30 },
+  { name: "Chamarajanagara", x: 30, y: 30 },
   { name: "Yelwala", x: 16, y: 68 },
   { name: "Hootagalli", x: 50, y: 74 },
   { name: "Bilikere", x: 55, y: 26 },
@@ -35,7 +35,7 @@ export const villages = [
 
 export const infrastructure: InfrastructurePoint[] = [
   { id: "inf-weather", kind: "weather", name: "Cluster weather station", detail: "Rain, humidity, temperature every 15 min", pos: { x: 41, y: 49 } },
-  { id: "inf-tank", kind: "water", name: "Varuna tank", detail: "Irrigation source for ~40 farms", pos: { x: 19, y: 43 } },
+  { id: "inf-tank", kind: "water", name: "Village tank", detail: "Chamarajanagara · irrigation source for ~40 farms", pos: { x: 19, y: 43 } },
   { id: "inf-borewell", kind: "water", name: "Community borewell", detail: "Hootagalli · shared schedule", pos: { x: 62, y: 60 } },
   { id: "inf-depot", kind: "machinery", name: "Machinery yard", detail: "Shivakumar Agro Services · tractors, pickup, sprayer", pos: { x: 6, y: 84 } },
   { id: "inf-cold", kind: "storage", name: "Cold room (10 t)", detail: "Hootagalli · shared cold storage", pos: { x: 40, y: 91 } },
@@ -124,12 +124,12 @@ function buildRoster(): ClusterFarm[] {
   // Farm #27 is the detailed demo farm — pin it to the real record.
   const f27 = drafts[26];
   Object.assign(f27, {
-    village: "Varuna",
+    village: "Chamarajanagara",
     crop: "Tomato",
     stage: "fruit-development",
     grade: "A",
     harvestWindow: TOMATO_WINDOW,
-    acres: 2.5,
+    acres: 1,
     soilMoisturePct: 64,
     minSoilMoisture: 55,
     healthScore: 78,
@@ -154,8 +154,8 @@ function buildRoster(): ClusterFarm[] {
   // Expected harvest per farm (indicative t/acre for the upcoming window).
   const perAcre: Record<string, number> = { Tomato: 2.1, Chilli: 1.2, Onion: 7, "Leafy vegetables": 1.4 };
   drafts.forEach((d) => (d.expectedTonnes = round1(d.acres * perAcre[d.crop])));
-  // Scale in-window Grade A tomato so it totals exactly 42 t (Farm #27 fixed at 3.2 t).
-  f27.expectedTonnes = 3.2;
+  // Scale in-window Grade A tomato so it totals exactly 42 t (Farm #27 fixed at 2.0 t).
+  f27.expectedTonnes = 2.0;
   const inWindow = drafts.filter((d) => d.tomatoInWindow && d !== f27);
   const target = CLUSTER_TARGETS.tomatoAInWindowTonnes - f27.expectedTonnes;
   const sum = inWindow.reduce((s, d) => s + d.expectedTonnes, 0);
@@ -210,3 +210,6 @@ function buildRoster(): ClusterFarm[] {
 }
 
 export const clusterFarms: ClusterFarm[] = buildRoster();
+
+/** Village names, for location pickers. */
+export const villageNames = villages.map((v) => v.name);
