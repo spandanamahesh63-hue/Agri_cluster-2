@@ -1,0 +1,13 @@
+# Netlify build settings (used when the site is connected to the GitHub repository).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Client-side routes (e.g. /farmer/market) all serve the app.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
