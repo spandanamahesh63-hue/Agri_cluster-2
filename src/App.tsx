@@ -22,7 +22,15 @@ const UploadCropPage = lazyPage(() => import("./pages/farmer/UploadCropPage"), "
 const ResourcesPage = lazyPage(() => import("./pages/farmer/ResourcesPage"), "ResourcesPage");
 const ExpertsPage = lazyPage(() => import("./pages/farmer/ExpertsPage"), "ExpertsPage");
 const ProfilePage = lazyPage(() => import("./pages/farmer/ProfilePage"), "ProfilePage");
-const OnboardingPage = lazyPage(() => import("./pages/farmer/OnboardingPage"), "OnboardingPage");
+const PlanOverviewPage = lazyPage(() => import("./pages/farmer/plan/PlanOverviewPage"), "PlanOverviewPage");
+const AssessmentStep = lazyPage(() => import("./pages/farmer/plan/AssessmentStep"), "AssessmentStep");
+const VisionStep = lazyPage(() => import("./pages/farmer/plan/VisionStep"), "VisionStep");
+const CropStep = lazyPage(() => import("./pages/farmer/plan/CropStep"), "CropStep");
+const MethodStep = lazyPage(() => import("./pages/farmer/plan/MethodStep"), "MethodStep");
+const InvestmentStep = lazyPage(() => import("./pages/farmer/plan/InvestmentStep"), "InvestmentStep");
+const MarketStep = lazyPage(() => import("./pages/farmer/plan/MarketStep"), "MarketStep");
+const ScheduleStep = lazyPage(() => import("./pages/farmer/plan/ScheduleStep"), "ScheduleStep");
+const ResourcesStep = lazyPage(() => import("./pages/farmer/plan/ResourcesStep"), "ResourcesStep");
 const WaterPage = lazyPage(() => import("./pages/farmer/WaterPage"), "WaterPage");
 const EnergyPage = lazyPage(() => import("./pages/farmer/EnergyPage"), "EnergyPage");
 const ClusterOverviewPage = lazyPage(() => import("./pages/cluster/ClusterOverviewPage"), "ClusterOverviewPage");
@@ -59,6 +67,7 @@ const RoleProfilePage = lazyPage(() => import("./pages/shared/RoleProfilePage"),
 const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
   farmer: {
     "": <FarmerDashboard />,
+    plan: <PlanOverviewPage />,
     farm: <MyFarmPage />,
     intelligence: <IntelligencePage />,
     crops: <CropsPage />,
@@ -113,7 +122,16 @@ function sharedScreen(role: Role, path: string): ReactElement | undefined {
 // Routes reachable from inside a role's screens but not listed in its navigation.
 const extraRoutes: Partial<Record<Role, { path: string; element: ReactElement }[]>> = {
   farmer: [
-    { path: "onboarding", element: <OnboardingPage /> },
+    // The old onboarding is now the planning journey's first step.
+    { path: "onboarding", element: <Navigate to="/farmer/plan/assessment" replace /> },
+    { path: "plan/assessment", element: <AssessmentStep /> },
+    { path: "plan/vision", element: <VisionStep /> },
+    { path: "plan/crop", element: <CropStep /> },
+    { path: "plan/method", element: <MethodStep /> },
+    { path: "plan/investment", element: <InvestmentStep /> },
+    { path: "plan/market", element: <MarketStep /> },
+    { path: "plan/schedule", element: <ScheduleStep /> },
+    { path: "plan/resources", element: <ResourcesStep /> },
     { path: "intelligence/water", element: <WaterPage /> },
     { path: "intelligence/energy", element: <EnergyPage /> },
     { path: "intelligence/:id", element: <RecommendationDetailPage /> },

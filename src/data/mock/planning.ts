@@ -1,4 +1,4 @@
-import type { FarmerObjective, FarmingMethod } from "../../types";
+import type { BudgetCategory, FarmerObjective, FarmingMethod } from "../../types";
 
 export const objectives: { id: FarmerObjective; title: string; description: string }[] = [
   { id: "income", title: "Increase farm income", description: "Better prices, better timing and less crop loss." },
@@ -59,58 +59,43 @@ export const methods: { id: FarmingMethod; title: string; summary: string; howIt
   },
 ];
 
-export interface InvestmentLine {
-  category: string;
-  estimate: number; // INR for the season, Farm #27 (2.5 acres), indicative
-  opportunity?: string;
-  savingRange?: [number, number]; // % of the line, indicative
+export interface ClusterSaving {
+  category: BudgetCategory;
+  opportunity: string;
+  savingRange: [number, number]; // % of the budget line, indicative
   domains: FarmerObjective[]; // which objectives this saving supports most
 }
 
-// Season plan for Farm #27. All figures are indicative demonstration values.
-export const investmentPlan: InvestmentLine[] = [
-  { category: "Seeds & seedlings", estimate: 22000, domains: [] },
+// Where cluster coordination can reduce a season budget line. Indicative demonstration values.
+export const clusterSavings: ClusterSaving[] = [
   {
-    category: "Fertiliser",
-    estimate: 48000,
-    opportunity: "Soil-test based doses and pooled cluster purchase",
+    category: "Inputs",
+    opportunity: "Soil-test based doses, pooled purchase and targeted spraying after early stress alerts",
     savingRange: [8, 12],
-    domains: ["cost", "sustainability"],
+    domains: ["cost", "sustainability", "income"],
   },
   {
     category: "Irrigation",
-    estimate: 12000,
-    opportunity: "Rain-aware scheduling reduces avoidable pumping",
-    savingRange: [10, 15],
+    opportunity: "Rain-aware scheduling and pumping in solar hours",
+    savingRange: [10, 20],
     domains: ["cost", "sustainability"],
   },
   {
     category: "Labour",
-    estimate: 95000,
     opportunity: "Coordinated harvest crews across neighbouring farms",
     savingRange: [3, 6],
     domains: ["cost", "income"],
   },
   {
     category: "Machinery",
-    estimate: 28000,
-    opportunity: "Shared tractors and transport instead of ad-hoc hiring",
+    opportunity: "Shared tractors instead of ad-hoc hiring",
     savingRange: [15, 25],
     domains: ["cost", "income"],
   },
   {
-    category: "Energy",
-    estimate: 9000,
-    opportunity: "Moving pumping into solar hours",
-    savingRange: [20, 30],
-    domains: ["cost", "sustainability"],
+    category: "Transport",
+    opportunity: "Pooled trips to buyers on the same day",
+    savingRange: [15, 25],
+    domains: ["cost", "income"],
   },
-  {
-    category: "Crop protection",
-    estimate: 36000,
-    opportunity: "Early stress detection allows targeted spraying",
-    savingRange: [10, 15],
-    domains: ["cost", "sustainability", "income"],
-  },
-  { category: "Technology services", estimate: 6000, domains: [] },
 ];

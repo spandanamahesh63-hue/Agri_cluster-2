@@ -14,6 +14,7 @@ import { EmptyState, ErrorState, PageSkeleton } from "../../components/ui/states
 import { DEMO_NOW } from "../../data/mock/clock";
 import { objectives } from "../../data/mock/planning";
 import { orderForObjective } from "../../features/farmer/objective";
+import { SeasonCard } from "../../features/plan/SeasonCard";
 import { formatAcres, formatHour, formatTime, greeting } from "../../utils/format";
 
 const MAX_ON_DASHBOARD = 3;
@@ -46,7 +47,7 @@ export function FarmerDashboard() {
             <div className="text-sm font-medium text-brand-900">Finish setting up your farm</div>
             <p className="text-[13px] text-brand-800">Tell us your goal, farm and crop — it takes about a minute.</p>
           </div>
-          <ButtonLink to="/farmer/onboarding" size="sm">
+          <ButtonLink to="/farmer/plan/assessment" size="sm">
             Continue setup
           </ButtonLink>
         </Card>
@@ -103,6 +104,7 @@ export function FarmerDashboard() {
         </section>
 
         <aside className="space-y-4">
+          <SeasonCard />
           <WeatherCard forecast={data.forecast} />
           <FieldsCard fields={data.fields} cycles={data.cycles} readings={data.latestReadings} />
           <ClusterCard data={data} />

@@ -62,8 +62,9 @@ export const roles: Record<Role, RoleMeta> = {
     icon: Sprout,
     nav: [
       { path: "", label: "Dashboard", icon: LayoutDashboard, question: "What needs my attention today?", primary: true },
+      { path: "plan", label: "Plan", icon: ListChecks, question: "What should I grow, how, and with what investment?", primary: true },
       { path: "farm", label: "My Farm", icon: Map, question: "What is the state of my fields?" },
-      { path: "intelligence", label: "Intelligence", icon: Brain, question: "What does the data suggest, and why?", primary: true },
+      { path: "intelligence", label: "Intelligence", icon: Brain, question: "What does the data suggest, and why?" },
       { path: "crops", label: "Crops", icon: Wheat, question: "How are my crops progressing?" },
       { path: "market", label: "Market", icon: TrendingUp, question: "Where can I sell my crop?", primary: true },
       { path: "resources", label: "Resources", icon: Tractor, question: "What equipment and labour are available?", primary: true },

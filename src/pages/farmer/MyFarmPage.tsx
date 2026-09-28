@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Droplets, MapPin, Ruler, Zap } from "lucide-react";
 import clsx from "clsx";
 import type { FarmerObjective, FarmingMethod } from "../../types";
@@ -6,7 +7,9 @@ import { useAppStore } from "../../store/AppStore";
 import { useFarmerOverview } from "../../features/farmer/useFarmerOverview";
 import type { FarmerOverview } from "../../services/api/demoApi";
 import { MethodExplainer } from "../../features/farmer/MethodExplainer";
-import { investmentPlan, methods, objectives } from "../../data/mock/planning";
+import { clusterSavings, methods, objectives } from "../../data/mock/planning";
+import { usePlan } from "../../features/plan/usePlan";
+import { ButtonLink } from "../../components/ui/Button";
 import { stageLabel } from "../../services/intelligence/engine";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card, CardHeader } from "../../components/ui/Card";
@@ -55,7 +58,8 @@ export function MyFarmPage() {
 
 function FarmTab({ data }: { data: FarmerOverview }) {
   const { farm, fields, cycles } = data;
-  const { farmerProfile } = useAppStore();
+  const p = usePlan();
+  const a = p.assessment;
   const facts = [
     { icon: MapPin, label: "Location", value: `${farm.village}, Mysuru` },
     { icon: Ruler, label: "Area", value: `${formatAcres(farm.totalAcres)} · ${fields.length} fields` },
@@ -65,14 +69,19 @@ function FarmTab({ data }: { data: FarmerOverview }) {
 
   return (
     <div className="space-y-6">
-      {farmerProfile.declared && (
+      {p.done.assessment && (
         <Card className="p-4 text-[13px]">
-          <div className="font-medium">From your setup</div>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div className="font-medium">From your farm assessment</div>
+            <Link to="/farmer/plan/assessment" className="font-medium text-brand-700 hover:underline">
+              Edit farm details
+            </Link>
+          </div>
           <p className="mt-0.5 text-ink-muted">
-            {formatAcres(farmerProfile.declared.acres)} in {farmerProfile.declared.village} · {farmerProfile.declared.crop} on{" "}
-            {farmerProfile.declared.cropAcres} acres, sown {formatDate(farmerProfile.declared.sowingDate)}.
+            {formatAcres(a.landAcres)} in {a.location} · {a.soilType} soil · {a.irrigation === "rainfed" ? "rainfed" : `${a.irrigation} irrigation`}
+            {a.currentCrop && ` · growing ${a.currentCrop.toLowerCase()}`}.
           </p>
-          <InfoNote className="mt-2">Prototype: recommendations continue to use the demo farm (Farm #27) so the story stays coherent.</InfoNote>
+          <InfoNote className="mt-2">Prototype: field monitoring continues to use the demo farm (Farm #27) so the story stays coherent.</InfoNote>
         </Card>
       )}
 
@@ -123,9 +132,23 @@ function FarmTab({ data }: { data: FarmerOverview }) {
 
 function ApproachTab() {
   const { farmerProfile, updateProfile } = useAppStore();
+  const p = usePlan();
   const toast = useToast();
 
   return (
+    <div className="space-y-6">
+      <Card className="flex flex-col gap-3 p-4 text-[13px] sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="font-medium">Season plan</div>
+          <p className="text-ink-muted">
+            {p.crop && p.method ? `${p.crop.name} with ${p.method.name.toLowerCase()}.` : "No crop or method chosen yet."} The plan picks what to grow and how; the
+            choices below change how daily suggestions are ordered.
+          </p>
+        </div>
+        <ButtonLink to={p.crop ? "/farmer/plan/method" : "/farmer/plan/crop"} size="sm" variant="secondary" className="shrink-0">
+          {p.crop ? "Change crop or method" : "Choose crop and method"}
+        </ButtonLink>
+      </Card>
     <div className="grid gap-6 lg:grid-cols-2">
       <Card className="p-5">
         <ChoiceCards<FarmerObjective>
@@ -152,30 +175,41 @@ function ApproachTab() {
         <MethodExplainer method={farmerProfile.method} />
       </Card>
     </div>
+    </div>
   );
 }
 
 function InvestmentTab() {
   const { farmerProfile } = useAppStore();
-  const total = investmentPlan.reduce((s, l) => s + l.estimate, 0);
-  const saveLow = investmentPlan.reduce((s, l) => s + (l.savingRange ? (l.estimate * l.savingRange[0]) / 100 : 0), 0);
-  const saveHigh = investmentPlan.reduce((s, l) => s + (l.savingRange ? (l.estimate * l.savingRange[1]) / 100 : 0), 0);
+  const p = usePlan();
+  const total = p.budget;
+  const rows = p.budgetLines.map((l) => ({ ...l, saving: clusterSavings.find((s) => s.category === l.category) }));
+  const saveLow = rows.reduce((s, l) => s + (l.saving ? (l.amount * l.saving.savingRange[0]) / 100 : 0), 0);
+  const saveHigh = rows.reduce((s, l) => s + (l.saving ? (l.amount * l.saving.savingRange[1]) / 100 : 0), 0);
+  const round = (n: number) => Math.round(n / 100) * 100;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-3 sm:grid-cols-2">
         <Card className="p-5">
-          <div className="text-[13px] text-ink-muted">Estimated season investment · Farm #27</div>
+          <div className="text-[13px] text-ink-muted">{p.done.investment ? "Your season budget" : "Suggested season budget (not saved yet)"}</div>
           <div className="mt-1 text-3xl font-semibold tracking-tight">{formatINR(total)}</div>
-          <div className="mt-1 text-[12px] text-ink-subtle">About {formatINR(total / 2.5)} per acre</div>
+          <div className="mt-1 text-[12px] text-ink-subtle">
+            {formatAcres(p.assessment.landAcres)}
+            {p.crop && ` · ${p.crop.name}`}
+            {p.method && ` · ${p.method.name}`} ·{" "}
+            <Link to="/farmer/plan/investment" className="font-medium text-brand-700 hover:underline">
+              Change in Plan
+            </Link>
+          </div>
         </Card>
         <Card className="p-5">
           <div className="text-[13px] text-ink-muted">Potential saving through cluster coordination</div>
           <div className="mt-1 text-3xl font-semibold tracking-tight">
-            {formatINR(Math.round(saveLow / 100) * 100)}–{formatINR(Math.round(saveHigh / 100) * 100)}
+            {formatINR(round(saveLow))}–{formatINR(round(saveHigh))}
           </div>
           <div className="mt-1 text-[12px] text-ink-subtle">
-            {Math.round((saveLow / total) * 100)}–{Math.round((saveHigh / total) * 100)}% of the season plan
+            {Math.round((saveLow / total) * 100)}–{Math.round((saveHigh / total) * 100)}% of the season budget
           </div>
         </Card>
       </div>
@@ -191,25 +225,25 @@ function InvestmentTab() {
             <thead>
               <tr className="border-y border-line text-left text-ink-muted">
                 <th scope="col" className="px-5 py-2.5 font-medium">Category</th>
-                <th scope="col" className="px-5 py-2.5 text-right font-medium">Estimate</th>
+                <th scope="col" className="px-5 py-2.5 text-right font-medium">Budget</th>
                 <th scope="col" className="px-5 py-2.5 font-medium">Cost-saving opportunity</th>
                 <th scope="col" className="px-5 py-2.5 text-right font-medium">Potential saving</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line tabular-nums">
-              {investmentPlan.map((l) => {
-                const supportsGoal = l.domains.includes(farmerProfile.objective);
+              {rows.map((l) => {
+                const supportsGoal = !!l.saving?.domains.includes(farmerProfile.objective);
                 return (
                   <tr key={l.category} className={clsx(supportsGoal && "bg-brand-50/60")}>
                     <td className="px-5 py-3 font-medium">
                       {l.category}
                       {supportsGoal && <span className="sr-only"> (supports your goal)</span>}
                     </td>
-                    <td className="px-5 py-3 text-right">{formatINR(l.estimate)}</td>
-                    <td className="px-5 py-3 text-ink-muted">{l.opportunity ?? "—"}</td>
+                    <td className="px-5 py-3 text-right">{formatINR(l.amount)}</td>
+                    <td className="px-5 py-3 text-ink-muted">{l.saving?.opportunity ?? "—"}</td>
                     <td className="px-5 py-3 text-right">
-                      {l.savingRange
-                        ? `${formatINR((l.estimate * l.savingRange[0]) / 100)}–${formatINR((l.estimate * l.savingRange[1]) / 100)}`
+                      {l.saving
+                        ? `${formatINR(round((l.amount * l.saving.savingRange[0]) / 100))}–${formatINR(round((l.amount * l.saving.savingRange[1]) / 100))}`
                         : "—"}
                     </td>
                   </tr>

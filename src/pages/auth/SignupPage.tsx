@@ -23,7 +23,7 @@ export function SignupPage() {
       return;
     }
     signUp(role, name);
-    navigate(role === "farmer" ? "/farmer/onboarding" : roleHome(role));
+    navigate(role === "farmer" ? "/farmer/plan/assessment" : roleHome(role));
   };
 
   return (

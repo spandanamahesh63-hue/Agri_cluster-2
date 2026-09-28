@@ -384,6 +384,12 @@ export interface CropListing extends Seedable {
   agreedWith?: { buyerUserId: string; buyerLabel: string; pricePerKg: number; quantityTonnes: number };
   /** Set when a buyer declined the farmer's offer on a requirement. */
   offerDeclinedBy?: string;
+  method?: string;
+  description?: string;
+  availableUntil?: ISODate;
+  hasVideo?: boolean;
+  /** What the farmer chose to show buyers on this listing (spec §16, §19). */
+  share?: { method: boolean; photos: boolean; village: boolean; name: boolean };
 }
 
 /** A buyer's interest in a farmer's listing. */
@@ -577,8 +583,12 @@ export interface FarmPlan {
   cropId?: string;
   methodId?: string;
   budget?: BudgetLine[];
-  /** Equipment kinds the farmer chose to rent instead of buy. */
-  rentInsteadOf?: string[];
+  /** Equipment kinds the farmer chose to buy instead of renting (default: rent). */
+  buy?: string[];
+  /** Planting / transplanting date the calendar is built from. */
+  plantDate?: ISODate;
+  /** Steps the farmer has explicitly reviewed (market, resources). */
+  reviewed?: string[];
   confirmedAt?: ISODateTime;
 }
 
