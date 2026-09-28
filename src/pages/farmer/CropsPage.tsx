@@ -95,7 +95,7 @@ export function CropsPage() {
                 <li aria-hidden className="pointer-events-none absolute -bottom-5 top-0 left-28 right-0">
                   <div className="absolute bottom-4 top-0 w-px bg-danger" style={{ left: `${pct(DEMO_NOW)}%` }} />
                   <span
-                    className="absolute bottom-0 -translate-x-1/2 rounded bg-danger px-1 text-[10px] font-medium leading-4 text-white"
+                    className="absolute bottom-0 -translate-x-1/2 rounded bg-danger px-1 text-[11px] font-medium leading-4 text-white"
                     style={{ left: `${pct(DEMO_NOW)}%` }}
                   >
                     Today

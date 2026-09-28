@@ -39,7 +39,7 @@ export function ExpertsPage() {
   const [q, setQ] = useState("");
   const plan = usePlan();
 
-  const header = <PageHeader title="Experts" description="Who can help me with this?" />;
+  const header = <PageHeader title="Experts" description="Who can help me with this?" actions={<SourceBadge source="demo" />} />;
   if (expertsState.status === "loading" || overview.status === "loading") return <PageSkeleton />;
   if (expertsState.status === "error" || overview.status === "error")
     return (
@@ -112,7 +112,7 @@ export function ExpertsPage() {
         </Card>
       )}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_14rem_auto] sm:items-end">
+      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_14rem] sm:items-end">
         <div>
           <label htmlFor="expert-q" className="mb-1 block text-[12px] font-medium text-ink-muted">
             Find an expert
@@ -135,7 +135,6 @@ export function ExpertsPage() {
             ))}
           </SelectInput>
         </div>
-        <SourceBadge source="demo" className="self-center sm:mb-2" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

@@ -41,7 +41,7 @@ export function CommunityDashboard() {
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatTile label="Groups you run" value={myGroups.length} sub={`${members} members`} to="/community/groups" />
           <StatTile label="Upcoming events" value={upcoming.length} sub={`${registrations} registrations`} to="/community/events" />
-          <StatTile label="Unanswered questions" value={unanswered.length} status={unanswered.length ? "moderate" : "healthy"} to="/community/community" />
+          <StatTile label="Unanswered questions" value={unanswered.length} status={unanswered.length ? "moderate" : undefined} to="/community/community" />
           <StatTile label="Success stories" value={posts.filter((p) => p.category === "story").length} to="/community/community" />
         </div>
 
