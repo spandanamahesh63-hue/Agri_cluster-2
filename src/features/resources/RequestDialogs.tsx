@@ -10,6 +10,8 @@ import { DEMO_TODAY, DEMO_TOMORROW } from "../../data/mock/clock";
 import { skillLabels } from "../../data/mock/labour";
 import { formatDate, formatHour, formatINR } from "../../utils/format";
 import { kindLabels, ownerLabel } from "./labels";
+import { usePlan } from "../plan/usePlan";
+import { cropCatalogue } from "../../data/catalog/crops";
 
 const purposes = ["Land preparation", "Harvest transport", "Spraying", "Inter-cultivation", "Other"];
 
@@ -111,10 +113,25 @@ export function RequestLabourDialog({ crew, onClose }: { crew: LabourProfile; on
   const [date, setDate] = useState(crew.availableFrom > DEMO_TOMORROW ? crew.availableFrom : DEMO_TOMORROW);
   const [days, setDays] = useState(2);
   const [note, setNote] = useState("");
+  const plan = usePlan();
+  const [crop, setCrop] = useState(plan.crop?.name ?? crew.cropExperience[0] ?? "Tomato");
+  const [location, setLocation] = useState(plan.assessment.location.split(",")[0]);
+  const [locError, setLocError] = useState<string | null>(null);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    addLabourRequest({ labourProfileId: crew.id, requesterUserId: session!.userId, skill, workers, date, days, note: note.trim() });
+    if (!location.trim()) return setLocError("Enter the village where the work is.");
+    addLabourRequest({
+      labourProfileId: crew.id,
+      requesterUserId: session!.userId,
+      skill,
+      crop,
+      location: location.trim(),
+      workers,
+      date,
+      days,
+      note: note.trim(),
+    });
     toast(`Request sent to ${crew.leadName}. Track it under My requests.`);
     onClose();
   };
@@ -135,9 +152,21 @@ export function RequestLabourDialog({ crew, onClose }: { crew: LabourProfile; on
         </>
       }
     >
-      <form id="labour-request" onSubmit={submit} className="space-y-4">
+      <form id="labour-request" onSubmit={submit} noValidate className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Work">
+          <FormField label="Crop" hint={crew.cropExperience.includes(crop) ? `The crew has worked with ${crop.toLowerCase()}` : undefined}>
+            {(p) => (
+              <SelectInput {...p} value={crop} onChange={(e) => setCrop(e.target.value)}>
+                {cropCatalogue.map((c) => (
+                  <option key={c.id}>{c.name}</option>
+                ))}
+              </SelectInput>
+            )}
+          </FormField>
+          <FormField label="Location" error={locError} hint="Village only; your exact farm is shared after the crew accepts">
+            {(p) => <TextInput {...p} value={location} onChange={(e) => (setLocation(e.target.value), setLocError(null))} />}
+          </FormField>
+          <FormField label="Task">
             {(p) => (
               <SelectInput {...p} value={skill} onChange={(e) => setSkill(e.target.value as LabourSkill)}>
                 {crew.skills.map((s) => (

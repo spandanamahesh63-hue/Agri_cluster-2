@@ -4,6 +4,7 @@ import { useAppStore } from "../../store/AppStore";
 import { useLabour } from "../../features/labour/useLabour";
 import { skillLabels } from "../../data/mock/labour";
 import { villageNames } from "../../data/mock/clusterFarms";
+import { cropCatalogue } from "../../data/catalog/crops";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -32,19 +33,29 @@ function ProfileForm({ profile }: { profile: LabourProfile }) {
   const [village, setVillage] = useState(profile.village);
   const [availability, setAvailability] = useState(profile.availability);
   const [from, setFrom] = useState(profile.availableFrom);
+  const [hourly, setHourly] = useState(profile.hourlyRate ? String(profile.hourlyRate) : "");
+  const [experience, setExperience] = useState(String(profile.experienceYears));
+  const [crops, setCrops] = useState<string[]>(profile.cropExperience);
+  const [transport, setTransport] = useState(profile.transport);
   const [error, setError] = useState<string | null>(null);
 
   const toggle = (s: LabourSkill) => setSkills((list) => (list.includes(s) ? list.filter((x) => x !== s) : [...list, s]));
+  const toggleCrop = (c: string) => setCrops((list) => (list.includes(c) ? list.filter((x) => x !== c) : [...list, c]));
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (skills.length === 0) return setError("Choose at least one skill.");
     if (!(Number(crewSize) > 0)) return setError("Crew size must be at least 1.");
+    if (!(Number(wage) > 0)) return setError("Enter a daily wage per worker.");
     setError(null);
     editLabour(profile.id, {
       skills,
       crewSize: Number(crewSize),
       dailyWage: Number(wage),
+      hourlyRate: Number(hourly) > 0 ? Number(hourly) : undefined,
+      experienceYears: Math.max(0, Number(experience) || 0),
+      cropExperience: crops,
+      transport,
       village,
       availability,
       availableFrom: from,
@@ -87,6 +98,32 @@ function ProfileForm({ profile }: { profile: LabourProfile }) {
             )}
           </FormField>
         </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormField label="Hourly rate per worker (₹)" hint="Optional, for short jobs">
+            {(p) => <TextInput {...p} type="number" inputMode="numeric" value={hourly} onChange={(e) => setHourly(e.target.value)} />}
+          </FormField>
+          <FormField label="Years of experience">
+            {(p) => <TextInput {...p} type="number" min="0" inputMode="numeric" value={experience} onChange={(e) => setExperience(e.target.value)} />}
+          </FormField>
+          <label className="flex items-center gap-2 self-end pb-2 text-[13px]">
+            <input type="checkbox" className="size-4 accent-brand-700" checked={transport} onChange={(e) => setTransport(e.target.checked)} />
+            Crew has its own transport
+          </label>
+        </div>
+        <fieldset>
+          <legend className="mb-2 text-[13px] font-medium">Crops you have worked with</legend>
+          <div className="flex flex-wrap gap-2">
+            {cropCatalogue.map((c) => (
+              <label
+                key={c.id}
+                className="flex cursor-pointer items-center gap-2 rounded-full border border-line-strong px-3 py-1.5 text-[13px] has-[:checked]:border-brand-700 has-[:checked]:bg-brand-50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-200"
+              >
+                <input type="checkbox" className="accent-brand-700" checked={crops.includes(c.name)} onChange={() => toggleCrop(c.name)} />
+                {c.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
         <ChoiceCards<LabourProfile["availability"]>
           legend="Availability"
           name="availability"
@@ -108,7 +145,7 @@ function ProfileForm({ profile }: { profile: LabourProfile }) {
         <Card className="p-5 text-[13px]">
           <div className="font-medium">{profile.leadName}</div>
           <div className="text-ink-muted">Crew lead · {profile.label}</div>
-          <InfoNote className="mt-3">Farmers see your crew label, skills, crew size, wage and availability — not your phone number.</InfoNote>
+          <InfoNote className="mt-3">Farmers see your crew label, skills, crops, experience, rates, transport and availability. They don't see your phone number.</InfoNote>
         </Card>
         <Button type="submit" className="w-full">
           Save profile

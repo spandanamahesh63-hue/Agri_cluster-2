@@ -395,7 +395,10 @@ export function resourceNeeds(crop: CropProfile, method: MethodProfile | undefin
   const needs = method?.needs ?? ["tractor"];
   const expertCategories: ExpertCategory[] = ["crop"];
   if (!a.soilTestDone) expertCategories.push("soil");
+  if (method?.id === "precision") expertCategories.push("precision");
+  if (method?.id === "organic") expertCategories.push("organic");
   if (method && ["precision", "drip", "smart-irrigation"].includes(method.id)) expertCategories.push("irrigation");
+  if (["tomato", "chilli", "beans"].includes(crop.id)) expertCategories.push("pest");
   if (a.needsLoan || budgetGap > 0) expertCategories.push("finance");
   expertCategories.push("market");
   return {

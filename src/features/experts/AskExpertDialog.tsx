@@ -14,13 +14,14 @@ interface Props {
   fields: Field[];
   initialFieldId?: string;
   initialMessage?: string;
+  initialKind?: Consultation["kind"];
   onClose: () => void;
 }
 
-export function AskExpertDialog({ expert, fields, initialFieldId, initialMessage, onClose }: Props) {
+export function AskExpertDialog({ expert, fields, initialFieldId, initialMessage, initialKind = "question", onClose }: Props) {
   const { session, addConsultation } = useAppStore();
   const toast = useToast();
-  const [kind, setKind] = useState<Consultation["kind"]>("question");
+  const [kind, setKind] = useState<Consultation["kind"]>(initialKind);
   const [fieldId, setFieldId] = useState(initialFieldId ?? "");
   const [message, setMessage] = useState(initialMessage ?? "");
   const [date, setDate] = useState(DEMO_TOMORROW);
@@ -102,7 +103,10 @@ export function AskExpertDialog({ expert, fields, initialFieldId, initialMessage
             />
           )}
         </FormField>
-        <InfoNote>Your farm label and field data are shared with the expert so they can see the context.</InfoNote>
+        <InfoNote>
+          The expert sees your farm label, your message and the field you choose, only what the consultation needs. Your finances and contact details are not
+          shared.
+        </InfoNote>
       </form>
     </Dialog>
   );

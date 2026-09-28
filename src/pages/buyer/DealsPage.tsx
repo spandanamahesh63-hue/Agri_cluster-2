@@ -22,7 +22,7 @@ export function DealsPage() {
           <EmptyState
             icon={<Handshake aria-hidden className="size-5" />}
             title="No agreed deals yet"
-            description="Deals appear when you accept a farmer's offer or a farmer accepts your interest."
+            description="Deals appear when you accept a farmer's offer or a farmer accepts your request."
           />
         </Card>
       ) : (

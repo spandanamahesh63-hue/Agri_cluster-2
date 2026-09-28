@@ -73,10 +73,13 @@ export const seedConsultations: Consultation[] = [
 ];
 
 export const seedListings: CropListing[] = [
-  { id: "lst-seed-1", farmId: "cf-12", farmLabel: "Farm #12", cropCycleId: "-", crop: "Tomato", grade: "A", quantityTonnes: 2.4, harvestDate: "2026-10-04", availableFrom: "2026-10-04", expectedPricePerKg: 23, location: "Bilikere", photoCount: 2, status: "listed", createdAt: "2026-09-26T10:00:00+05:30", seeded: true },
-  { id: "lst-seed-2", farmId: "cf-7", farmLabel: "Farm #7", cropCycleId: "-", crop: "Tomato", grade: "A", quantityTonnes: 1.6, harvestDate: "2026-10-05", availableFrom: "2026-10-05", expectedPricePerKg: 24, location: "Yelwala", photoCount: 1, requirementId: "br-1", status: "offer-sent", createdAt: "2026-09-26T21:15:00+05:30", seeded: true },
-  { id: "lst-seed-3", farmId: "cf-63", farmLabel: "Farm #63", cropCycleId: "-", crop: "Onion", grade: "B", quantityTonnes: 6, harvestDate: "2026-10-13", availableFrom: "2026-10-14", expectedPricePerKg: 19, location: "Kadakola", photoCount: 0, status: "listed", createdAt: "2026-09-25T15:30:00+05:30", seeded: true },
-  { id: "lst-seed-4", farmId: "cf-41", farmLabel: "Farm #41", cropCycleId: "-", crop: "Chilli", grade: "B", quantityTonnes: 0.9, harvestDate: "2026-11-12", availableFrom: "2026-11-12", expectedPricePerKg: 48, location: "Jayapura", photoCount: 0, status: "listed", createdAt: "2026-09-23T11:00:00+05:30", seeded: true },
+  { id: "lst-seed-1", farmId: "cf-12", farmLabel: "Farm #12", cropCycleId: "-", crop: "Tomato", grade: "A", quantityTonnes: 2.4, harvestDate: "2026-10-04", availableFrom: "2026-10-04", availableUntil: "2026-10-09", expectedPricePerKg: 23, location: "Bilikere", photoCount: 2, method: "Drip irrigation", description: "Hybrid tomato, firm, packed in 25 kg crates.", status: "listed", createdAt: "2026-09-26T10:00:00+05:30", seeded: true },
+  { id: "lst-seed-2", farmId: "cf-7", farmLabel: "Farm #7", cropCycleId: "-", crop: "Tomato", grade: "A", quantityTonnes: 1.6, harvestDate: "2026-10-05", availableFrom: "2026-10-05", expectedPricePerKg: 24, location: "Yelwala", photoCount: 1, method: "Drip irrigation", requirementId: "br-1", status: "offer-sent", createdAt: "2026-09-26T21:15:00+05:30", seeded: true },
+  { id: "lst-seed-3", farmId: "cf-63", farmLabel: "Farm #63", cropCycleId: "-", crop: "Onion", grade: "B", quantityTonnes: 6, harvestDate: "2026-10-13", availableFrom: "2026-10-14", availableUntil: "2026-11-10", expectedPricePerKg: 19, location: "Kadakola", photoCount: 0, method: "Conventional", description: "Medium bulbs, field-cured for a week; stores well.", status: "listed", createdAt: "2026-09-25T15:30:00+05:30", seeded: true },
+  { id: "lst-seed-4", farmId: "cf-41", farmLabel: "Farm #41", cropCycleId: "-", crop: "Chilli", grade: "B", quantityTonnes: 0.9, harvestDate: "2026-11-12", availableFrom: "2026-11-12", expectedPricePerKg: 48, location: "Jayapura", photoCount: 0, method: "Integrated farming", status: "listed", createdAt: "2026-09-23T11:00:00+05:30", seeded: true },
+  { id: "lst-seed-5", farmId: "cf-88", farmLabel: "Farm #88", cropCycleId: "-", crop: "Beans", grade: "A", quantityTonnes: 1.2, harvestDate: "2026-10-02", availableFrom: "2026-10-02", availableUntil: "2026-10-06", expectedPricePerKg: 42, location: "Hootagalli", photoCount: 3, hasVideo: true, method: "Organic farming", description: "French beans, tender, picked every 3 days. Organic inputs only (not certified).", status: "listed", createdAt: "2026-09-27T07:40:00+05:30", seeded: true },
+  { id: "lst-seed-6", farmId: "cf-102", farmLabel: "Farm #102", cropCycleId: "-", crop: "Leafy vegetables", grade: "A", quantityTonnes: 0.4, harvestDate: "2026-09-29", availableFrom: "2026-09-29", availableUntil: "2026-10-01", expectedPricePerKg: 30, location: "Chamarajanagara", photoCount: 2, method: "Drip irrigation", description: "Spinach and methi bunches, harvested early morning.", status: "listed", createdAt: "2026-09-27T06:30:00+05:30", seeded: true },
+  { id: "lst-seed-7", farmId: "cf-115", farmLabel: "Farm #115", cropCycleId: "-", crop: "Onion", grade: "A", quantityTonnes: 3.5, harvestDate: "2026-10-20", availableFrom: "2026-10-21", availableUntil: "2026-11-30", expectedPricePerKg: 22, location: "Terakanambi", photoCount: 1, method: "Less-water farming", status: "listed", createdAt: "2026-09-24T16:10:00+05:30", seeded: true },
 ];
 
 export const seedPosts: CommunityPost[] = [
@@ -133,6 +136,39 @@ export const seedPosts: CommunityPost[] = [
     title: "Whitefly seen near Hootagalli",
     body: "Found whitefly on tomato and chilli this morning. Yellow sticky traps are helping; check the underside of leaves.",
     createdAt: "2026-09-27T06:40:00+05:30",
+    seeded: true,
+  },
+  {
+    id: "post-seed-6",
+    authorUserId: "u-community-1",
+    authorLabel: "Lakshmi N.",
+    authorRole: "community",
+    category: "story",
+    title: "Chamarajanagara women's group sold 11 t of tomato together",
+    body: "Twelve members pooled their Grade A tomato last season and sold to one aggregator at ₹3–4/kg above the local mandi. Shared transport and crates cut costs for everyone. The group meets on Fridays if you want to join.",
+    createdAt: "2026-09-22T18:00:00+05:30",
+    seeded: true,
+  },
+  {
+    id: "post-seed-7",
+    authorUserId: "u-farmer-88",
+    authorLabel: "Farm #88",
+    authorRole: "farmer",
+    category: "story",
+    title: "First organic beans harvest on 1 acre",
+    body: "Switched to jeevamrutha and neem after a training at Hootagalli. Yield was a little lower, but a Mysuru restaurant now buys every week. Not certified yet; we are keeping records for it.",
+    createdAt: "2026-09-20T10:30:00+05:30",
+    seeded: true,
+  },
+  {
+    id: "post-seed-8",
+    authorUserId: "u-community-1",
+    authorLabel: "Lakshmi N.",
+    authorRole: "community",
+    category: "announcement",
+    title: "Drip maintenance workshop on Thursday 1 Oct",
+    body: "Hands-on session at the Chamarajanagara group plot, 10 am. Bring a blocked emitter if you have one. Register from Community → Events.",
+    createdAt: "2026-09-26T09:00:00+05:30",
     seeded: true,
   },
 ];

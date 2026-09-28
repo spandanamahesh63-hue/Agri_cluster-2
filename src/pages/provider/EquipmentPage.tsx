@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CalendarPlus, MapPin, Plus, X } from "lucide-react";
-import type { Machinery, ResourceKind } from "../../types";
+import type { Machinery, ResourceKind, ServiceType } from "../../types";
+import { machineOffering } from "../../features/resources/offerings";
+
+const cropChoices = ["All crops", "Tomato", "Chilli", "Onion", "Beans", "Leafy vegetables", "Ragi"];
 import { useAppStore } from "../../store/AppStore";
 import { useProvider } from "../../features/provider/useProvider";
 import { kindLabels } from "../../features/resources/labels";
@@ -68,7 +71,19 @@ export function EquipmentPage() {
                     {m.status === "maintenance" ? "Maintenance" : m.status === "booked" ? "Booked today" : "Free today"}
                   </Badge>
                 </div>
-                {m.notes && <p className="mt-2 text-[13px] text-ink-muted">{m.notes}</p>}
+                {(() => {
+                  const o = machineOffering(m);
+                  return (
+                    <>
+                      <p className="mt-2 text-[13px] text-ink-muted">{o.description}</p>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <Badge tone="resource">{o.serviceType}</Badge>
+                        <Badge>{o.suitableCrops.join(", ")}</Badge>
+                        <Badge>No ratings yet</Badge>
+                      </div>
+                    </>
+                  );
+                })()}
 
                 <div className="mt-3 text-[12px] font-medium text-ink-subtle">Availability</div>
                 {m.availableSlots?.length ? (
@@ -129,20 +144,26 @@ function AddEquipmentDialog({ onClose }: { onClose: () => void }) {
   const [rate, setRate] = useState("900");
   const [village, setVillage] = useState("Yelwala");
   const [notes, setNotes] = useState("");
+  const [serviceType, setServiceType] = useState<ServiceType>("Rental with operator");
+  const [crops, setCrops] = useState<string[]>(["All crops"]);
   const [error, setError] = useState<string | null>(null);
+  const [rateError, setRateError] = useState<string | null>(null);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return setError("Give the equipment a name farmers will recognise, e.g. “Tractor · 50 HP”.");
+    if (!(Number(rate) > 0)) return setRateError("Enter an hourly rate. Farmers see it as indicative.");
     addEquipment({
       kind,
       name: name.trim(),
       ownerUserId: session!.userId,
       clusterId: CLUSTER_ID,
       village,
-      ratePerHour: Number(rate) || 0,
+      ratePerHour: Number(rate),
       status: "available",
-      notes: notes.trim() || undefined,
+      description: notes.trim() || undefined,
+      serviceType,
+      suitableCrops: crops.length ? crops : ["All crops"],
       availableSlots: [],
     });
     toast(`${name.trim()} listed. Farmers can now request it.`);
@@ -169,7 +190,7 @@ function AddEquipmentDialog({ onClose }: { onClose: () => void }) {
         <FormField label="Type">
           {(p) => (
             <SelectInput {...p} value={kind} onChange={(e) => setKind(e.target.value as ResourceKind)}>
-              {(["tractor", "harvester", "sprayer", "drone", "tiller", "transport"] as ResourceKind[]).map((k) => (
+              {(["tractor", "harvester", "sprayer", "seeder", "tiller", "drone", "transport"] as ResourceKind[]).map((k) => (
                 <option key={k} value={k}>
                   {kindLabels[k]}
                 </option>
@@ -180,8 +201,17 @@ function AddEquipmentDialog({ onClose }: { onClose: () => void }) {
         <FormField label="Name" error={error}>
           {(p) => <TextInput {...p} placeholder="Tractor · 50 HP" value={name} onChange={(e) => (setName(e.target.value), setError(null))} />}
         </FormField>
-        <FormField label="Rate (₹ per hour)" hint="Indicative — you confirm the final price">
-          {(p) => <TextInput {...p} type="number" inputMode="numeric" value={rate} onChange={(e) => setRate(e.target.value)} />}
+        <FormField label="Rate (₹ per hour)" error={rateError} hint="Indicative — you confirm the final price">
+          {(p) => <TextInput {...p} type="number" inputMode="numeric" value={rate} onChange={(e) => (setRate(e.target.value), setRateError(null))} />}
+        </FormField>
+        <FormField label="Service type">
+          {(p) => (
+            <SelectInput {...p} value={serviceType} onChange={(e) => setServiceType(e.target.value as ServiceType)}>
+              {(["Rental with operator", "Self-drive rental", "Per-visit service"] as ServiceType[]).map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </SelectInput>
+          )}
         </FormField>
         <FormField label="Location">
           {(p) => (
@@ -192,7 +222,27 @@ function AddEquipmentDialog({ onClose }: { onClose: () => void }) {
             </SelectInput>
           )}
         </FormField>
-        <FormField label="Notes" hint="Optional — attachments, operator included, fuel" className="sm:col-span-2">
+        <fieldset className="sm:col-span-2">
+          <legend className="mb-1.5 text-[13px] font-medium">Suitable crops</legend>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-[13px]">
+            {cropChoices.map((c) => (
+              <label key={c} className="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-brand-700"
+                  checked={crops.includes(c)}
+                  onChange={(e) =>
+                    setCrops((list) =>
+                      c === "All crops" ? (e.target.checked ? ["All crops"] : []) : e.target.checked ? [...list.filter((x) => x !== "All crops"), c] : list.filter((x) => x !== c),
+                    )
+                  }
+                />
+                {c}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <FormField label="Description" hint="Optional — attachments, operator included, fuel" className="sm:col-span-2">
           {(p) => <TextArea {...p} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />}
         </FormField>
       </form>

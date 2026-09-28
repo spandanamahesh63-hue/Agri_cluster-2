@@ -60,6 +60,9 @@ const ExpertDashboard = lazyPage(() => import("./pages/expert/ExpertDashboard"),
 const ExpertRequestsPage = lazyPage(() => import("./pages/expert/ExpertRequestsPage"), "ExpertRequestsPage");
 const ConsultationsPage = lazyPage(() => import("./pages/expert/ConsultationsPage"), "ConsultationsPage");
 const QueryDetailPage = lazyPage(() => import("./pages/expert/QueryDetailPage"), "QueryDetailPage");
+const CommunityDashboard = lazyPage(() => import("./pages/community/CommunityDashboard"), "CommunityDashboard");
+const GroupsPage = lazyPage(() => import("./pages/community/GroupsPage"), "GroupsPage");
+const EventsPage = lazyPage(() => import("./pages/community/EventsPage"), "EventsPage");
 const CommunityPage = lazyPage(() => import("./pages/shared/CommunityPage"), "CommunityPage");
 const RoleProfilePage = lazyPage(() => import("./pages/shared/RoleProfilePage"), "RoleProfilePage");
 
@@ -109,6 +112,11 @@ const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
     "": <ExpertDashboard />,
     requests: <ExpertRequestsPage />,
     consultations: <ConsultationsPage />,
+  },
+  community: {
+    "": <CommunityDashboard />,
+    groups: <GroupsPage />,
+    events: <EventsPage />,
   },
 };
 

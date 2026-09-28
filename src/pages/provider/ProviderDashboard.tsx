@@ -9,6 +9,8 @@ import { kindLabels } from "../../features/resources/labels";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { ButtonLink } from "../../components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
+import { machineOffering } from "../../features/resources/offerings";
 import { EmptyState } from "../../components/ui/states";
 import { DEMO_NOW } from "../../data/mock/clock";
 import { formatDate, formatINR, greeting } from "../../utils/format";
@@ -36,8 +38,29 @@ export function ProviderDashboard() {
           <StatTile label="Equipment listed" value={p.equipment.length} to="/provider/equipment" />
           <StatTile label="New requests" value={p.requests.length} status={p.requests.length ? "moderate" : "healthy"} to="/provider/bookings" />
           <StatTile label="Confirmed bookings" value={p.upcoming.length} to="/provider/bookings" />
-          <StatTile label="Confirmed value" value={formatINR(earnings)} sub="Indicative, before costs" />
+          <StatTile label="Revenue (confirmed)" value={formatINR(earnings)} sub="Placeholder: indicative, no payments processed" />
         </div>
+
+        <Card>
+          <CardHeader title="Availability" subtitle="What farmers see today" />
+          <ul className="mt-2 divide-y divide-line">
+            {p.equipment.map((m) => {
+              const o = machineOffering(m);
+              return (
+                <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5 text-[13px]">
+                  <span>
+                    <span className="font-medium">{m.name}</span>
+                    <span className="text-ink-muted"> · {m.village}</span>
+                  </span>
+                  <Badge tone={o.availability.tone}>{o.availability.label}</Badge>
+                </li>
+              );
+            })}
+          </ul>
+          <Link to="/provider/equipment" className="block border-t border-line py-2.5 text-center text-[13px] font-medium text-brand-700 hover:bg-canvas">
+            Manage availability
+          </Link>
+        </Card>
 
         {gaps.map((g) => (
           <Card key={`${g.kind}-${g.date}`} className="border-warning/30 bg-warning-soft p-4 text-[13px]">

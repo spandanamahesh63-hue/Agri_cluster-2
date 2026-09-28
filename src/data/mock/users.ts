@@ -37,6 +37,14 @@ export const users: User[] = [
     location: "Yelwala, Mysuru",
   },
   {
+    id: "u-provider-2",
+    role: "provider",
+    name: "Hasiru AgriTech",
+    displayLabel: "Farm technology provider",
+    clusterId: CLUSTER_ID,
+    location: "Chamarajanagara",
+  },
+  {
     id: "u-labour-1",
     role: "labour",
     name: "Nagaraj B.",

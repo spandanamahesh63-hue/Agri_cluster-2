@@ -23,7 +23,9 @@ export function WorkRow({ request, profile }: { request: LabourRequest; profile?
     <li className="flex flex-col gap-2 px-5 py-3 text-[13px] sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="font-medium">
-          {skillLabels[request.skill]} · {farm}
+          {skillLabels[request.skill]}
+          {request.crop && ` · ${request.crop}`} · {farm}
+          {request.location && <span className="font-normal text-ink-muted"> · {request.location}</span>}
         </div>
         <div className="text-ink-muted">
           {request.workers} workers × {request.days} day{request.days > 1 ? "s" : ""} from {formatDate(request.date, { weekday: "short", day: "numeric", month: "short" })}

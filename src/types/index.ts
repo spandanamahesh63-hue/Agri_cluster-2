@@ -178,6 +178,7 @@ export type ResourceKind =
   | "sprayer"
   | "drone"
   | "tiller"
+  | "seeder"
   | "transport"
   | "cold-storage"
   | "irrigation";
@@ -194,7 +195,14 @@ export interface Machinery {
   /** Owner-declared availability windows. */
   availableSlots?: AvailabilitySlot[];
   notes?: string;
+  /** Marketplace details (spec §11). Defaults per kind fill anything left out. */
+  description?: string;
+  suitableCrops?: string[];
+  serviceType?: ServiceType;
 }
+
+/** How a machine or technology is offered to farmers. */
+export type ServiceType = "Rental with operator" | "Self-drive rental" | "Per-visit service" | "Subscription" | "Supply & install" | "Cluster shared service";
 
 export interface AvailabilitySlot {
   date: ISODate;
@@ -230,7 +238,7 @@ export interface Booking extends Seedable {
   createdAt: ISODateTime;
 }
 
-export type LabourSkill = "harvesting" | "transplanting" | "weeding" | "spraying" | "grading-packing" | "irrigation";
+export type LabourSkill = "land-preparation" | "transplanting" | "weeding" | "spraying" | "irrigation" | "harvesting" | "grading-packing";
 
 export interface LabourProfile {
   id: string;
@@ -241,6 +249,12 @@ export interface LabourProfile {
   crewSize: number;
   village: string;
   dailyWage: number; // INR per worker, indicative
+  /** Optional hourly rate per worker for short jobs, INR, indicative. */
+  hourlyRate?: number;
+  experienceYears: number;
+  cropExperience: string[];
+  /** Crew brings its own transport to the farm. */
+  transport: boolean;
   availableFrom: ISODate;
   availability: "available" | "limited" | "booked";
   source: DataSource;
@@ -251,6 +265,9 @@ export interface LabourRequest extends Seedable {
   labourProfileId: string;
   requesterUserId: string;
   skill: LabourSkill;
+  /** Crop and village the work is for; shared with the crew (spec §12). */
+  crop?: string;
+  location?: string;
   workers: number;
   date: ISODate;
   days: number;
@@ -268,6 +285,12 @@ export interface Technology {
   /** How a small farm accesses it through the cluster. */
   access: string;
   indicativeCost: string;
+  /** Marketplace details (spec §11). */
+  providerUserId: string;
+  location: string;
+  availability: string;
+  serviceType: ServiceType;
+  suitableCrops: string[];
 }
 
 export interface ServiceRequest extends Seedable {
@@ -283,7 +306,19 @@ export interface ServiceRequest extends Seedable {
 // Experts
 // ---------------------------------------------------------------------------
 
-export type ExpertCategory = "agronomist" | "soil" | "crop" | "irrigation" | "finance" | "market";
+/** Expert categories from spec §13. */
+export type ExpertCategory =
+  | "soil"
+  | "crop"
+  | "irrigation"
+  | "pest"
+  | "organic"
+  | "precision"
+  | "finance"
+  | "market"
+  | "export"
+  | "post-harvest"
+  | "food-processing";
 
 export interface Expert {
   id: string;
@@ -321,7 +356,42 @@ export interface Consultation extends Seedable {
 // Community
 // ---------------------------------------------------------------------------
 
-export type PostCategory = "announcement" | "alert" | "question" | "practice" | "resource";
+export type PostCategory = "announcement" | "alert" | "question" | "practice" | "story" | "resource";
+
+/** A local farmer group run by a community organiser (spec §17). */
+export interface CommunityGroup extends Seedable {
+  id: string;
+  name: string;
+  village: string;
+  focus: string;
+  description: string;
+  organiserUserId: string;
+  /** Member count before this prototype's joins. */
+  baseMembers: number;
+  memberUserIds: string[];
+  meets: string;
+  createdAt: ISODateTime;
+}
+
+export type EventKind = "workshop" | "field-day" | "meeting" | "training";
+
+export interface CommunityEvent extends Seedable {
+  id: string;
+  title: string;
+  kind: EventKind;
+  date: ISODate;
+  startHour: number;
+  village: string;
+  groupId?: string;
+  hostLabel: string;
+  organiserUserId: string;
+  description: string;
+  seats: number;
+  /** Registrations before this prototype's sign-ups. */
+  baseRegistered: number;
+  attendeeUserIds: string[];
+  createdAt: ISODateTime;
+}
 
 export interface CommunityPost extends Seedable {
   id: string;

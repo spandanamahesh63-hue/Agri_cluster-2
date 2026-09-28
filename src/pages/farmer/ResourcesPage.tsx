@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import clsx from "clsx";
-import { ChevronDown, MapPin, TriangleAlert, Users } from "lucide-react";
-import type { LabourProfile, LabourSkill, Machinery, ResourceKind, Technology } from "../../types";
+import { TriangleAlert, Users } from "lucide-react";
+import type { LabourProfile, LabourSkill, ResourceKind } from "../../types";
+import { useAppStore } from "../../store/AppStore";
 import { useLabourProfiles, useMachinery, useMyRequests } from "../../features/shared/useMerged";
 import { useAsync } from "../../hooks/useAsync";
 import { getResourceCatalog, type ResourceCatalog } from "../../services/api/demoApi";
 import { RequestLabourDialog, RequestMachineryDialog, RequestTechnologyDialog } from "../../features/resources/RequestDialogs";
-import { bookingStatusLabel, kindLabels, ownerLabel } from "../../features/resources/labels";
+import { bookingStatusLabel, kindLabels } from "../../features/resources/labels";
+import { machineOffering, techOffering, type Offering } from "../../features/resources/offerings";
+import { CompareDialog, ContactDialog, OfferingCard, OfferingDetailDialog, type RequestState } from "../../features/resources/OfferingCard";
+import { usePlan } from "../../features/plan/usePlan";
 import { skillLabels } from "../../data/mock/labour";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
@@ -16,6 +19,7 @@ import { Button } from "../../components/ui/Button";
 import { EmptyState, ErrorState, PageSkeleton } from "../../components/ui/states";
 import { Tabs } from "../../components/navigation/Tabs";
 import { FilterChips } from "../../components/navigation/FilterChips";
+import { SelectInput } from "../../components/forms/fields";
 import { formatDate, formatHour, formatINR } from "../../utils/format";
 
 type Tab = "machinery" | "labour" | "technology" | "requests";
@@ -59,7 +63,12 @@ export function ResourcesPage() {
       />
       {tab === "machinery" && <MachineryTab catalog={catalog.data} initialKind={params.get("kind") as ResourceKind | null} />}
       {tab === "labour" && <LabourTab crews={catalog.data.labour} />}
-      {tab === "technology" && <TechnologyTab technologies={catalog.data.technologies} />}
+      {tab === "technology" && (
+        <OfferingsTab
+          offerings={catalog.data.technologies.map(techOffering)}
+          intro={<p className="text-[13px] text-ink-muted">You don't need to own every technology. The cluster shares it, and each option is sized for small farms.</p>}
+        />
+      )}
       {tab === "requests" && <RequestsTab catalog={catalog.data} onBrowse={() => setTab("machinery")} />}
     </>
   );
@@ -67,17 +76,121 @@ export function ResourcesPage() {
 
 // ---------------------------------------------------------------------------
 
-function MachineryTab({ catalog, initialKind }: { catalog: ResourceCatalog; initialKind: ResourceKind | null }) {
-  const { bookings } = useMyRequests();
-  const kinds = [...new Set(catalog.machinery.map((m) => m.kind))];
-  const [kind, setKind] = useState<ResourceKind | "all">(initialKind && kinds.includes(initialKind) ? initialKind : "all");
-  const [requesting, setRequesting] = useState<Machinery | null>(null);
-  const visible = catalog.machinery.filter((m) => kind === "all" || m.kind === kind);
-  const gaps = catalog.demand.filter((d) => d.requested > d.available);
+const MAX_COMPARE = 3;
+
+/** Machinery or technology listings with filter, compare, save, view, contact and request (spec §11). */
+function OfferingsTab({ offerings, initialType, intro }: { offerings: Offering[]; initialType?: string | null; intro?: ReactNode }) {
+  const { bookings, serviceRequests } = useMyRequests();
+  const { savedResources } = useAppStore();
+  const plan = usePlan();
+  const crop = plan.crop?.name;
+  const types = [...new Set(offerings.map((o) => o.typeLabel))];
+  const [type, setType] = useState<string>(initialType && types.includes(initialType) ? initialType : "all");
+  const [compare, setCompare] = useState<string[]>([]);
+  const [showCompare, setShowCompare] = useState(false);
+  const [viewing, setViewing] = useState<Offering | null>(null);
+  const [contacting, setContacting] = useState<Offering | null>(null);
+  const [requesting, setRequesting] = useState<Offering | null>(null);
+
+  const visible = offerings.filter((o) => (type === "all" ? true : type === "saved" ? savedResources.includes(o.key) : o.typeLabel === type));
+  const compared = offerings.filter((o) => compare.includes(o.key));
+  const savedCount = offerings.filter((o) => savedResources.includes(o.key)).length;
+
+  const requestOf = (o: Offering): RequestState | undefined => {
+    if (o.machine) {
+      const mine = bookings.find((b) => b.machineryId === o.key);
+      if (!mine) return undefined;
+      return { label: mine.status === "requested" ? `Requested for ${formatDate(mine.date)}` : `${bookingStatusLabel[mine.status].label} · ${formatDate(mine.date)}`, tone: bookingStatusLabel[mine.status].tone };
+    }
+    return serviceRequests.some((r) => r.technologyId === o.key) ? { label: "Requested", tone: "info" } : undefined;
+  };
 
   return (
-    <div className="space-y-4">
-      {gaps.map((g) => (
+    <div className="space-y-4 pb-16">
+      {intro}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <FilterChips
+          label="Type"
+          value={type}
+          onChange={setType}
+          options={[{ id: "all", label: "All" }, ...types.map((t) => ({ id: t, label: t })), { id: "saved", label: `Saved (${savedCount})` }]}
+        />
+        <SourceBadge source="demo" />
+      </div>
+      {visible.length === 0 ? (
+        <Card>
+          <EmptyState title={type === "saved" ? "Nothing saved yet" : "Nothing listed of this type"} description={type === "saved" ? "Use the bookmark on a listing to keep it here." : "Ask the cluster office to find a provider."} />
+        </Card>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {visible.map((o) => (
+            <OfferingCard
+              key={o.key}
+              o={o}
+              crop={crop}
+              request={requestOf(o)}
+              comparing={compare.includes(o.key)}
+              compareDisabled={compare.length >= MAX_COMPARE}
+              onCompare={(on) => setCompare((c) => (on ? [...c, o.key] : c.filter((k) => k !== o.key)))}
+              onView={() => setViewing(o)}
+              onContact={() => setContacting(o)}
+              onRequest={() => setRequesting(o)}
+            />
+          ))}
+        </div>
+      )}
+
+      {compare.length > 0 && (
+        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] z-30 flex justify-center px-4 lg:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] lg:pl-64">
+          <div className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-2.5 text-[13px] shadow-pop">
+            <span>
+              {compare.length} selected{compare.length < 2 ? " · pick one more" : ""}
+            </span>
+            <Button size="sm" variant="ghost" onClick={() => setCompare([])}>
+              Clear
+            </Button>
+            <Button size="sm" disabled={compare.length < 2} onClick={() => setShowCompare(true)}>
+              Compare
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showCompare && (
+        <CompareDialog
+          offerings={compared}
+          onClose={() => setShowCompare(false)}
+          onClear={() => {
+            setCompare([]);
+            setShowCompare(false);
+          }}
+        />
+      )}
+      {viewing && (
+        <OfferingDetailDialog
+          o={viewing}
+          requested={!!requestOf(viewing)}
+          onClose={() => setViewing(null)}
+          onRequest={() => {
+            setRequesting(viewing);
+            setViewing(null);
+          }}
+        />
+      )}
+      {contacting && <ContactDialog o={contacting} onClose={() => setContacting(null)} />}
+      {requesting?.machine && <RequestMachineryDialog machine={requesting.machine} onClose={() => setRequesting(null)} />}
+      {requesting?.tech && <RequestTechnologyDialog tech={requesting.tech} onClose={() => setRequesting(null)} />}
+    </div>
+  );
+}
+
+function MachineryTab({ catalog, initialKind }: { catalog: ResourceCatalog; initialKind: ResourceKind | null }) {
+  const gaps = catalog.demand.filter((d) => d.requested > d.available);
+  return (
+    <OfferingsTab
+      offerings={catalog.machinery.map(machineOffering)}
+      initialType={initialKind ? kindLabels[initialKind] : null}
+      intro={gaps.map((g) => (
         <div key={`${g.kind}-${g.date}`} className="flex items-start gap-3 rounded-xl border border-warning/20 bg-warning-soft px-4 py-3 text-[13px]">
           <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />
           <p>
@@ -88,84 +201,61 @@ function MachineryTab({ catalog, initialKind }: { catalog: ResourceCatalog; init
           </p>
         </div>
       ))}
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <FilterChips
-          label="Equipment type"
-          value={kind}
-          onChange={setKind}
-          options={[{ id: "all" as const, label: "All" }, ...kinds.map((k) => ({ id: k, label: kindLabels[k] }))]}
-        />
-        <SourceBadge source="demo" />
-      </div>
-
-      <Card>
-        <ul className="divide-y divide-line">
-          {visible.map((m) => {
-            const mine = bookings.find((b) => b.machineryId === m.id);
-            return (
-              <li key={m.id} className="flex flex-col gap-3 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium">{m.name}</div>
-                  <div className="flex flex-wrap items-center gap-x-3 text-[13px] text-ink-muted">
-                    <span>{ownerLabel(m)}</span>
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin aria-hidden className="size-3" />
-                      {m.village}
-                    </span>
-                    <span>{formatINR(m.ratePerHour)}/h (indicative)</span>
-                  </div>
-                  {m.availableSlots && m.availableSlots.length > 0 && (
-                    <div className="mt-0.5 text-[12px] text-success">
-                      Owner availability:{" "}
-                      {m.availableSlots.map((s) => `${formatDate(s.date)} ${formatHour(s.startHour)}–${formatHour(s.endHour)}`).join(" · ")}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge tone={m.status === "available" ? "success" : "neutral"}>
-                    {m.status === "available" ? "Free today" : m.status === "booked" ? "Booked today" : "Maintenance"}
-                  </Badge>
-                  {mine ? (
-                    <Badge tone={bookingStatusLabel[mine.status].tone}>
-                      {mine.status === "requested" ? `Requested for ${formatDate(mine.date)}` : `${bookingStatusLabel[mine.status].label} · ${formatDate(mine.date)}`}
-                    </Badge>
-                  ) : (
-                    <Button size="sm" variant="secondary" onClick={() => setRequesting(m)} disabled={m.status === "maintenance"}>
-                      Request
-                    </Button>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </Card>
-      {requesting && <RequestMachineryDialog machine={requesting} onClose={() => setRequesting(null)} />}
-    </div>
+    />
   );
 }
 
 function LabourTab({ crews }: { crews: LabourProfile[] }) {
   const { labourRequests } = useMyRequests();
+  const plan = usePlan();
   const [skill, setSkill] = useState<LabourSkill | "all">("all");
+  const [crop, setCrop] = useState("");
+  const [village, setVillage] = useState("");
   const [requesting, setRequesting] = useState<LabourProfile | null>(null);
-  const visible = crews.filter((c) => skill === "all" || c.skills.includes(skill));
+  const crops = [...new Set(crews.flatMap((c) => c.cropExperience))].sort();
+  const villages = [...new Set(crews.map((c) => c.village))].sort();
+  const visible = crews.filter(
+    (c) => (skill === "all" || c.skills.includes(skill)) && (!crop || c.cropExperience.includes(crop)) && (!village || c.village === village),
+  );
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <FilterChips
-          label="Skill"
+          label="Task"
           value={skill}
           onChange={setSkill}
-          options={[{ id: "all" as const, label: "All skills" }, ...(Object.keys(skillLabels) as LabourSkill[]).map((s) => ({ id: s, label: skillLabels[s] }))]}
+          options={[{ id: "all" as const, label: "All tasks" }, ...(Object.keys(skillLabels) as LabourSkill[]).map((s) => ({ id: s, label: skillLabels[s] }))]}
         />
         <SourceBadge source="demo" />
       </div>
+      <div className="grid max-w-md grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="labour-crop" className="mb-1 block text-[12px] font-medium text-ink-muted">
+            Crop experience
+          </label>
+          <SelectInput id="labour-crop" value={crop} onChange={(e) => setCrop(e.target.value)}>
+            <option value="">Any crop</option>
+            {crops.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </SelectInput>
+        </div>
+        <div>
+          <label htmlFor="labour-village" className="mb-1 block text-[12px] font-medium text-ink-muted">
+            Location
+          </label>
+          <SelectInput id="labour-village" value={village} onChange={(e) => setVillage(e.target.value)}>
+            <option value="">Any village</option>
+            {villages.map((v) => (
+              <option key={v}>{v}</option>
+            ))}
+          </SelectInput>
+        </div>
+      </div>
       {visible.length === 0 ? (
         <Card>
-          <EmptyState title="No crews with this skill" description="Try another skill, or ask the cluster office to find one." />
+          <EmptyState title="No crews match" description="Try another task, crop or village, or ask the cluster office to find a crew." />
         </Card>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -192,9 +282,28 @@ function LabourTab({ crews }: { crews: LabourProfile[] }) {
                     <Users aria-hidden className="size-3.5" />
                     {c.crewSize} workers
                   </span>
-                  <span>{formatINR(c.dailyWage)}/day each</span>
+                  <span>
+                    {formatINR(c.dailyWage)}/day each{c.hourlyRate ? ` or ${formatINR(c.hourlyRate)}/hour` : ""}
+                  </span>
                   <span>From {formatDate(c.availableFrom)}</span>
                 </div>
+                <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[12px]">
+                  <div>
+                    <dt className="inline text-ink-subtle">Experience: </dt>
+                    <dd className="inline">{c.experienceYears} years</dd>
+                  </div>
+                  <div>
+                    <dt className="inline text-ink-subtle">Transport: </dt>
+                    <dd className="inline">{c.transport ? "Own transport" : "Needs pickup"}</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="inline text-ink-subtle">Crops: </dt>
+                    <dd className="inline">
+                      {c.cropExperience.join(", ")}
+                      {plan.crop && c.cropExperience.includes(plan.crop.name) && <span className="font-medium text-crop"> · knows your {plan.crop.name.toLowerCase()}</span>}
+                    </dd>
+                  </div>
+                </dl>
                 <div className="mt-4 flex justify-end">
                   {mine ? (
                     <Badge tone="info">Requested for {formatDate(mine.date)}</Badge>
@@ -210,68 +319,6 @@ function LabourTab({ crews }: { crews: LabourProfile[] }) {
         </div>
       )}
       {requesting && <RequestLabourDialog crew={requesting} onClose={() => setRequesting(null)} />}
-    </div>
-  );
-}
-
-function TechnologyTab({ technologies }: { technologies: Technology[] }) {
-  const { serviceRequests } = useMyRequests();
-  const [requesting, setRequesting] = useState<Technology | null>(null);
-  const [open, setOpen] = useState<string | null>(null);
-
-  return (
-    <div className="space-y-4">
-      <p className="text-[13px] text-ink-muted">
-        Farmers don't need to own every technology — the cluster shares it. Each option below is sized for small farms.
-      </p>
-      <div className="grid gap-3 md:grid-cols-2">
-        {technologies.map((t) => {
-          const requested = serviceRequests.some((r) => r.technologyId === t.id);
-          const expanded = open === t.id;
-          return (
-            <Card key={t.id} className="flex flex-col p-4">
-              <div className="text-sm font-medium">{t.name}</div>
-              <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">{t.summary}</p>
-              <dl className="mt-3 space-y-1 text-[12px]">
-                <div>
-                  <dt className="inline text-ink-subtle">Access: </dt>
-                  <dd className="inline text-ink">{t.access}</dd>
-                </div>
-                <div>
-                  <dt className="inline text-ink-subtle">Indicative cost: </dt>
-                  <dd className="inline text-ink">{t.indicativeCost}</dd>
-                </div>
-              </dl>
-              <button
-                type="button"
-                aria-expanded={expanded}
-                onClick={() => setOpen(expanded ? null : t.id)}
-                className="mt-3 inline-flex items-center gap-1 self-start text-[13px] font-medium text-brand-700"
-              >
-                How it works
-                <ChevronDown aria-hidden className={clsx("size-4 transition-transform", expanded && "rotate-180")} />
-              </button>
-              {expanded && (
-                <ol className="mt-2 list-decimal space-y-1 pl-5 text-[13px] text-ink-muted">
-                  {t.howItWorks.map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ol>
-              )}
-              <div className="mt-auto flex justify-end pt-4">
-                {requested ? (
-                  <Badge tone="info">Requested</Badge>
-                ) : (
-                  <Button size="sm" variant="secondary" onClick={() => setRequesting(t)}>
-                    Request
-                  </Button>
-                )}
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-      {requesting && <RequestTechnologyDialog tech={requesting} onClose={() => setRequesting(null)} />}
     </div>
   );
 }

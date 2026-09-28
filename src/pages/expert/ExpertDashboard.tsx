@@ -5,8 +5,11 @@ import { StatTile } from "../../features/cluster/StatTile";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/states";
+import { Badge } from "../../components/ui/Badge";
+import { expertCategoryLabels } from "../../data/mock/experts";
 import { DEMO_NOW } from "../../data/mock/clock";
-import { greeting } from "../../utils/format";
+import { formatINR, greeting } from "../../utils/format";
+import { Link } from "react-router-dom";
 
 export function ExpertDashboard() {
   const { session } = useAppStore();
@@ -20,6 +23,24 @@ export function ExpertDashboard() {
           <StatTile label="Upcoming consultations" value={x.scheduled.length} to="/expert/consultations" />
           <StatTile label="Answered / completed" value={x.done.length} />
         </div>
+        {x.expert && (
+          <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-[13px]">
+              <div className="font-medium">Your expertise: {expertCategoryLabels[x.expert.category]}</div>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {x.expert.expertise.map((e) => (
+                  <Badge key={e}>{e}</Badge>
+                ))}
+              </div>
+              <div className="mt-1 text-ink-muted">
+                {x.expert.languages.join(", ")} · consultation {formatINR(x.expert.consultationFee)} (indicative) · questions free through the cluster
+              </div>
+            </div>
+            <Link to="/expert/consultations" className="shrink-0 text-[13px] font-medium text-brand-700 hover:underline">
+              View schedule
+            </Link>
+          </Card>
+        )}
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader title="Waiting for your advice" subtitle="Newest first" />

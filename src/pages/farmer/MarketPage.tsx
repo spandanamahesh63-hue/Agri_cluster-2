@@ -15,7 +15,7 @@ import { formatDate, formatDateRange, formatINR, formatKg } from "../../utils/fo
 const listingStatus: Record<CropListing["status"], { label: string; tone: "neutral" | "info" | "market" | "success" }> = {
   listed: { label: "Listed · visible to buyers", tone: "info" },
   "offer-sent": { label: "Offer sent · awaiting buyer", tone: "market" },
-  "interest-received": { label: "Buyer interested", tone: "market" },
+  "interest-received": { label: "Buyer request", tone: "market" },
   agreed: { label: "Agreed", tone: "success" },
   withdrawn: { label: "Withdrawn", tone: "neutral" },
 };
@@ -152,6 +152,15 @@ export function MarketPage() {
                             From {formatDate(l.availableFrom)} · asking ₹{l.expectedPricePerKg}/kg · {l.location}
                             {l.photoCount > 0 && ` · ${l.photoCount} photo${l.photoCount > 1 ? "s" : ""}`}
                           </div>
+                          {l.share && (
+                            <div className="text-[12px] text-ink-subtle">
+                              Buyers see: crop, grade, quantity, dates, price
+                              {(["method", "photos", "village", "name"] as const)
+                                .filter((k) => l.share![k])
+                                .map((k) => `, ${k === "photos" ? "photos and video" : k === "name" ? "your name" : k}`)
+                                .join("")}
+                            </div>
+                          )}
                         </div>
                         <Badge tone={listingStatus[l.status].tone} className="self-start sm:self-auto">
                           {l.status === "agreed" && l.agreedWith ? `Agreed with ${l.agreedWith.buyerLabel}` : listingStatus[l.status].label}
@@ -197,7 +206,7 @@ export function MarketPage() {
                               onClick={() => {
                                 update("interests", i.id, { status: "declined" });
                                 if (pending.length === 1) update("listings", l.id, { status: "listed" });
-                                toast("Interest declined.");
+                                toast("Request declined. The listing stays visible to other buyers.");
                               }}
                             >
                               Decline

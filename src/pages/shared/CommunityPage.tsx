@@ -5,7 +5,9 @@ import type { CommunityPost, PostCategory } from "../../types";
 import { useAppStore } from "../../store/AppStore";
 import { publicLabel, roleNoun } from "../../features/shared/identity";
 import { PageHeader } from "../../components/ui/PageHeader";
-import { Card } from "../../components/ui/Card";
+import { Card, CardHeader } from "../../components/ui/Card";
+import { EventRow, GroupRow } from "../../features/community/EventRow";
+import { DEMO_TODAY } from "../../data/mock/clock";
 import { Badge, InfoNote, type Tone } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { EmptyState } from "../../components/ui/states";
@@ -19,6 +21,7 @@ const categories: Record<PostCategory, { label: string; tone: Tone }> = {
   alert: { label: "Local alert", tone: "warning" },
   question: { label: "Question", tone: "info" },
   practice: { label: "What worked", tone: "crop" },
+  story: { label: "Success story", tone: "success" },
   resource: { label: "Resource sharing", tone: "resource" },
 };
 
@@ -56,7 +59,8 @@ export function CommunityPage() {
           {announcements.map((p) => (
             <Card key={p.id} className="border-brand-200 bg-brand-50 p-4">
               <div className="flex items-center gap-2 text-[12px] font-medium text-brand-800">
-                <Pin aria-hidden className="size-3.5" /> Cluster announcement · {formatDate(p.createdAt)}, {formatTime(p.createdAt)}
+                <Pin aria-hidden className="size-3.5" /> {p.authorRole === "community" ? `Local announcement · ${p.authorLabel}` : "Cluster announcement"} ·{" "}
+                {formatDate(p.createdAt)}, {formatTime(p.createdAt)}
               </div>
               <h2 className="mt-1 text-[15px] font-semibold">{p.title}</h2>
               <p className="mt-1 text-[13px] leading-relaxed text-ink">{p.body}</p>
@@ -70,7 +74,7 @@ export function CommunityPage() {
               onChange={setFilter}
               options={[
                 { id: "all", label: "All" },
-                ...(["question", "alert", "practice", "resource"] as PostCategory[]).map((c) => ({ id: c, label: categories[c].label })),
+                ...(["question", "alert", "practice", "story", "resource"] as PostCategory[]).map((c) => ({ id: c, label: categories[c].label })),
               ]}
             />
           </div>
@@ -93,7 +97,9 @@ export function CommunityPage() {
         </div>
 
         <aside className="space-y-4">
-          <Composer canAnnounce={session?.role === "cluster"} />
+          <Composer canAnnounce={session?.role === "cluster" || session?.role === "community"} />
+          <UpcomingEvents />
+          <GroupsNearYou />
           <InfoNote>Keep it about farming in the cluster. Farmers appear by farm label; experts, providers and the cluster office by name.</InfoNote>
         </aside>
       </div>
@@ -173,6 +179,37 @@ function ReplyBox({ postId }: { postId: string }) {
   );
 }
 
+function GroupsNearYou() {
+  const { groups, session } = useAppStore();
+  if (session?.role === "community") return null;
+  return (
+    <Card>
+      <CardHeader title="Farmer groups" subtitle="Local groups you can join" />
+      <ul className="mt-2 divide-y divide-line">
+        {groups.slice(0, 3).map((g) => (
+          <GroupRow key={g.id} group={g} />
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+function UpcomingEvents() {
+  const { events } = useAppStore();
+  const upcoming = [...events].filter((e) => e.date >= DEMO_TODAY).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
+  if (upcoming.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader title="Events near you" subtitle="Workshops, field days and meetings" />
+      <ul className="mt-2 divide-y divide-line">
+        {upcoming.map((e) => (
+          <EventRow key={e.id} event={e} compact />
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 function Composer({ canAnnounce }: { canAnnounce: boolean }) {
   const { session, addPost } = useAppStore();
   const toast = useToast();
@@ -198,7 +235,7 @@ function Composer({ canAnnounce }: { canAnnounce: boolean }) {
     toast(category === "announcement" ? "Announcement pinned for the whole cluster." : "Posted to the cluster community.");
   };
 
-  const options = (canAnnounce ? ["announcement"] : []).concat(["question", "alert", "practice", "resource"]) as PostCategory[];
+  const options = (canAnnounce ? ["announcement"] : []).concat(["question", "alert", "practice", "story", "resource"]) as PostCategory[];
   return (
     <Card className="scroll-mt-20 p-5" id="ask">
       <h2 className="flex items-center gap-2 text-[15px] font-semibold">

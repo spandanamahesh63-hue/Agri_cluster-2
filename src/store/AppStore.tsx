@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import type {
   AppNotification,
   Booking,
+  CommunityEvent,
+  CommunityGroup,
   FarmPlan,
   BuyerRequirement,
   CommunityPost,
@@ -29,6 +31,7 @@ import {
   seedPosts,
   seedReplies,
 } from "../data/mock/activity";
+import { seedEvents, seedGroups } from "../data/mock/community";
 
 // Client-side state for the prototype: the simulated session and every record
 // people create or change during a demo. Roles share these records — a farmer's
@@ -54,6 +57,8 @@ export interface Collections {
   posts: CommunityPost[];
   replies: CommunityReply[];
   notifications: AppNotification[];
+  groups: CommunityGroup[];
+  events: CommunityEvent[];
 }
 export type CollectionKey = keyof Collections;
 type Item<K extends CollectionKey> = Collections[K][number];
@@ -70,6 +75,8 @@ export interface State extends Collections {
   plan: FarmPlan;
   /** Listing ids a buyer saved. */
   savedListings: string[];
+  /** Machinery and technology offering keys a farmer saved. */
+  savedResources: string[];
 }
 
 type Action =
@@ -86,9 +93,10 @@ type Action =
   | { type: "resetPlan" }
   | { type: "markAllRead"; userId: string }
   | { type: "toggleSaved"; listingId: string }
+  | { type: "toggleSavedResource"; key: string }
   | { type: "reset" };
 
-const STORAGE_KEY = "agricluster:v4";
+const STORAGE_KEY = "agricluster:v5";
 
 const demoFarmer = farmers[0];
 const demoProfile: FarmerProfile = {
@@ -113,10 +121,13 @@ const initialState: State = {
   posts: seedPosts,
   replies: seedReplies,
   notifications: seedNotifications,
+  groups: seedGroups,
+  events: seedEvents,
   machineryEdits: {},
   labourEdits: {},
   plan: {},
   savedListings: [],
+  savedResources: [],
 };
 
 function reducer(state: State, action: Action): State {
@@ -170,6 +181,13 @@ function reducer(state: State, action: Action): State {
           ? state.savedListings.filter((id) => id !== action.listingId)
           : [...state.savedListings, action.listingId],
       };
+    case "toggleSavedResource":
+      return {
+        ...state,
+        savedResources: state.savedResources.includes(action.key)
+          ? state.savedResources.filter((k) => k !== action.key)
+          : [...state.savedResources, action.key],
+      };
     case "reset":
       return initialState;
   }
@@ -210,6 +228,7 @@ interface AppStore extends State {
   markRead: (id: string) => void;
   markAllRead: (userId: string) => void;
   toggleSaved: (listingId: string) => void;
+  toggleSavedResource: (key: string) => void;
   addListing: (listing: NewRecord<CropListing>) => CropListing;
   addBooking: (booking: NewRecord<Booking>) => Booking;
   addLabourRequest: (request: NewRecord<LabourRequest>) => LabourRequest;
@@ -220,6 +239,8 @@ interface AppStore extends State {
   addEquipment: (m: Omit<Machinery, "id">) => Machinery;
   addPost: (post: Omit<CommunityPost, "id" | "createdAt">) => CommunityPost;
   addReply: (reply: Omit<CommunityReply, "id" | "createdAt">) => CommunityReply;
+  addGroup: (group: Omit<CommunityGroup, "id" | "createdAt">) => CommunityGroup;
+  addEvent: (event: Omit<CommunityEvent, "id" | "createdAt">) => CommunityEvent;
   /** Farmer accepts a buyer's interest: the listing is agreed with that buyer; other interests are declined. */
   acceptInterest: (interest: MarketInterest) => void;
   /** Buyer accepts a farmer's offer on their requirement. */
@@ -281,6 +302,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       markRead: (id) => update("notifications", id, { read: true }),
       markAllRead: (userId) => dispatch({ type: "markAllRead", userId }),
       toggleSaved: (listingId) => dispatch({ type: "toggleSaved", listingId }),
+      toggleSavedResource: (key) => dispatch({ type: "toggleSavedResource", key }),
       addListing: (input) => add("listings", { ...input, ...meta("lst"), status: input.requirementId ? "offer-sent" : "listed" }),
       addBooking: (input) => add("bookings", { ...input, ...meta("bk"), status: "requested" }),
       addLabourRequest: (input) => add("labourRequests", { ...input, ...meta("lr"), status: "requested" }),
@@ -298,6 +320,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       addEquipment: (input) => add("equipment", { ...input, id: meta("eq").id }),
       addPost: (input) => add("posts", { ...input, ...meta("post") }),
       addReply: (input) => add("replies", { ...input, ...meta("rep") }),
+      addGroup: (input) => add("groups", { ...input, ...meta("grp") }),
+      addEvent: (input) => add("events", { ...input, ...meta("evt") }),
       acceptInterest: (interest) => {
         state.interests
           .filter((i) => i.listingId === interest.listingId && i.id !== interest.id && i.status === "pending")

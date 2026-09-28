@@ -15,7 +15,7 @@ export function BuyerRequestsPage() {
 
   return (
     <>
-      <PageHeader title="Requests" description="Which farmers have responded, and where do your interests stand?" />
+      <PageHeader title="Requests" description="Which farmers have responded, and where do your requests stand?" />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader title="Offers received" subtitle="Farmers offering against your requirements" />
@@ -30,9 +30,9 @@ export function BuyerRequestsPage() {
           )}
         </Card>
         <Card>
-          <CardHeader title="Interest you sent" subtitle="On farmers' listings" />
+          <CardHeader title="Requests you sent" subtitle="To farmers, on their listings" />
           {b.interests.length === 0 ? (
-            <EmptyState title="No interest sent yet" description="Send interest from Crop supply or a requirement's matching listings." />
+            <EmptyState title="No requests sent yet" description="Use “Request farmer” on a listing in Crop supply or on a requirement's matches." />
           ) : (
             <ul className="mt-2 divide-y divide-line">
               {b.interests.map((i) => {

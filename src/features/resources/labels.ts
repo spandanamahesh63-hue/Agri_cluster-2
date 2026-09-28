@@ -7,6 +7,7 @@ export const kindLabels: Record<ResourceKind, string> = {
   sprayer: "Sprayer",
   drone: "Drone",
   tiller: "Tiller",
+  seeder: "Seeder",
   transport: "Transport",
   "cold-storage": "Cold storage",
   irrigation: "Irrigation",

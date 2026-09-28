@@ -26,7 +26,9 @@ export function ResourcesStep() {
   const matchedTech = technologies.filter((t) => needs.technologyIds.includes(t.id));
   // Crews whose skills cover the plan's labour tasks.
   const skillForTask: Record<string, LabourSkill> = {
+    "Land preparation": "land-preparation",
     Planting: "transplanting",
+    Spraying: "spraying",
     Weeding: "weeding",
     Harvesting: "harvesting",
     "Sorting & packing": "grading-packing",

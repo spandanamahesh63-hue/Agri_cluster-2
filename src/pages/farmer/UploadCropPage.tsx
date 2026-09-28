@@ -320,7 +320,7 @@ function UploadForm({
           <ol className="mt-3 list-decimal space-y-2 pl-4 text-[13px] text-ink-muted">
             <li>Your listing joins the cluster's expected supply.</li>
             <li>Buyers looking for {group.crop.toLowerCase()} can see it{requirement ? ", and this buyer is notified of your offer" : ""}.</li>
-            <li>You decide whether to accept any buyer interest.</li>
+            <li>You decide whether to accept any buyer request.</li>
           </ol>
         </Card>
         <Button type="submit" className="w-full">

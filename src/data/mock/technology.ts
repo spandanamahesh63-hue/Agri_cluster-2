@@ -1,7 +1,8 @@
 import type { Technology } from "../../types";
 
 // Technologies adapted to small-farm economics: each is accessed as a shared
-// cluster service rather than bought by one farmer. Costs are indicative.
+// cluster service rather than bought by one farmer. Providers are fictional;
+// costs are indicative.
 export const technologies: Technology[] = [
   {
     id: "tech-soil",
@@ -16,6 +17,11 @@ export const technologies: Technology[] = [
     ],
     access: "Cluster-owned probes, one shared across neighbouring fields with similar soil.",
     indicativeCost: "₹150 / month per farm",
+    providerUserId: "u-provider-2",
+    location: "Chamarajanagara",
+    availability: "Installation slots next week",
+    serviceType: "Subscription",
+    suitableCrops: ["Tomato", "Chilli", "Onion", "Beans", "Leafy vegetables"],
   },
   {
     id: "tech-weather",
@@ -29,6 +35,11 @@ export const technologies: Technology[] = [
     ],
     access: "Installed once for the whole cluster; every member benefits.",
     indicativeCost: "Included in cluster membership",
+    providerUserId: "u-cluster-1",
+    location: "Whole cluster",
+    availability: "Active now",
+    serviceType: "Cluster shared service",
+    suitableCrops: ["All crops"],
   },
   {
     id: "tech-drone",
@@ -42,6 +53,11 @@ export const technologies: Technology[] = [
     ],
     access: "Booked per visit from a cluster service provider.",
     indicativeCost: "From ₹800 / acre per visit",
+    providerUserId: "u-provider-2",
+    location: "Chamarajanagara",
+    availability: "2–3 days' notice",
+    serviceType: "Per-visit service",
+    suitableCrops: ["Tomato", "Chilli", "Ragi", "Onion"],
   },
   {
     id: "tech-drip",
@@ -55,6 +71,29 @@ export const technologies: Technology[] = [
     ],
     access: "Installed per farm; installation crews shared across the cluster.",
     indicativeCost: "₹6,000–9,000 one-time (indicative)",
+    providerUserId: "u-provider-2",
+    location: "Chamarajanagara",
+    availability: "In stock",
+    serviceType: "Supply & install",
+    suitableCrops: ["Tomato", "Chilli", "Beans", "Leafy vegetables"],
+  },
+  {
+    id: "tech-dripkit",
+    name: "Drip irrigation kit (1 acre)",
+    category: "irrigation",
+    summary: "Laterals, emitters, filter and fittings for one acre of row crops, laid by a trained crew.",
+    howItWorks: [
+      "The crew surveys your field and water source.",
+      "Mains, laterals and emitters are laid to your row spacing.",
+      "The system is flushed and tested with you before handover.",
+    ],
+    access: "Bought per farm; the cluster pools orders to lower the price.",
+    indicativeCost: "₹35,000–55,000 per acre before subsidy (indicative)",
+    providerUserId: "u-provider-2",
+    location: "Chamarajanagara",
+    availability: "Installation in 1–2 weeks",
+    serviceType: "Supply & install",
+    suitableCrops: ["Tomato", "Chilli", "Onion", "Beans"],
   },
   {
     id: "tech-solar",
@@ -68,6 +107,11 @@ export const technologies: Technology[] = [
     ],
     access: "Individual or shared pumps; the cluster can help with scheme applications.",
     indicativeCost: "Depends on pump size and subsidy",
+    providerUserId: "u-provider-2",
+    location: "Chamarajanagara",
+    availability: "Site survey on request",
+    serviceType: "Supply & install",
+    suitableCrops: ["All crops"],
   },
   {
     id: "tech-sat",
@@ -81,5 +125,10 @@ export const technologies: Technology[] = [
     ],
     access: "Subscribed once at cluster level.",
     indicativeCost: "Included in cluster membership",
+    providerUserId: "u-cluster-1",
+    location: "Whole cluster",
+    availability: "Active now",
+    serviceType: "Cluster shared service",
+    suitableCrops: ["All crops"],
   },
 ];

@@ -31,13 +31,13 @@ export function SendInterestDialog({ listing, onClose }: { listing: CropListing;
       pricePerKg: p,
       message: message.trim(),
     });
-    toast(`Interest sent to ${listing.farmLabel}. The farmer decides whether to accept.`);
+    toast(`Request sent to ${listing.farmLabel}. The farmer decides whether to connect.`);
     onClose();
   };
 
   return (
     <Dialog
-      title={`Send interest · ${sellerLabel(listing, farmerProfile)}`}
+      title={`Request farmer · ${sellerLabel(listing, farmerProfile)}`}
       description={`${listing.quantityTonnes} t ${listing.crop.toLowerCase()} Grade ${listing.grade} · from ${formatDate(listing.availableFrom)} · ${listing.location}`}
       onClose={onClose}
       footer={
@@ -46,7 +46,7 @@ export function SendInterestDialog({ listing, onClose }: { listing: CropListing;
             Cancel
           </Button>
           <Button type="submit" form="send-interest">
-            Send interest
+            Send request
           </Button>
         </>
       }
@@ -67,7 +67,10 @@ export function SendInterestDialog({ listing, onClose }: { listing: CropListing;
           <span className="text-ink-muted">Indicative value</span>
           <span className="font-semibold tabular-nums">{q > 0 && p > 0 ? formatINR(q * 1000 * p) : "—"}</span>
         </div>
-        <InfoNote>This is an expression of interest, not a purchase. Nothing is confirmed until the farmer accepts.</InfoNote>
+        <InfoNote>
+          This is a request to connect, not a purchase. The farmer sees your organisation and offer, and decides whether to accept. Nothing is confirmed
+          until they do.
+        </InfoNote>
       </form>
     </Dialog>
   );

@@ -30,7 +30,7 @@ export function LabourDashboard() {
           <StatTile label="New work requests" value={l.requests.length} status={l.requests.length ? "moderate" : "healthy"} to="/labour/jobs" />
           <StatTile label="Upcoming assignments" value={l.assignments.length} to="/labour/assignments" />
           <StatTile label="Days booked" value={days} />
-          <StatTile label="Expected wages" value={formatINR(wages)} sub="For the whole crew · indicative" />
+          <StatTile label="Earnings (expected)" value={formatINR(wages)} sub="Placeholder: whole crew, indicative, no payments processed" />
         </div>
 
         {p && (
@@ -38,6 +38,10 @@ export function LabourDashboard() {
             <div className="text-[13px]">
               <div className="font-medium">
                 Your profile: {p.crewSize} workers · {p.village} · {formatINR(p.dailyWage)}/day each
+                {p.hourlyRate ? ` or ${formatINR(p.hourlyRate)}/hour` : ""}
+              </div>
+              <div className="text-ink-muted">
+                {p.experienceYears} years · {p.cropExperience.join(", ")} · {p.transport ? "own transport" : "needs pickup"}
               </div>
               <div className="mt-1 flex flex-wrap gap-1">
                 {p.skills.map((s) => (

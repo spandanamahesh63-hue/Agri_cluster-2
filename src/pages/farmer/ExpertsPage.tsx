@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Clock, Languages, MessageSquareText } from "lucide-react";
+import { Clock, Languages, MessageSquareText, Search } from "lucide-react";
+import { usePlan } from "../../features/plan/usePlan";
+import { SelectInput, TextInput } from "../../components/forms/fields";
 import type { Consultation, Expert, ExpertCategory } from "../../types";
 import { useMyRequests } from "../../features/shared/useMerged";
 import { useAsync } from "../../hooks/useAsync";
@@ -14,7 +16,6 @@ import { Card, CardHeader } from "../../components/ui/Card";
 import { Badge, SourceBadge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { EmptyState, ErrorState, PageSkeleton } from "../../components/ui/states";
-import { FilterChips } from "../../components/navigation/FilterChips";
 import { formatDate, formatINR, formatTime } from "../../utils/format";
 
 const statusLabel: Record<Consultation["status"], string> = {
@@ -34,7 +35,9 @@ export function ExpertsPage() {
   const [category, setCategory] = useState<ExpertCategory | "all">(
     initialCategory && initialCategory in expertCategoryLabels ? initialCategory : "all",
   );
-  const [contacting, setContacting] = useState<Expert | null>(null);
+  const [contacting, setContacting] = useState<{ expert: Expert; kind: Consultation["kind"] } | null>(null);
+  const [q, setQ] = useState("");
+  const plan = usePlan();
 
   const header = <PageHeader title="Experts" description="Who can help me with this?" />;
   if (expertsState.status === "loading" || overview.status === "loading") return <PageSkeleton />;
@@ -48,7 +51,16 @@ export function ExpertsPage() {
 
   const experts = expertsState.data;
   const { fields, cycles, sensorHistory } = overview.data;
-  const visible = experts.filter((e) => category === "all" || e.category === category);
+  const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const visible = experts.filter(
+    (e) =>
+      (category === "all" || e.category === category) &&
+      words.every((w) => [e.name, e.title, expertCategoryLabels[e.category], ...e.expertise].join(" ").toLowerCase().includes(w)),
+  );
+  // Surface experts for the farmer's current problem: crop stress sends them to crop and pest experts,
+  // otherwise the plan's needs decide (spec §13).
+  const suggestedCategories: ExpertCategory[] = contextFieldId ? ["crop", "pest"] : (plan.needs?.expertCategories ?? ["crop", "soil", "market"]);
+  const suggested = suggestedCategories.map((c) => experts.find((e) => e.category === c)).filter((e): e is Expert => !!e).slice(0, 4);
 
   // Pre-filled context when arriving from a crop-stress suggestion.
   const contextField = fields.find((f) => f.id === contextFieldId);
@@ -75,24 +87,62 @@ export function ExpertsPage() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <FilterChips
-          label="Expertise"
-          value={category}
-          onChange={setCategory}
-          options={[
-            { id: "all" as const, label: "All" },
-            ...(Object.keys(expertCategoryLabels) as ExpertCategory[]).map((c) => ({ id: c, label: expertCategoryLabels[c] })),
-          ]}
-        />
-        <SourceBadge source="demo" />
+      {suggested.length > 0 && (
+        <Card className="mb-5 p-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-[15px] font-semibold">Suggested for you</h2>
+            <span className="text-[12px] text-ink-muted">
+              {contextFieldId ? "Because of the crop-health alert" : plan.crop ? `Based on your ${plan.crop.name.toLowerCase()} plan` : "Based on your farm"}
+            </span>
+          </div>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {suggested.map((e) => (
+              <li key={e.id}>
+                <button
+                  type="button"
+                  onClick={() => setContacting({ expert: e, kind: "question" })}
+                  className="rounded-lg border border-line px-3 py-1.5 text-left text-[13px] hover:border-brand-500 hover:bg-brand-50"
+                >
+                  <span className="font-medium">{e.name}</span>
+                  <span className="block text-[12px] text-ink-muted">{expertCategoryLabels[e.category]}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_14rem_auto] sm:items-end">
+        <div>
+          <label htmlFor="expert-q" className="mb-1 block text-[12px] font-medium text-ink-muted">
+            Find an expert
+          </label>
+          <div className="relative">
+            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
+            <TextInput id="expert-q" type="search" placeholder="e.g. leaf curl, drip, export" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="expert-cat" className="mb-1 block text-[12px] font-medium text-ink-muted">
+            Expertise
+          </label>
+          <SelectInput id="expert-cat" value={category} onChange={(e) => setCategory(e.target.value as ExpertCategory | "all")}>
+            <option value="all">All categories</option>
+            {(Object.keys(expertCategoryLabels) as ExpertCategory[]).map((c) => (
+              <option key={c} value={c}>
+                {expertCategoryLabels[c]}
+              </option>
+            ))}
+          </SelectInput>
+        </div>
+        <SourceBadge source="demo" className="self-center sm:mb-2" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           {visible.length === 0 ? (
             <Card>
-              <EmptyState title="No experts in this category yet" />
+              <EmptyState title="No experts match" description="Try another word or category." />
             </Card>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
@@ -125,9 +175,12 @@ export function ExpertsPage() {
                       {e.responseTime} · consultation {formatINR(e.consultationFee)}
                     </div>
                   </div>
-                  <div className="mt-auto flex justify-end pt-4">
-                    <Button size="sm" variant="secondary" onClick={() => setContacting(e)}>
-                      Contact expert
+                  <div className="mt-auto flex flex-wrap justify-end gap-2 pt-4">
+                    <Button size="sm" variant="ghost" onClick={() => setContacting({ expert: e, kind: "consultation" })}>
+                      Book consultation
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => setContacting({ expert: e, kind: "question" })}>
+                      Ask a question
                     </Button>
                   </div>
                 </Card>
@@ -180,7 +233,8 @@ export function ExpertsPage() {
 
       {contacting && (
         <AskExpertDialog
-          expert={contacting}
+          expert={contacting.expert}
+          initialKind={contacting.kind}
           fields={fields}
           initialFieldId={contextFieldId}
           initialMessage={contextMessage}
