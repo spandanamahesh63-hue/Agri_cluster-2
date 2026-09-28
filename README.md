@@ -2,7 +2,7 @@
 
 **Right Crop. Right Technology. Right Resource. Right Investment. Right Support.**
 
-AgriCluster connects fragmented small farms into an intelligent cluster. It combines farm, weather, sensor, resource and market data. It suggests practical actions, with the reasoning shown. It coordinates shared machinery, labour, expertise and buyers across nearby farms.
+AgriCluster guides a small farmer from farm information to a buyer: assessment → goal → crop → method → investment → market → cropping plan → resources → harvest listing → buyer connection. Around that journey it connects the farmer to shared machinery and technology, labour, experts, community groups and support, across a cluster of nearby farms. It suggests practical actions with the reasoning shown.
 
 > The platform recommends. The farmer decides.
 
@@ -21,14 +21,15 @@ npm run build      # type-check + production build into dist/
 npm run preview    # serve the production build
 ```
 
-Sign in from the login screen with **Demo access**. Pick any of the six roles:
+Sign in from the login screen with **Demo access**. Pick any of the seven roles:
 
-- Farmer
+- Farmer (Spandana, 1 acre near Chamarajanagara)
 - Cluster Manager
 - Buyer
 - Machinery / Tech Owner
 - Labour
 - Expert
+- Community
 
 Everything you do is stored in your browser only. **Reset demo** (sidebar or Profile) restores the starting data.
 
@@ -45,7 +46,7 @@ The single-file build routes with the URL hash (`#/farmer/market`), so it works 
 
 ## Pitch deck
 
-`deck/AgriCluster-pitch.pptx` (plus `AgriCluster-pitch.pdf`) is the 12-slide deck from spec §71. It has speaker notes, sized for about 7 minutes. It is generated from app screenshots and demo figures:
+`deck/AgriCluster-pitch.pptx` (plus `AgriCluster-pitch.pdf`) is the 12-slide pitch deck. It has speaker notes, sized for about 7 minutes. It is generated from app screenshots and demo figures:
 
 ```bash
 cd deck && npm install && npm run build   # rewrites AgriCluster-pitch.pptx
@@ -55,20 +56,31 @@ To refresh screenshots after UI changes, recapture them into `deck/assets/` at 1
 
 ## Presenting the demo
 
-Click **Guided demo** on the login screen, or the presentation icon in the app header. The panel walks through the 12-step demo order from the spec (§72). Each step shows a one-line talking point, and the panel switches roles automatically:
+Click **Guided demo** on the login screen, or the presentation icon in the app header. The panel walks through the 21-step competition demo flow (spec §37). Each step says what to show and what to press, and the panel switches roles automatically:
 
-1. Log in as a farmer
-2. Farmer dashboard
-3. An intelligence recommendation
-4. Water intelligence
-5. The reasoning and the decision
-6. Crops
-7. A market opportunity
-8. Upload the expected harvest
-9. The buyer match
-10. Request machinery
-11. Switch to the cluster dashboard
-12. Cluster-level impact
+1. Open AGRI CLUSTER
+2. Choose Farmer
+3. Enter farm details
+4. Select a farming goal
+5. Receive crop options
+6. Select a crop
+7. See suitable farming methods
+8. Watch "How it works"
+9. Select a method
+10. Optimise investment
+11. See shared machinery and services
+12. View market analysis
+13. Generate the cropping plan
+14. See experts, labour and resources
+15. Complete the farming plan
+16. Create a harvest listing
+17. Switch to Buyer
+18. Search for the crop
+19. View farmer-approved information
+20. Request farmer connection
+21. The farmer is notified
+
+Start with **Reset demo data** on step 1 so the plan and listings begin fresh.
 
 The demo runs on a fixed **demo clock** (Sun 27 Sept 2026, 8:30 am IST), so "rain in 10 hours" and "harvest in 7 days" stay true whenever you present.
 
@@ -81,10 +93,14 @@ src/
     clusterFarms.ts       128-farm roster, generated deterministically and normalised
                           to the headline figures (128 farms, 312 acres, 42 t tomato…)
     activity.ts           Seeded activity from other members, so each role has an inbox
+    community.ts          Farmer groups and events
+  data/catalog/           Crops, methods, sample market series, support options (all indicative)
   services/
     api/demoApi.ts        The only place screens get data from. Replace with real APIs.
     intelligence/engine.ts  Rule-based IntelligenceEngine (farm + cluster analysis)
+    planning/planner.ts   Crop, method, budget, buy-vs-rent and calendar rules for the farmer journey
   store/AppStore.tsx      Session + everything users create; shared by all roles
+  features/notifications/rules.ts  Who is notified about each new record or status change
   features/               Feature logic & components (intelligence, water, cluster, buyer…)
   pages/                  One folder per role, plus auth and shared screens
   components/             Design system: ui, layout, navigation, forms, charts, modals
@@ -105,11 +121,17 @@ An ML or LLM layer can sit behind the same interface later without changing any 
 
 ### Roles act on shared records
 
-The app store holds bookings, labour requests, consultations, listings, buyer interests, requirements, equipment and community posts. Each role sees the same records from its own side:
+The app store holds bookings, labour requests, consultations, listings, buyer requests, requirements, equipment, community posts, groups and events. Each role sees the same records from its own side:
 
 - A farmer's booking is what the machinery owner accepts.
-- A farmer's listing is what the buyer sends interest on.
+- A farmer's listing is what the buyer searches and requests.
 - A farmer's question is what the expert answers.
+
+Every new record and status change notifies the other side through `features/notifications/rules.ts`, applied centrally in the store. Nobody is notified of their own action.
+
+### Privacy
+
+`features/shared/privacy.ts` decides who sees what. Buyers see only what the farmer approved on each listing (method, photos, village, name). They never see phone numbers, finances or documents. Labour sees the crop and village of the job. Experts see the message and chosen field.
 
 The cluster view (`features/cluster/useClusterView.ts`) layers this activity onto the roster. For example, when Farm #27 delays irrigation, "farms irrigating before rain" drops from 24 to 23.
 

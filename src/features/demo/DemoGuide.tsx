@@ -6,7 +6,8 @@ import type { Role } from "../../types";
 import { useAppStore } from "../../store/AppStore";
 import { Button } from "../../components/ui/Button";
 
-// Guided demo following the competition demo order (spec §72).
+// Guided demo following the competition demo flow (spec §37) and the
+// demo scenario (spec §38): Spandana, 1 acre near Chamarajanagara, ₹1,50,000.
 interface Step {
   title: string;
   say: string;
@@ -15,18 +16,27 @@ interface Step {
 }
 
 export const demoSteps: Step[] = [
-  { title: "Log in as a farmer", role: null, path: "/login", say: "Seven roles share one cluster. Start as Spandana, who grows 1 acre of tomato near Chamarajanagara." },
-  { title: "Farmer dashboard", role: "farmer", path: "/farmer", say: "The first screen answers one question: what needs my attention today?" },
-  { title: "An intelligence recommendation", role: "farmer", path: "/farmer", say: "Open “Why this recommendation?” on the irrigation card — rain is 82% likely and soil moisture is already above the crop's need." },
-  { title: "Water intelligence", role: "farmer", path: "/farmer/intelligence/water", say: "Today's irrigation plan, soil moisture against crop need, and last week's avoidable water use." },
-  { title: "The reasoning — and the decision", role: "farmer", path: "/farmer/intelligence/water-delay-f27-1", say: "Every suggestion shows its data. The platform recommends, the farmer decides: accept to delay Field 1 by 24 hours." },
-  { title: "Crops", role: "farmer", path: "/farmer/crops", say: "The cropping plan: Field 1 tomato is 7 days from harvest; Field 2's health index is falling." },
-  { title: "A market opportunity", role: "farmer", path: "/farmer/market", say: "A buyer needs 35 t of Grade A tomato for 4–7 Oct — exactly when Field 1 is ready." },
-  { title: "Upload the expected harvest", role: "farmer", path: "/farmer/market/upload?cycle=cc-27-1&requirement=br-1", say: "Offer the expected 2,000 kg directly against that buyer's request, before harvest." },
-  { title: "The buyer match", role: "buyer", path: "/buyer/requests", say: "The buyer sees Farm #27's offer — by farm label, not name — and can accept it." },
-  { title: "Request machinery", role: "farmer", path: "/farmer/resources?tab=machinery", say: "Tractors are short tomorrow: 14 requests for 9 tractors. Request one from the shared pool." },
-  { title: "Switch to the cluster dashboard", role: "cluster", path: "/cluster", say: "The coordinator sees all 128 farms: who still irrigates before rain, the tractor gap, supply against demand." },
-  { title: "Cluster-level impact", role: "cluster", path: "/cluster/impact", say: "Pilot targets, the baseline comparison, and the activity created in this demo feeding the measures." },
+  { title: "Open AGRI CLUSTER", role: null, path: "/login", say: "Right Crop. Right Technology. Right Resource. Right Investment. Right Support. Seven roles share one farming cluster." },
+  { title: "Choose Farmer", role: "farmer", path: "/farmer", say: "Meet Spandana: 1 acre near Chamarajanagara. Her dashboard shows what needs attention today and where her season plan stands." },
+  { title: "Enter farm details", role: "farmer", path: "/farmer/plan/assessment", say: "Only questions that change a recommendation: land, soil, water, energy, money and experience. Spandana's answers are filled in; press Continue through the three parts and save." },
+  { title: "Select a farming goal", role: "farmer", path: "/farmer/plan/vision", say: "Three ways to start: money to invest, an income goal, or no idea yet. Spandana has ₹1,50,000 to invest. Press “See crop options”." },
+  { title: "Receive crop options", role: "farmer", path: "/farmer/plan/crop", say: "Crops ranked for her land and budget, with water, labour, investment, harvest and demand. Open “Why are we suggesting this crop?” on tomato." },
+  { title: "Select a crop", role: "farmer", path: "/farmer/plan/crop", say: "Tomato is the best match. Every figure is an indicative range, never a guarantee. Press “Choose tomato”." },
+  { title: "See suitable farming methods", role: "farmer", path: "/farmer/plan/method", say: "Only methods that suit tomato on her farm, best match first, with water, labour, technology and what to consider." },
+  { title: "Watch “How it works”", role: "farmer", path: "/farmer/plan/method", say: "Open the precision farming walkthrough. It is an illustrated placeholder in the prototype, and says so." },
+  { title: "Select a method", role: "farmer", path: "/farmer/plan/method", say: "Press “Use precision farming”." },
+  { title: "Optimise investment", role: "farmer", path: "/farmer/plan/investment", say: "Move the slider: the split updates live and always adds up. Rent is the default, and buying shows the one-time cost. Save the plan." },
+  { title: "See shared machinery and services", role: "farmer", path: "/farmer/resources?tab=machinery", say: "Machinery and technology from cluster providers: price, availability, service type, suitable crops. Tick two and press Compare." },
+  { title: "View market analysis", role: "farmer", path: "/farmer/plan/market", say: "Sample seasonal prices with her harvest month marked, demand, buyer categories and live buyer requests. Clearly labelled as sample data." },
+  { title: "Generate the cropping plan", role: "farmer", path: "/farmer/plan/schedule", say: "A calendar from planting on 28 June to first harvest around 4 October, with who can help at each step. Press “Confirm my plan”." },
+  { title: "See experts, labour and resources", role: "farmer", path: "/farmer/plan/resources", say: "Matched to her crop and method: equipment to rent, crews, experts and support. Support is never shown as verified eligibility. Press “Finish planning”." },
+  { title: "Complete the farming plan", role: "farmer", path: "/farmer/plan", say: "All eight steps are done: crop, method, budget, calendar and resources in one plan. Her dashboard now shows the season and the next task." },
+  { title: "Create a harvest listing", role: "farmer", path: "/farmer/market/upload", say: "2,000 kg of Grade A tomato, precision farming. Spandana chooses what buyers can see: method, photos, village, name. Publish it." },
+  { title: "Switch to Buyer", role: "buyer", path: "/buyer", say: "Kaveri Fresh Aggregators sees saved crops, requests and active purchases." },
+  { title: "Search for the crop", role: "buyer", path: "/buyer/supply?q=tomato", say: "Search and filter by location, quantity, grade, harvest date and farming method." },
+  { title: "View farmer-approved information", role: "buyer", path: "/buyer/supply?q=tomato", say: "Press “View crop” on Farm #27. Only what Spandana approved is shown: no phone number, finances or exact location." },
+  { title: "Request farmer connection", role: "buyer", path: "/buyer/supply?q=tomato", say: "Press “Request farmer”, set a price, and send. Nothing is agreed until the farmer accepts." },
+  { title: "The farmer is notified", role: "farmer", path: "/farmer/market", say: "The bell shows “Buyer requested your tomato crop”, and the request waits under her listing. Spandana decides: accept or decline." },
 ];
 
 const STORAGE_KEY = "agricluster:demo-guide";
