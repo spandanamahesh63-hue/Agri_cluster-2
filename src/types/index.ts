@@ -660,6 +660,8 @@ export interface FarmPlan {
   /** Steps the farmer has explicitly reviewed (market, resources). */
   reviewed?: string[];
   confirmedAt?: ISODateTime;
+  /** Support options the farmer asked the cluster office to help with. */
+  supportRequested?: string[];
 }
 
 export interface CalendarTask {

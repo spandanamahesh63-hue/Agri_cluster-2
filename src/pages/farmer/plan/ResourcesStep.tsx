@@ -4,6 +4,7 @@ import { StepLayout } from "../../../features/plan/StepLayout";
 import { usePlan } from "../../../features/plan/usePlan";
 import { useLabourProfiles, useMachinery } from "../../../features/shared/useMerged";
 import { experts, expertCategoryLabels } from "../../../data/mock/experts";
+import { SupportHelpButton } from "../../../features/plan/SupportHelpButton";
 import { technologies } from "../../../data/mock/technology";
 import { kindLabels } from "../../../features/resources/labels";
 import { Card, CardHeader } from "../../../components/ui/Card";
@@ -159,6 +160,9 @@ export function ResourcesStep() {
                 <ExternalLink aria-hidden className="size-3" />
                 Source: {s.source.label}
               </p>
+              <div className="mt-2">
+                <SupportHelpButton id={s.id} name={s.name} />
+              </div>
             </li>
           ))}
         </ul>

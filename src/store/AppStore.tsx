@@ -32,6 +32,7 @@ import {
   seedReplies,
 } from "../data/mock/activity";
 import { seedEvents, seedGroups } from "../data/mock/community";
+import { onAdd, onUpdate, type NewNotification } from "../features/notifications/rules";
 
 // Client-side state for the prototype: the simulated session and every record
 // people create or change during a demo. Roles share these records — a farmer's
@@ -279,11 +280,25 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AppStore>(() => {
+    // Cross-role notifications (Phase 4): the rules decide who hears about a new
+    // record or a status change; nobody is notified about their own action.
+    const send = (list: NewNotification[]) =>
+      list
+        .filter((n) => n.userId !== state.session?.userId)
+        .forEach((n) => {
+          const record: AppNotification = { ...n, ...meta("ntf"), read: false };
+          dispatch({ type: "add", key: "notifications", record });
+        });
     const add = <K extends CollectionKey>(key: K, record: Item<K>) => {
       dispatch({ type: "add", key, record });
+      if (key !== "notifications") send(onAdd(key, record, state));
       return record;
     };
-    const update = <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => dispatch({ type: "update", key, id, patch });
+    const update = <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => {
+      const before = (state[key] as { id: string }[]).find((r) => r.id === id);
+      dispatch({ type: "update", key, id, patch });
+      if (key !== "notifications") send(onUpdate(key, before, patch as Record<string, unknown>, state));
+    };
 
     return {
       ...state,
