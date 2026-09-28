@@ -8,14 +8,17 @@ HOW TO OPEN
   Best in Chrome, Edge or Firefox, on a laptop or a phone.
 
 FASTEST WAY TO SEE IT
-  Click "Guided demo" on the first screen. It walks you through the story step
-  by step and switches between roles for you.
+  Click "Guided demo" on the first screen. In 21 steps it follows Spandana, a
+  farmer with 1 acre near Chamarajanagara, from farm details to crop, method,
+  investment and plan, to a harvest listing and a buyer's request. Each step
+  says what to press, and the guide switches between roles for you.
 
 EXPLORE FREELY
   On the first screen, choose any role: Farmer, Cluster Manager, Buyer,
   Machinery/Tech Owner, Labour, Expert, Community.
   The roles are connected. For example, a tractor request made as the Farmer
-  appears for the Machinery Owner to accept.
+  appears for the Machinery Owner to accept, and each side gets a notification
+  (the bell at the top).
 
 GOOD TO KNOW
   - All data is demonstration, simulated or indicative, and is labelled that

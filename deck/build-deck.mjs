@@ -2,7 +2,14 @@
 // Figures come from the prototype's demo data or the spec's pilot targets and
 // are labelled as such. Run: `npm run build` in deck/ → AgriCluster-pitch.pptx
 
+import { readFileSync } from "node:fs";
 import PptxGenJS from "pptxgenjs";
+
+/** Height ÷ width of a PNG in assets/, read from its header. */
+const ratio = (name) => {
+  const b = readFileSync(`assets/${name}.png`);
+  return b.readUInt32BE(20) / b.readUInt32BE(16);
+};
 
 const C = {
   field: "0F3021",
@@ -88,8 +95,8 @@ function para(s, runs, opts) {
   s.addText("AgriCluster", { x: 0.8, y: 2.1, w: 7.5, h: 1.1, fontFace: HEAD, fontSize: 60, color: "FFFFFF", margin: 0 });
   s.addText(TAGLINE, { x: 0.8, y: 3.2, w: 8.2, h: 0.9, fontFace: HEAD, fontSize: 22, color: C.leaf, margin: 0, valign: "top" });
   s.addText(
-    "Cluster intelligence that connects neighbouring small farms, shares their machinery, labour and expertise, and coordinates their harvests with buyers.",
-    { x: 0.8, y: 4.05, w: 7.2, h: 1.2, fontFace: BODY, fontSize: 17, color: C.onDark, margin: 0, valign: "top", lineSpacingMultiple: 1.1 },
+    "Guides a small farmer from farm information to a buyer: the right crop, method, investment and support, with machinery, labour, experts and buyers shared across a cluster of nearby farms.",
+    { x: 0.8, y: 4.05, w: 7.2, h: 1.4, fontFace: BODY, fontSize: 17, color: C.onDark, margin: 0, valign: "top", lineSpacingMultiple: 1.1 },
   );
   s.addText("Competition prototype  ·  Demonstration cluster: Mysuru Vegetable Cluster, Karnataka", {
     x: 0.8, y: 6.6, w: 8, h: 0.3, fontFace: BODY, fontSize: 12, color: C.onDarkMuted, margin: 0,
@@ -99,7 +106,7 @@ function para(s, runs, opts) {
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 9.55, y: 0.72, w: pw + 0.16, h: ph + 0.16, rectRadius: 0.25, fill: { color: "0A2217" }, line: { color: "2E5A45", width: 1 } });
   s.addImage({ path: img("farmer-mobile"), x: 9.63, y: 0.8, w: pw, h: ph, rounding: false });
   s.addNotes(
-    "AgriCluster is a smart-farming platform for small farms. Instead of trying to make every small farm a fully equipped smart farm on its own, we connect nearby farms into one intelligent cluster. The cluster shares data, machinery, labour, expertise and market access. What you see on the phone is a working prototype: a farmer's dashboard in our demonstration cluster in Mysuru district.",
+    "AgriCluster helps a small farmer make the season's big decisions: which crop, which method, how much to invest, and who to sell to. It connects nearby farms into one cluster that shares machinery, labour, expertise and market access. Right crop, right technology, right resource, right investment, right support. On the phone is the working prototype: Spandana's dashboard, a farmer with 1 acre near Chamarajanagara.",
   );
 }
 
@@ -178,9 +185,9 @@ function para(s, runs, opts) {
   const s = contentSlide(4, "Solution", "AgriCluster makes the cluster smart, not every farm");
   para(s, "A shared intelligence and coordination layer for a group of neighbouring farms.", { x: 0.6, y: 1.9, w: 6.0, h: 0.7, fontSize: 17, color: C.muted });
   const pillars = [
-    ["Connect", "Farmers, farms, machinery, labour, experts and buyers in one cluster."],
-    ["Understand", "Farm, weather, sensor, resource and market data turned into suggestions that explain themselves."],
-    ["Coordinate", "Shared machinery, labour and expertise, and pooled harvests matched to buyer demand."],
+    ["Guide", "From farm details to the right crop, method, investment and cropping plan, with every suggestion explained."],
+    ["Connect", "Farmers, machinery and technology providers, labour, experts, community groups and buyers in one cluster."],
+    ["Coordinate", "Shared resources, pooled harvests matched to buyer demand, and a notification for every request and reply."],
   ];
   pillars.forEach(([h, b], i) => {
     const y = 2.75 + i * 0.95;
@@ -189,10 +196,14 @@ function para(s, runs, opts) {
   });
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.6, y: 5.75, w: 6.0, h: 0.8, rectRadius: 0.08, fill: { color: C.field }, line: { type: "none" } });
   s.addText("The platform recommends. The farmer decides.", { x: 0.85, y: 5.75, w: 5.6, h: 0.8, fontFace: HEAD, fontSize: 18, color: "FFFFFF", valign: "middle", margin: 0 });
-  screenshot(s, "crop-cluster-map", 7.05, 1.9, 5.7, 5.7 * (1090 / 1440));
-  caption(s, "128 farms in six villages, with shared water sources, machinery, cold storage and a collection centre", 7.05, 6.3, 5.7);
+  {
+    const h = Math.min(4.25, 5.7 * ratio("crop-cluster-map"));
+    const w = h / ratio("crop-cluster-map");
+    screenshot(s, "crop-cluster-map", 7.05 + (5.7 - w) / 2, 1.9, w, h);
+    caption(s, "128 farms in six villages, with shared water sources, machinery, cold storage and a collection centre", 7.05, 1.9 + h + 0.15, 5.7);
+  }
   s.addNotes(
-    "Our answer is to make the cluster smart rather than every individual farm. AgriCluster is a shared layer around a group of neighbouring farms. It connects the people and resources, turns farm, weather, sensor and market data into suggestions that explain themselves, and coordinates what is shared: machinery, labour, expertise and harvests. The map shows our demonstration cluster: 128 farms in six villages around shared infrastructure. One principle runs through everything: the platform recommends, the farmer decides.",
+    "Our answer has three parts. First, guide the farmer through the decisions that shape a season: crop, method, investment and plan, with every suggestion explained. Second, connect the farmer to the people and resources around them: machinery and technology providers, labour, experts, community groups and buyers. Third, coordinate what is shared, so small lots and scarce tractors are planned across the cluster. The map shows our demonstration cluster: 128 farms in six villages. One principle runs through everything: the platform recommends, the farmer decides.",
   );
 }
 
@@ -200,45 +211,38 @@ function para(s, runs, opts) {
 // 5 · How it works
 
 {
-  const s = contentSlide(5, "How it works", "From data to coordinated action");
-  const steps = [
-    ["Connect", "Farms, resources, experts and buyers join the cluster"],
-    ["Collect", "Farmer input, weather, sensors, energy and market data"],
-    ["Analyze", "Rules check the data against each crop and plan"],
-    ["Recommend", "A suggestion with its reasons and data"],
-    ["Coordinate", "Shared machinery, labour and buyers across farms"],
-    ["Act", "The farmer accepts, ignores or checks first"],
-    ["Measure", "Water, energy, inputs, loss and prices"],
-  ];
-  // Seven chevrons that exactly span the 12.13" content width (0.6" → 12.73").
-  const overlap = 0.12;
-  const cw = (12.13 + 6 * overlap) / 7;
-  steps.forEach(([name, text], i) => {
+  const s = contentSlide(5, "The farmer's journey", "From farm information to a buyer, one decision at a time");
+  const steps = ["Farm", "Goal", "Crop", "Method", "Investment", "Market", "Plan", "Resources", "Harvest", "Buyer"];
+  // Ten chevrons that exactly span the 12.13" content width (0.6" → 12.73").
+  const overlap = 0.1;
+  const cw = (12.13 + 9 * overlap) / 10;
+  steps.forEach((name, i) => {
     const x = 0.6 + i * (cw - overlap);
     s.addShape(i === 0 ? pres.shapes.PENTAGON : pres.shapes.CHEVRON, {
-      x, y: 2.0, w: cw, h: 0.75, fill: { color: i < 5 ? C.brand : C.brandMid }, line: { color: C.canvas, width: 1.5 },
+      x, y: 1.9, w: cw, h: 0.62, fill: { color: i < 8 ? C.brand : C.water }, line: { color: C.canvas, width: 1.5 },
     });
-    // Label sits between the left notch and the right point.
-    s.addText(name, { x: x + (i === 0 ? 0.1 : 0.34), y: 2.0, w: cw - (i === 0 ? 0.45 : 0.62), h: 0.75, fontFace: HEAD, fontSize: 12.5, color: "FFFFFF", valign: "middle", align: i === 0 ? "left" : "center", margin: 0 });
-    s.addText(text, { x: x + 0.1, y: 2.9, w: cw - 0.25, h: 1.0, fontFace: BODY, fontSize: 12, color: C.muted, margin: 0, valign: "top" });
+    // The notch is ~0.31" deep at mid-height; keep the label to its right.
+    s.addText(name, { x: x + (i === 0 ? 0.08 : 0.3), y: 1.9, w: cw - (i === 0 ? 0.3 : 0.34), h: 0.62, fontFace: HEAD, fontSize: 10.5, color: "FFFFFF", valign: "middle", align: "center", margin: 0 });
   });
-  // Worked example
-  s.addText("ONE EXAMPLE FROM THE PROTOTYPE", { x: 0.6, y: 4.15, w: 6, h: 0.3, fontFace: HEAD, fontSize: 10, color: C.water, charSpacing: 2, margin: 0 });
+  // Worked example: the demo scenario (spec §38)
+  s.addText("SPANDANA'S SEASON IN THE PROTOTYPE", { x: 0.6, y: 2.85, w: 6, h: 0.3, fontFace: HEAD, fontSize: 10, color: C.brandMid, charSpacing: 2, margin: 0 });
   const ex = [
-    ["Signal", "Rain 82% likely from 6:30 pm. Field 1 soil moisture 64%; tomato needs at least 55%."],
-    ["Suggestion", "Consider delaying Field 1 irrigation by 24 hours, with the data shown."],
-    ["Decision", "The farmer accepts. The schedule moves; one tap undoes it."],
-    ["Measured", "About 36,000 L of water and 11 kWh of pumping avoided (indicative)."],
+    ["Farm & goal", "1 acre near Chamarajanagara, red soil, drip, ₹1,50,000 to invest."],
+    ["Crop & method", "Tomato is the best match, with the reasons shown. Precision farming suits her drip and solar."],
+    ["Investment & plan", "₹1,50,000 split across ten costs; tractor and sprayer rented, not bought. First harvest around 4 October."],
+    ["Harvest & buyer", "2,000 kg of Grade A tomato listed. She chooses what buyers see; a buyer requests, she decides."],
   ];
   ex.forEach(([h, b], i) => {
-    const x = 0.6 + i * 3.1;
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 4.55, w: 2.85, h: 1.95, rectRadius: 0.08, fill: { color: C.waterSoft }, line: { type: "none" } });
-    s.addText(h, { x: x + 0.2, y: 4.72, w: 2.5, h: 0.3, fontFace: HEAD, fontSize: 14, color: C.water, margin: 0 });
-    s.addText(b, { x: x + 0.2, y: 5.1, w: 2.5, h: 1.3, fontFace: BODY, fontSize: 13, color: C.ink, margin: 0, valign: "top" });
-    if (i < 3) s.addText("→", { x: x + 2.83, y: 5.25, w: 0.3, h: 0.4, fontFace: BODY, fontSize: 18, color: C.water, align: "center", margin: 0 });
+    const y = 3.25 + i * 0.86;
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.6, y: y + 0.04, w: 0.05, h: 0.66, fill: { color: i < 3 ? C.brand : C.water }, line: { type: "none" } });
+    s.addText(h, { x: 0.8, y, w: 5.2, h: 0.3, fontFace: HEAD, fontSize: 14, color: C.ink, margin: 0 });
+    s.addText(b, { x: 0.8, y: y + 0.3, w: 5.2, h: 0.5, fontFace: BODY, fontSize: 12.5, color: C.muted, margin: 0, valign: "top" });
   });
+  const sw = 6.35, sh = Math.min(3.25, sw * ratio("plan-crop"));
+  screenshot(s, "plan-crop", 6.4, 2.95, sw, sh);
+  caption(s, "Crop step: indicative ranges and the reasons behind the suggestion, never a guaranteed income", 6.4, 2.95 + sh + 0.12, sw);
   s.addNotes(
-    "The platform works in seven steps: connect, collect, analyze, recommend, coordinate, act and measure. Here is one real example from the prototype. Rain is 82 percent likely this evening, and Field 1's soil moisture is already above what the tomato crop needs. So AgriCluster suggests delaying irrigation by a day, and shows exactly which data led to that. The farmer accepts with one tap, and the schedule moves. That single decision avoids roughly 36,000 litres of water and 11 kilowatt-hours of pumping, an indicative estimate.",
+    "At the heart of AgriCluster is the farmer's journey, from farm information to a buyer. Here is Spandana, from our demo. She has 1 acre near Chamarajanagara, red soil, drip irrigation and 1.5 lakh rupees to invest. After a few questions, AgriCluster ranks crops for her land and budget; tomato is the best match, and the card explains why. It then shows only the methods that suit tomato on her farm; precision farming fits her drip and solar. It splits her budget across the season and suggests renting the tractor and sprayer rather than buying them. It builds a calendar to her first harvest around 4 October, and matches the labour, experts and support she will need. At harvest, she lists 2,000 kilograms of Grade A tomato, choosing what buyers can see. A buyer requests, and she decides. Every figure is an indicative range, never a guarantee.",
   );
 }
 
@@ -266,11 +270,11 @@ function para(s, runs, opts) {
     ],
     { x: 0.6, y: 4.8, w: 4.7, h: 1.8, fontSize: 14, paraSpaceAfter: 8 },
   );
-  screenshot(s, "crop-reasoning", 5.6, 1.9, 7.15, 7.15 / 2);
+  screenshot(s, "crop-reasoning", 5.6, 1.9, 7.15, 7.15 * ratio("crop-reasoning"));
   caption(s, "Every suggestion shows what is happening, why it matters, and the data behind it, with each value's source labelled.", 5.6, 5.6, 7.15);
   s.addText("Demonstration data", { x: 5.6, y: 5.95, w: 3, h: 0.3, fontFace: BODY, fontSize: 11, color: C.subtle, margin: 0 });
   s.addNotes(
-    "This is what we call cluster intelligence. AgriCluster combines farm and crop data, soil moisture, weather, water and energy, machinery, labour, experts and market demand. For one farmer, it produces a suggestion that explains itself, as on the right. Across the cluster the same signals become patterns a coordinator can act on: 24 farms about to irrigate before rain, 6 tomato farms under stress, 14 tractor requests for 9 tractors, and 42 tonnes of tomato coming against 35 tonnes of buyer demand.",
+    "Once the season is running, the same approach continues day to day. AgriCluster combines farm and crop data, soil moisture, weather, water and energy, machinery, labour, experts and market demand. For one farmer, it produces a suggestion that explains itself, as on the right: rain is 82 percent likely tonight and Field 1 already has enough moisture, so delaying irrigation by a day could save about 15,000 litres of water. Across the cluster the same signals become patterns a coordinator can act on: 24 farms about to irrigate before rain, 6 tomato farms under stress, 14 tractor requests for 9 tractors, and 42 tonnes of tomato coming against 35 tonnes of buyer demand.",
   );
 }
 
@@ -278,24 +282,36 @@ function para(s, runs, opts) {
 // 7 · Product
 
 {
-  const s = contentSlide(7, "Product", "Six roles, one connected cluster");
+  const s = contentSlide(7, "Product", "Seven roles, one connected cluster");
   const roles = [
-    ["Farmer", "Decisions with reasons; requests resources; lists harvests."],
-    ["Cluster manager", "Sees all 128 farms; coordinates water, resources, buyers."],
-    ["Buyer", "Posts requirements, sees pooled supply, accepts offers."],
-    ["Machinery owner", "Lists equipment and availability, accepts bookings."],
-    ["Labour", "Lists skills and availability, accepts and tracks work."],
-    ["Expert", "Answers questions with farm data in view; schedules visits."],
+    ["Farmer", "Plans the season, requests resources, lists harvests."],
+    ["Buyer", "Searches crops, sees farmer-approved details, requests farmers."],
+    ["Machinery & tech owner", "Lists equipment and services; accepts bookings."],
+    ["Labour", "Lists skills, crops, rates and transport; accepts work."],
+    ["Expert", "Answers questions and books consultations, across 11 fields."],
+    ["Community", "Runs farmer groups, events and success stories."],
+    ["Cluster manager", "Sees all 128 farms; coordinates water, resources, supply."],
   ];
   roles.forEach(([r, d], i) => {
-    const y = 1.9 + i * 0.8;
-    s.addText(r, { x: 0.6, y, w: 4.8, h: 0.3, fontFace: HEAD, fontSize: 15, color: C.brand, margin: 0 });
-    s.addText(d, { x: 0.6, y: y + 0.3, w: 4.8, h: 0.45, fontFace: BODY, fontSize: 12.5, color: C.ink, margin: 0, valign: "top" });
+    const y = 1.85 + i * 0.69;
+    s.addText(r, { x: 0.6, y, w: 4.8, h: 0.28, fontFace: HEAD, fontSize: 14, color: C.brand, margin: 0 });
+    s.addText(d, { x: 0.6, y: y + 0.28, w: 4.8, h: 0.38, fontFace: BODY, fontSize: 12, color: C.ink, margin: 0, valign: "top" });
   });
-  screenshot(s, "cluster-overview", 5.75, 1.9, 7.0, 7.0 * (1620 / 2880));
-  caption(s, "Cluster overview in the working prototype. A farmer's decision updates what every other role sees.", 5.75, 5.95, 7.0);
+  const bw = 3.4, bh = bw * ratio("buyer-view-crop");
+  screenshot(s, "buyer-view-crop", 5.75, 1.85, bw, bh);
+  s.addText(
+    [
+      { text: "Privacy by role", options: { fontFace: HEAD, color: C.ink, breakLine: true } },
+      { text: "Buyers see only what the farmer approved on each listing: never her phone number, finances or exact location. Labour sees the job's crop and village. Experts see the question and the field it is about.", options: { color: C.muted, breakLine: true } },
+      { text: " ", options: { breakLine: true } },
+      { text: "Connected by notifications", options: { fontFace: HEAD, color: C.ink, breakLine: true } },
+      { text: "Every request, offer and reply notifies the other side, from “Buyer requested your tomato crop” to “Expert consultation confirmed”.", options: { color: C.muted } },
+    ],
+    { x: 9.4, y: 1.85, w: 3.35, h: 4.4, fontFace: BODY, fontSize: 12.5, margin: 0, valign: "top", paraSpaceAfter: 4 },
+  );
+  caption(s, "What a buyer sees on “View crop”: farmer-approved details only", 5.75, 1.85 + bh + 0.12, bw + 3.6);
   s.addNotes(
-    "The product has six connected roles: farmer, cluster manager, buyer, machinery owner, labour and expert. They all work on the same shared records. When the farmer requests a tractor, the owner accepts it. When the farmer lists a harvest, the buyer sees it. When the farmer delays irrigation, the cluster dashboard updates. [If showing the live demo, switch now: open the prototype and use the Guided demo button.]",
+    "The product has seven connected roles: farmer, buyer, machinery and technology owner, labour, expert, community organiser and cluster manager. They all work on the same shared records, and every request and reply sends a notification to the other side. Privacy is built in: a buyer sees only what the farmer chose to share on a listing, as on this screen, never her phone number or finances. [If showing the live demo, switch now: open the prototype and use the Guided demo button. It walks through all 21 steps.]",
   );
 }
 
@@ -322,7 +338,7 @@ function para(s, runs, opts) {
   });
   s.addText("WHAT THE PROTOTYPE ALREADY SHOWS", { x: 0.6, y: 4.55, w: 6, h: 0.3, fontFace: HEAD, fontSize: 10, color: C.brandMid, charSpacing: 2, margin: 0 });
   const shows = [
-    ["≈36,000 L", "water and ≈11 kWh pumping avoided by one accepted irrigation suggestion (indicative)"],
+    ["≈15,000 L", "water and ≈4 kWh pumping avoided on 1 acre by one accepted irrigation suggestion (indicative)"],
     ["42 t vs 35 t", "pooled tomato supply against buyer demand, visible a week before harvest"],
     ["14 vs 9", "tractor requests against available tractors, flagged a day ahead"],
   ];
@@ -332,7 +348,7 @@ function para(s, runs, opts) {
     s.addText(text, { x, y: 5.5, w: 3.7, h: 0.9, fontFace: BODY, fontSize: 13, color: C.ink, margin: 0, valign: "top" });
   });
   s.addNotes(
-    "We will measure impact against a baseline, not promise it. The pilot targets are 15 to 20 percent less avoidable water use, 10 to 15 percent better input efficiency, 10 percent less crop loss, and 5 to 10 percent better market realisation. These are illustrative goals, not guaranteed outcomes. The prototype already shows the mechanism: one accepted suggestion avoids about 36,000 litres of water; the cluster sees 42 tonnes of tomato against 35 tonnes of demand a week ahead; and a tractor shortage is visible a day before it happens.",
+    "We will measure impact against a baseline, not promise it. The pilot targets are 15 to 20 percent less avoidable water use, 10 to 15 percent better input efficiency, 10 percent less crop loss, and 5 to 10 percent better market realisation. These are illustrative goals, not guaranteed outcomes. The prototype already shows the mechanism: on a single acre, one accepted suggestion avoids about 15,000 litres of water; the cluster sees 42 tonnes of tomato against 35 tonnes of demand a week ahead; and a tractor shortage is visible a day before it happens.",
   );
 }
 
