@@ -186,7 +186,7 @@ function para(s, runs, opts) {
   para(s, "A shared intelligence and coordination layer for a group of neighbouring farms.", { x: 0.6, y: 1.9, w: 6.0, h: 0.7, fontSize: 17, color: C.muted });
   const pillars = [
     ["Guide", "From farm details to the right crop, method, investment and cropping plan, with every suggestion explained."],
-    ["Connect", "Farmers, machinery and technology providers, labour, experts, community groups and buyers in one cluster."],
+    ["Connect", "Farmers, machinery and technology providers, labour, experts, buyers, and government and private support, in one cluster."],
     ["Coordinate", "Shared resources, pooled harvests matched to buyer demand, and a notification for every request and reply."],
   ];
   pillars.forEach(([h, b], i) => {
@@ -284,7 +284,7 @@ function para(s, runs, opts) {
 {
   const s = contentSlide(7, "Product", "Seven roles, one connected cluster");
   const roles = [
-    ["Farmer", "Plans the season, requests resources, lists harvests."],
+    ["Farmer", "Plans the season, finds support, requests resources, lists harvests."],
     ["Buyer", "Searches crops, sees farmer-approved details, requests farmers."],
     ["Machinery & tech owner", "Lists equipment and services; accepts bookings."],
     ["Labour", "Lists skills, crops, rates and transport; accepts work."],
@@ -442,7 +442,7 @@ function para(s, runs, opts) {
   });
   s.addText("Pilot starts here", { x: 2.22, y: 4.25, w: 1.45, h: 0.5, fontFace: HEAD, fontSize: 11, color: C.field, align: "center", margin: 0 });
   const points = [
-    ["Simulation-first", "Works from farmer input and shared sensors today. Real sensors and data feeds plug into the same interfaces later."],
+    ["Real database, simulated sensors", "Runs today on a cloud database with row-level security. Sensor readings are simulated; real sensors plug into the same interfaces later."],
     ["Same engine, every cluster", "A new cluster reuses the intelligence rules, roles and screens. Only local data changes."],
     ["Network effects", "Each new cluster brings more buyers, equipment providers and experts to every member."],
   ];
@@ -452,7 +452,7 @@ function para(s, runs, opts) {
     s.addText(b, { x: 9.0, y: y + 0.38, w: 3.75, h: 1.0, fontFace: BODY, fontSize: 13, color: C.muted, margin: 0, valign: "top" });
   });
   s.addNotes(
-    "The model scales from one farm to a local cluster, then district clusters, multiple regions and a larger network. What scales is the intelligence and coordination layer; the farms stay small. We are simulation-first: the platform runs today on farmer input and shared sensors, and real sensors and data feeds plug into the same interfaces later. Every new cluster reuses the same engine, roles and screens, and brings more buyers, providers and experts to everyone.",
+    "The model scales from one farm to a local cluster, then district clusters, multiple regions and a larger network. What scales is the intelligence and coordination layer; the farms stay small. The prototype already stores its data in a real cloud database, with rules that keep each space private. Sensor readings are simulated for now, and real sensors and data feeds plug into the same interfaces later. Every new cluster reuses the same engine, roles and screens, and brings more buyers, providers and experts to everyone.",
   );
 }
 
