@@ -7,7 +7,24 @@ import type {
   LabourRequest,
   MarketInterest,
   ServiceRequest,
+  SupportHelp,
+  SupportRequest,
 } from "../../types";
+import { supportById } from "../../data/catalog/support";
+
+export const supportHelpLabels: Record<SupportHelp, string> = {
+  eligibility: "Check if I qualify",
+  application: "Help filling the application",
+  documents: "Help collecting documents",
+  compare: "Compare options",
+};
+
+const supportStatusNotice: Partial<Record<SupportRequest["status"], string>> = {
+  "in-progress": "the cluster office is helping you",
+  "documents-needed": "documents needed",
+  submitted: "application submitted",
+  closed: "request closed",
+};
 import type { State } from "../../store/AppStore";
 import { machinery } from "../../data/mock/resources";
 import { labourProfiles, skillLabels } from "../../data/mock/labour";
@@ -120,6 +137,20 @@ export function onAdd(key: string, record: unknown, s: State): NewNotification[]
         },
       ];
     }
+    case "supportRequests": {
+      const r = record as SupportRequest;
+      const scheme = supportById(r.schemeId);
+      if (!scheme) return [];
+      return [
+        {
+          userId: "u-cluster-1",
+          kind: "system",
+          title: `${farmLabelForUser(r.requesterUserId)} asked for help with ${scheme.name}`,
+          body: `${supportHelpLabels[r.help]}${r.note ? ` · “${r.note}”` : ""}`,
+          link: "/cluster/support",
+        },
+      ];
+    }
     case "requirements": {
       const r = record as BuyerRequirement;
       return farmers
@@ -228,6 +259,21 @@ export function onUpdate(key: string, before: unknown, patch: Record<string, unk
       if (l.status === "offer-sent" && patch.offerDeclinedBy)
         return [{ userId: farmer, kind: "buyer", title: `${patch.offerDeclinedBy as string} declined your offer`, body: "Your listing stays visible to other buyers.", link: "/farmer/market" }];
       return [];
+    }
+    case "supportRequests": {
+      const r = before as SupportRequest;
+      const scheme = supportById(r.schemeId);
+      const words = changed ? supportStatusNotice[status as SupportRequest["status"]] : undefined;
+      if (!scheme || !words) return [];
+      return [
+        {
+          userId: r.requesterUserId,
+          kind: "system",
+          title: `${scheme.name}: ${words}`,
+          body: (patch.officeNote as string | undefined) ?? undefined,
+          link: "/farmer/support?tab=requests",
+        },
+      ];
     }
     case "serviceRequests": {
       const r = before as ServiceRequest;

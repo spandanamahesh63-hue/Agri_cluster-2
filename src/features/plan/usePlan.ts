@@ -14,7 +14,9 @@ import {
   buyVsRent,
   recommendCrops,
   recommendMethods,
+  rankSupport,
   relevantSupport,
+  supportContext,
   resourceNeeds,
   typicalCost,
 } from "../../services/planning/planner";
@@ -47,7 +49,8 @@ export function usePlan() {
     const plantDate = plan.plantDate ?? DEMO_PLANT_DATE;
     const calendar = crop ? buildCalendar(crop, method, plantDate) : [];
     const needs = crop ? resourceNeeds(crop, method, assessment, budgetGap) : undefined;
-    const support = relevantSupport(assessment, method, budgetGap);
+    const support = relevantSupport(assessment, crop, method, budgetGap);
+    const allSupport = rankSupport(supportContext(assessment, crop, method, budgetGap));
 
     const done = {
       assessment: !!plan.assessment,
@@ -78,6 +81,7 @@ export function usePlan() {
       calendar,
       needs,
       support,
+      allSupport,
       done,
       updatePlan,
       resetPlan,

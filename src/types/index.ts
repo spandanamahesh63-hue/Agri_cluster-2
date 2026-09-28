@@ -660,8 +660,8 @@ export interface FarmPlan {
   /** Steps the farmer has explicitly reviewed (market, resources). */
   reviewed?: string[];
   confirmedAt?: ISODateTime;
-  /** Support options the farmer asked the cluster office to help with. */
-  supportRequested?: string[];
+  /** Documents the farmer has ticked as ready, per support option. */
+  supportDocs?: Record<string, string[]>;
 }
 
 export interface CalendarTask {
@@ -689,19 +689,48 @@ export interface MarketData {
   source: DataSource;
 }
 
+export type SupportSector = "government" | "private";
+export type SupportNeed = "income" | "credit" | "insurance" | "subsidy" | "soil-training" | "market" | "storage";
+
+/**
+ * A government scheme or private-sector option (spec §18). Government facts
+ * come from official sources and carry the date they were checked. Eligibility
+ * is never decided by AgriCluster.
+ */
 export interface SupportScheme {
   id: string;
   name: string;
-  category: "Government scheme" | "Banking" | "Insurance" | "Training" | "Institutional";
+  sector: SupportSector;
+  level: "Central government" | "Karnataka government" | "Private sector";
+  provider: string;
+  needs: SupportNeed[];
   summary: string;
-  relevantWhen: string; // why we are showing it
-  /** Always "Check with the official source" in the prototype. Never fabricated. */
+  /** Key facts, quoted or summarised from the source. */
+  offers: string[];
   eligibility: string;
   documents: string[];
   howToApply: string;
   source: { label: string; url?: string };
-  lastUpdated?: ISODate;
-  verified: boolean;
+  /** Date the facts were checked against the source (government options). */
+  lastChecked?: ISODate;
+  /** True when the facts above were checked against an official source. */
+  sourceChecked: boolean;
+}
+
+export type SupportHelp = "eligibility" | "application" | "documents" | "compare";
+
+/** A farmer asking the cluster office for help with one support option. */
+export interface SupportRequest extends Seedable {
+  id: string;
+  schemeId: string;
+  requesterUserId: string;
+  help: SupportHelp;
+  contact: "call" | "rsk-visit";
+  note: string;
+  status: "requested" | "in-progress" | "documents-needed" | "submitted" | "closed";
+  createdAt: ISODateTime;
+  /** Latest note from the cluster office. */
+  officeNote?: string;
 }
 
 // ---------------------------------------------------------------------------

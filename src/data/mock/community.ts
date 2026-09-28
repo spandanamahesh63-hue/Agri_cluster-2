@@ -1,4 +1,31 @@
-import type { CommunityEvent, CommunityGroup, EventKind } from "../../types";
+import type { CommunityEvent, CommunityGroup, EventKind, SupportRequest } from "../../types";
+
+// Support requests other farmers have already sent the cluster office.
+export const seedSupportRequests: SupportRequest[] = [
+  {
+    id: "sup-seed-1",
+    schemeId: "pmfby",
+    requesterUserId: "u-farmer-12",
+    help: "application",
+    contact: "rsk-visit",
+    note: "Want to insure the rabi onion crop this year.",
+    status: "in-progress",
+    officeNote: "Enrolment window confirmed with the bank; visit on Tuesday with sowing details.",
+    createdAt: "2026-09-24T11:00:00+05:30",
+    seeded: true,
+  },
+  {
+    id: "sup-seed-2",
+    schemeId: "pdmc",
+    requesterUserId: "u-farmer-51",
+    help: "eligibility",
+    contact: "call",
+    note: "Planning drip for 1.5 acres of chilli.",
+    status: "requested",
+    createdAt: "2026-09-26T16:20:00+05:30",
+    seeded: true,
+  },
+];
 
 // Fictional farmer groups and events in the cluster (spec §17).
 export const seedGroups: CommunityGroup[] = [

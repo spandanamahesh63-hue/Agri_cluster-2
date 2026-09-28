@@ -21,6 +21,8 @@ const MarketPage = lazyPage(() => import("./pages/farmer/MarketPage"), "MarketPa
 const UploadCropPage = lazyPage(() => import("./pages/farmer/UploadCropPage"), "UploadCropPage");
 const ResourcesPage = lazyPage(() => import("./pages/farmer/ResourcesPage"), "ResourcesPage");
 const ExpertsPage = lazyPage(() => import("./pages/farmer/ExpertsPage"), "ExpertsPage");
+const SupportPage = lazyPage(() => import("./pages/farmer/SupportPage"), "SupportPage");
+const ClusterSupportPage = lazyPage(() => import("./pages/cluster/ClusterSupportPage"), "ClusterSupportPage");
 const ProfilePage = lazyPage(() => import("./pages/farmer/ProfilePage"), "ProfilePage");
 const PlanOverviewPage = lazyPage(() => import("./pages/farmer/plan/PlanOverviewPage"), "PlanOverviewPage");
 const AssessmentStep = lazyPage(() => import("./pages/farmer/plan/AssessmentStep"), "AssessmentStep");
@@ -77,6 +79,7 @@ const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
     market: <MarketPage />,
     resources: <ResourcesPage />,
     experts: <ExpertsPage />,
+    support: <SupportPage />,
     profile: <ProfilePage />,
   },
   cluster: {
@@ -88,6 +91,7 @@ const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
     crops: <ClusterCropsPage />,
     resources: <ClusterResourcesPage />,
     market: <ClusterMarketPage />,
+    support: <ClusterSupportPage />,
     impact: <ClusterImpactPage />,
   },
   buyer: {

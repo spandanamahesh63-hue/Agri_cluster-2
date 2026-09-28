@@ -1,14 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, GraduationCap, HardHat, Landmark, Tractor, Wifi } from "lucide-react";
+import { GraduationCap, HardHat, Landmark, Tractor, Wifi } from "lucide-react";
 import { StepLayout } from "../../../features/plan/StepLayout";
 import { usePlan } from "../../../features/plan/usePlan";
 import { useLabourProfiles, useMachinery } from "../../../features/shared/useMerged";
 import { experts, expertCategoryLabels } from "../../../data/mock/experts";
-import { SupportHelpButton } from "../../../features/plan/SupportHelpButton";
 import { technologies } from "../../../data/mock/technology";
 import { kindLabels } from "../../../features/resources/labels";
 import { Card, CardHeader } from "../../../components/ui/Card";
-import { Badge, InfoNote } from "../../../components/ui/Badge";
+import { Badge } from "../../../components/ui/Badge";
 import { Button, ButtonLink } from "../../../components/ui/Button";
 import { useToast } from "../../../components/ui/Toast";
 import type { LabourSkill, ResourceKind } from "../../../types";
@@ -138,37 +137,29 @@ export function ResourcesStep() {
       <Card>
         <CardHeader title="Support that may apply" subtitle="Shown because of your plan and answers" />
         <ul className="divide-y divide-line">
-          {p.support.map((s) => (
+          {p.support.slice(0, 5).map(({ scheme: s, why }) => (
             <li key={s.id} className="px-5 py-3 text-[13px]">
               <div className="flex flex-wrap items-center gap-2">
                 <Landmark aria-hidden className="size-4 text-ink-subtle" />
                 <span className="font-medium">{s.name}</span>
-                <Badge>{s.category}</Badge>
-                {!s.verified && <Badge tone="warning">Not verified</Badge>}
+                <Badge tone={s.sector === "government" ? "brand" : "resource"}>{s.level}</Badge>
               </div>
-              <p className="mt-1 text-ink-muted">{s.summary}</p>
+              <p className="mt-1 text-ink-muted">{s.offers[0]}</p>
               <p className="mt-1">
                 <span className="text-ink-subtle">Why you're seeing this: </span>
-                {s.relevantWhen}
+                {why}
               </p>
-              <p className="mt-1 text-ink-muted">
-                <span className="text-ink-subtle">How to apply: </span>
-                {s.howToApply}
-              </p>
-              {s.documents.length > 0 && <p className="mt-1 text-ink-muted"><span className="text-ink-subtle">Usually needed: </span>{s.documents.join(", ")}</p>}
-              <p className="mt-1 flex items-center gap-1 text-[12px] text-ink-subtle">
-                <ExternalLink aria-hidden className="size-3" />
-                Source: {s.source.label}
-              </p>
-              <div className="mt-2">
-                <SupportHelpButton id={s.id} name={s.name} />
-              </div>
             </li>
           ))}
         </ul>
-        <InfoNote className="border-t border-line px-5 py-3">
-          Eligibility is not checked by AgriCluster. Confirm details, documents and deadlines with the official office before applying.
-        </InfoNote>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-5 py-3">
+          <span className="text-[12px] text-ink-muted">
+            {p.support.length} options match your plan. Eligibility is decided by the scheme office, not AgriCluster.
+          </span>
+          <ButtonLink to="/farmer/support" size="sm" variant="secondary">
+            See all support and ask for help
+          </ButtonLink>
+        </div>
       </Card>
     </StepLayout>
   );

@@ -4,6 +4,7 @@ import type {
   Booking,
   CommunityEvent,
   CommunityGroup,
+  SupportRequest,
   FarmPlan,
   BuyerRequirement,
   CommunityPost,
@@ -31,7 +32,7 @@ import {
   seedPosts,
   seedReplies,
 } from "../data/mock/activity";
-import { seedEvents, seedGroups } from "../data/mock/community";
+import { seedEvents, seedGroups, seedSupportRequests } from "../data/mock/community";
 import { onAdd, onUpdate, type NewNotification } from "../features/notifications/rules";
 
 // Client-side state for the prototype: the simulated session and every record
@@ -60,6 +61,7 @@ export interface Collections {
   notifications: AppNotification[];
   groups: CommunityGroup[];
   events: CommunityEvent[];
+  supportRequests: SupportRequest[];
 }
 export type CollectionKey = keyof Collections;
 type Item<K extends CollectionKey> = Collections[K][number];
@@ -124,6 +126,7 @@ const initialState: State = {
   notifications: seedNotifications,
   groups: seedGroups,
   events: seedEvents,
+  supportRequests: seedSupportRequests,
   machineryEdits: {},
   labourEdits: {},
   plan: {},
@@ -242,6 +245,7 @@ interface AppStore extends State {
   addReply: (reply: Omit<CommunityReply, "id" | "createdAt">) => CommunityReply;
   addGroup: (group: Omit<CommunityGroup, "id" | "createdAt">) => CommunityGroup;
   addEvent: (event: Omit<CommunityEvent, "id" | "createdAt">) => CommunityEvent;
+  addSupportRequest: (request: NewRecord<SupportRequest>) => SupportRequest;
   /** Farmer accepts a buyer's interest: the listing is agreed with that buyer; other interests are declined. */
   acceptInterest: (interest: MarketInterest) => void;
   /** Buyer accepts a farmer's offer on their requirement. */
@@ -337,6 +341,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       addReply: (input) => add("replies", { ...input, ...meta("rep") }),
       addGroup: (input) => add("groups", { ...input, ...meta("grp") }),
       addEvent: (input) => add("events", { ...input, ...meta("evt") }),
+      addSupportRequest: (input) => add("supportRequests", { ...input, ...meta("sup"), status: "requested" }),
       acceptInterest: (interest) => {
         state.interests
           .filter((i) => i.listingId === interest.listingId && i.id !== interest.id && i.status === "pending")

@@ -20,7 +20,7 @@ import type {
 } from "../../types";
 import { cropCatalogue } from "../../data/catalog/crops";
 import { equipmentBuyPrice, methodCatalogue } from "../../data/catalog/methods";
-import { supportCatalogue } from "../../data/catalog/support";
+import { supportCatalogue, type SupportContext } from "../../data/catalog/support";
 import { formatINR } from "../../utils/format";
 
 const levelIndex: Record<Level, number> = { low: 0, moderate: 1, high: 2 };
@@ -409,13 +409,29 @@ export function resourceNeeds(crop: CropProfile, method: MethodProfile | undefin
   };
 }
 
-export function relevantSupport(a: FarmAssessment, method: MethodProfile | undefined, budgetGap: number) {
-  const ctx = {
+export function supportContext(a: FarmAssessment, crop: CropProfile | undefined, method: MethodProfile | undefined, budgetGap: number): SupportContext {
+  return {
+    cropId: crop?.id,
     methodIds: method ? [method.id] : [],
+    irrigation: a.irrigation,
+    water: a.water,
+    electricity: a.electricity,
+    solar: a.solar,
     soilTestDone: a.soilTestDone,
     needsLoan: a.needsLoan,
     budgetGap,
     techFamiliarity: a.techFamiliarity,
   };
-  return supportCatalogue.filter((s) => s.when(ctx));
+}
+
+/** Every support option with the reason it fits this farmer, or null when it isn't specially relevant. */
+export function rankSupport(ctx: SupportContext) {
+  return supportCatalogue.map((scheme) => ({ scheme, why: scheme.why(ctx) }));
+}
+
+/** Support options that fit the farmer's plan, government first. */
+export function relevantSupport(a: FarmAssessment, crop: CropProfile | undefined, method: MethodProfile | undefined, budgetGap: number) {
+  return rankSupport(supportContext(a, crop, method, budgetGap))
+    .filter((r) => r.why)
+    .sort((x, y) => (x.scheme.sector === y.scheme.sector ? 0 : x.scheme.sector === "government" ? -1 : 1));
 }

@@ -129,6 +129,12 @@ The app store holds bookings, labour requests, consultations, listings, buyer re
 
 Every new record and status change notifies the other side through `features/notifications/rules.ts`, applied centrally in the store. Nobody is notified of their own action.
 
+### Government and private support
+
+`data/catalog/support.ts` lists 12 government options (PM-KISAN, PMFBY, Per Drop More Crop, KCC, PM-KUSUM, Soil Health Card, MIDH, FPOs, Agriculture Infrastructure Fund, e-NWR loans, Karnataka's Krishi Bhagya, KVK training). It also lists 6 types of private-sector provider. Government facts were checked against official sources (scheme portals and PIB releases) on 28 Sept 2026, and each card links its source. Private options name kinds of provider, not companies.
+
+AgriCluster never decides eligibility. The farmer's Support page explains why each option fits their plan, keeps a documents checklist, and sends "Ask for help applying" requests to the cluster office (`/cluster/support`). Both sides are notified as the request moves on. Re-check the facts and `LAST_CHECKED` before a real pilot.
+
 ### Privacy
 
 `features/shared/privacy.ts` decides who sees what. Buyers see only what the farmer approved on each listing (method, photos, village, name). They never see phone numbers, finances or documents. Labour sees the crop and village of the job. Experts see the message and chosen field.
