@@ -13,7 +13,8 @@ const WS_KEY = "agricluster:workspace";
 
 /** Cloud storage is configured, and we are not inside an embedding host (which blocks outside requests). */
 export const cloudConfigured = (() => {
-  if (!URL_ || !KEY) return false;
+  // Anything that isn't an http(s) URL (for example "off") disables the database.
+  if (!URL_ || !KEY || !/^https?:\/\//.test(URL_)) return false;
   try {
     return window.self === window.top;
   } catch {
@@ -21,7 +22,7 @@ export const cloudConfigured = (() => {
   }
 })();
 
-export const cloudHost = URL_ ? new URL(URL_).host : undefined;
+export const cloudHost = cloudConfigured ? new URL(URL_!).host : undefined;
 
 const newId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -49,6 +50,41 @@ export function currentWorkspaceId(): string {
     history.replaceState(history.state, "", url.toString());
   }
   return id!;
+}
+
+// Which demo space the browser's local copy belongs to.
+const LOCAL_WS_KEY = "agricluster:local-copy-space";
+export function setLocalCopySpace(ws: string) {
+  try {
+    localStorage.setItem(LOCAL_WS_KEY, ws);
+  } catch {
+    /* storage unavailable */
+  }
+}
+export function localCopyIsFor(ws: string): boolean {
+  try {
+    return localStorage.getItem(LOCAL_WS_KEY) === ws;
+  } catch {
+    return false;
+  }
+}
+
+// A flag per space: this device has changes the database hasn't confirmed yet.
+const pendingKey = (ws: string) => `agricluster:pending:${ws}`;
+export function markPendingChanges(ws: string, pending: boolean) {
+  try {
+    if (pending) localStorage.setItem(pendingKey(ws), "1");
+    else localStorage.removeItem(pendingKey(ws));
+  } catch {
+    /* storage unavailable */
+  }
+}
+export function hasPendingChanges(ws: string): boolean {
+  try {
+    return localStorage.getItem(pendingKey(ws)) === "1";
+  } catch {
+    return false;
+  }
 }
 
 /** Start a fresh, empty demo space on this browser. */

@@ -1,5 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
-import { cloudConfigured, currentWorkspaceId, loadWorkspace, saveWorkspace, startNewWorkspace, type Snapshot } from "../services/storage/cloud";
+import {
+  cloudConfigured,
+  currentWorkspaceId,
+  hasPendingChanges,
+  loadWorkspace,
+  localCopyIsFor,
+  setLocalCopySpace,
+  markPendingChanges,
+  saveWorkspace,
+  startNewWorkspace,
+  type Snapshot,
+} from "../services/storage/cloud";
 import type {
   AppNotification,
   Booking,
@@ -331,6 +342,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const lastSaved = useRef<Snapshot | null>(null);
   const queue = useRef<Promise<void>>(Promise.resolve());
   const busy = useRef(false);
+  const hydrating = useRef(false);
   const [ready, setReady] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [storage, setStorage] = useState<StorageStatus>({
@@ -349,7 +361,16 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       .then((remote) => {
         if (cancelled) return;
         lastSaved.current = remote;
-        if (remote) dispatch({ type: "hydrate", state: fromSnapshot(remote) });
+        // Changes made on this device that never reached the database (for example
+        // the tab was closed or reloaded right after a change) win: keep them and
+        // send them. Otherwise the database copy is newer (maybe from another device).
+        const keepLocal = hasPendingChanges(wsRef.current) && localCopyIsFor(wsRef.current);
+        if (remote && !keepLocal) {
+          hydrating.current = true;
+          dispatch({ type: "hydrate", state: fromSnapshot(remote) });
+        }
+        // From now on the browser copy belongs to this space.
+        setLocalCopySpace(wsRef.current);
         setReady(true);
       })
       .catch((e: Error) => !cancelled && setStorage((s) => ({ ...s, status: "offline", error: e.message })));
@@ -359,8 +380,14 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   }, [attempt]);
 
   // Save changes shortly after they happen, one save at a time, only what changed.
+  const changeSeq = useRef(0);
   useEffect(() => {
     if (!cloudConfigured || !ready) return;
+    // Remember on this device that there are changes not yet in the database
+    // (not for data that just came from the database).
+    const seq = ++changeSeq.current;
+    if (hydrating.current) hydrating.current = false;
+    else markPendingChanges(wsRef.current, true);
     const t = setTimeout(() => {
       const snap = toSnapshot(state);
       const ws = wsRef.current;
@@ -369,6 +396,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         setStorage((s) => ({ ...s, status: "saving" }));
         try {
           lastSaved.current = await saveWorkspace(ws, snap, lastSaved.current);
+          if (seq === changeSeq.current && ws === wsRef.current) markPendingChanges(ws, false);
           setStorage((s) => ({ ...s, status: "saved", savedAt: new Date().toISOString(), error: undefined }));
         } catch (e) {
           setStorage((s) => ({ ...s, status: "offline", error: (e as Error).message }));
@@ -384,10 +412,10 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!cloudConfigured) return;
     const onFocus = () => {
-      if (!ready || busy.current) return;
+      if (!ready || busy.current || hasPendingChanges(wsRef.current)) return;
       loadWorkspace(wsRef.current)
         .then((remote) => {
-          if (!remote || busy.current) return;
+          if (!remote || busy.current || hasPendingChanges(wsRef.current)) return;
           if (JSON.stringify(remote) === JSON.stringify(lastSaved.current)) return;
           lastSaved.current = remote;
           dispatch({ type: "hydrate", state: fromSnapshot(remote) });
