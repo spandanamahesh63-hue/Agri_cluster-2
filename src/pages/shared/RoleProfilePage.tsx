@@ -8,6 +8,7 @@ import { roles } from "../../components/navigation/navConfig";
 import { publicLabel } from "../../features/shared/identity";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card, CardHeader } from "../../components/ui/Card";
+import { StorageCard } from "../../features/storage/StorageStatus";
 import { Button } from "../../components/ui/Button";
 
 /** Account & public identity for roles without a dedicated profile editor. */
@@ -44,8 +45,9 @@ export function RoleProfilePage({ role }: { role: Role }) {
             ))}
           </dl>
         </Card>
+        <StorageCard />
         <Card>
-          <CardHeader title="Demo data" subtitle="Everything you create is stored only in this browser" />
+          <CardHeader title="Demo data" subtitle="Restore the starting data for this demo space" />
           <div className="px-5 pb-5 pt-3">
             <Button
               variant="danger"

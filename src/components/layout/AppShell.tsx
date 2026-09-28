@@ -13,6 +13,7 @@ import { PageSkeleton } from "../ui/states";
 import { PageErrorBoundary } from "./PageErrorBoundary";
 import { NotificationBell } from "./NotificationBell";
 import { DemoGuideButton } from "../../features/demo/DemoGuide";
+import { StorageBadge } from "../../features/storage/StorageStatus";
 
 export function AppShell({ role }: { role: Role }) {
   const meta = roles[role];
@@ -166,6 +167,9 @@ function DemoClock() {
     <div className="flex flex-wrap items-center gap-2 text-[12px] text-ink-muted">
       <Badge tone="warning">Prototype · demo data</Badge>
       <span title="The demo runs on a fixed clock so the story stays consistent.">Demo clock: {label}</span>
+      <span className="hidden xl:inline-flex">
+        <StorageBadge />
+      </span>
     </div>
   );
 }

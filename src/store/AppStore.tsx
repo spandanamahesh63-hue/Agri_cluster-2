@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
+import { cloudConfigured, currentWorkspaceId, loadWorkspace, saveWorkspace, startNewWorkspace, type Snapshot } from "../services/storage/cloud";
 import type {
   AppNotification,
   Booking,
@@ -66,6 +67,32 @@ export interface Collections {
 export type CollectionKey = keyof Collections;
 type Item<K extends CollectionKey> = Collections[K][number];
 
+/** Collections stored as one database row per record (see services/storage/cloud.ts). */
+export const COLLECTION_KEYS: CollectionKey[] = [
+  "listings",
+  "bookings",
+  "labourRequests",
+  "serviceRequests",
+  "consultations",
+  "interests",
+  "requirements",
+  "equipment",
+  "posts",
+  "replies",
+  "notifications",
+  "groups",
+  "events",
+  "supportRequests",
+];
+
+export interface StorageStatus {
+  mode: "cloud" | "local";
+  status: "connecting" | "saving" | "saved" | "offline" | "local";
+  workspaceId: string;
+  savedAt?: string;
+  error?: string;
+}
+
 export interface State extends Collections {
   session: Session | null;
   decisions: Record<string, Decision>;
@@ -97,6 +124,7 @@ type Action =
   | { type: "markAllRead"; userId: string }
   | { type: "toggleSaved"; listingId: string }
   | { type: "toggleSavedResource"; key: string }
+  | { type: "hydrate"; state: State }
   | { type: "reset" };
 
 const STORAGE_KEY = "agricluster:v5";
@@ -192,9 +220,34 @@ function reducer(state: State, action: Action): State {
           ? state.savedResources.filter((k) => k !== action.key)
           : [...state.savedResources, action.key],
       };
+    case "hydrate":
+      // Data loaded from the database; who is signed in stays per device.
+      return { ...action.state, session: state.session };
     case "reset":
       return initialState;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Database snapshots: settings in one row, each collection record in its own row.
+
+function toSnapshot(s: State): Snapshot {
+  const settings: Record<string, unknown> = { __collections: COLLECTION_KEYS };
+  const collections: Snapshot["collections"] = {};
+  for (const [k, v] of Object.entries(s)) {
+    if (k === "session") continue;
+    if ((COLLECTION_KEYS as string[]).includes(k)) collections[k] = v as { id: string }[];
+    else settings[k] = v;
+  }
+  return { settings, collections };
+}
+
+function fromSnapshot(snap: Snapshot): State {
+  const { __collections, ...settings } = snap.settings as { __collections?: string[] } & Record<string, unknown>;
+  const collections: Record<string, unknown> = {};
+  // A collection the space saved but that now has no rows is empty, not "use the seeds".
+  for (const k of __collections ?? []) collections[k] = snap.collections[k] ?? [];
+  return { ...initialState, ...settings, ...collections, session: null } as State;
 }
 
 function loadState(): State {
@@ -252,6 +305,12 @@ interface AppStore extends State {
   acceptOffer: (listing: CropListing, buyer: { userId: string; label: string }) => void;
   declineOffer: (listing: CropListing, buyerLabel: string) => void;
   resetDemo: () => void;
+  /** Where the data is saved, and whether the last save worked. */
+  storage: StorageStatus;
+  /** Start a fresh demo space in the database (the old one stays reachable by its share link). */
+  newDemoSpace: () => void;
+  /** Try connecting to the database again after being offline. */
+  retryStorage: () => void;
 }
 
 const AppStoreContext = createContext<AppStore | null>(null);
@@ -266,6 +325,90 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       // Storage unavailable (private mode, quota) — the demo still works in memory.
     }
   }, [state]);
+
+  // ---- Cloud database (Supabase). The browser copy above stays as an offline fallback.
+  const wsRef = useRef(cloudConfigured ? currentWorkspaceId() : "");
+  const lastSaved = useRef<Snapshot | null>(null);
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const busy = useRef(false);
+  const [ready, setReady] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [storage, setStorage] = useState<StorageStatus>({
+    mode: cloudConfigured ? "cloud" : "local",
+    status: cloudConfigured ? "connecting" : "local",
+    workspaceId: wsRef.current,
+  });
+
+  // Load this browser's demo space.
+  useEffect(() => {
+    if (!cloudConfigured) return;
+    let cancelled = false;
+    setReady(false);
+    setStorage((s) => ({ ...s, status: "connecting", workspaceId: wsRef.current, error: undefined }));
+    loadWorkspace(wsRef.current)
+      .then((remote) => {
+        if (cancelled) return;
+        lastSaved.current = remote;
+        if (remote) dispatch({ type: "hydrate", state: fromSnapshot(remote) });
+        setReady(true);
+      })
+      .catch((e: Error) => !cancelled && setStorage((s) => ({ ...s, status: "offline", error: e.message })));
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt]);
+
+  // Save changes shortly after they happen, one save at a time, only what changed.
+  useEffect(() => {
+    if (!cloudConfigured || !ready) return;
+    const t = setTimeout(() => {
+      const snap = toSnapshot(state);
+      const ws = wsRef.current;
+      queue.current = queue.current.then(async () => {
+        busy.current = true;
+        setStorage((s) => ({ ...s, status: "saving" }));
+        try {
+          lastSaved.current = await saveWorkspace(ws, snap, lastSaved.current);
+          setStorage((s) => ({ ...s, status: "saved", savedAt: new Date().toISOString(), error: undefined }));
+        } catch (e) {
+          setStorage((s) => ({ ...s, status: "offline", error: (e as Error).message }));
+        } finally {
+          busy.current = false;
+        }
+      });
+    }, 600);
+    return () => clearTimeout(t);
+  }, [state, ready]);
+
+  // Coming back to the tab: pick up changes made on another device with the share link.
+  useEffect(() => {
+    if (!cloudConfigured) return;
+    const onFocus = () => {
+      if (!ready || busy.current) return;
+      loadWorkspace(wsRef.current)
+        .then((remote) => {
+          if (!remote || busy.current) return;
+          if (JSON.stringify(remote) === JSON.stringify(lastSaved.current)) return;
+          lastSaved.current = remote;
+          dispatch({ type: "hydrate", state: fromSnapshot(remote) });
+        })
+        .catch(() => undefined);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [ready]);
+
+  const newDemoSpace = useCallback(() => {
+    if (!cloudConfigured) {
+      dispatch({ type: "reset" });
+      return;
+    }
+    wsRef.current = startNewWorkspace();
+    lastSaved.current = null;
+    dispatch({ type: "reset" });
+    setAttempt((a) => a + 1);
+  }, []);
+  const retryStorage = useCallback(() => setAttempt((a) => a + 1), []);
 
   const signInAsDemo = useCallback((role: Role) => {
     const user = demoUserForRole(role);
@@ -365,8 +508,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       declineOffer: (listing, buyerLabel) =>
         update("listings", listing.id, { status: "listed", requirementId: undefined, offerDeclinedBy: buyerLabel }),
       resetDemo: () => dispatch({ type: "reset" }),
+      storage,
+      newDemoSpace,
+      retryStorage,
     };
-  }, [state, signInAsDemo, signUp]);
+  }, [state, signInAsDemo, signUp, storage, newDemoSpace, retryStorage]);
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;
 }

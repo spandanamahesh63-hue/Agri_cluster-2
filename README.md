@@ -31,7 +31,17 @@ Sign in from the login screen with **Demo access**. Pick any of the seven roles:
 - Expert
 - Community
 
-Everything you do is stored in your browser only. **Reset demo** (sidebar or Profile) restores the starting data.
+**Reset demo** (sidebar or Profile) restores the starting data.
+
+## Where data is stored
+
+- **With Supabase configured** (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, see `.env.example`), data is saved in a PostgreSQL database.
+  - Each browser works in its own *demo space*. Settings and the plan go in a `workspaces` row, and every listing, request and notification is its own `records` row.
+  - Profile → "Where your data is saved" shows the status and a share link that opens the same space on another device.
+  - A copy stays in the browser, so the app keeps working offline.
+- **Without it**, and always in the double-click file and the published artifact, data stays in the browser only.
+
+To set up the database, run `supabase/schema.sql` once in the Supabase SQL Editor. Row-level security lets a browser read and write only the space whose id it sends. This is prototype-grade: before storing real farmers' data, add Supabase Auth (phone OTP) and per-role policies. The sign-in session is never stored in the database.
 
 ## Sharing with judges
 
