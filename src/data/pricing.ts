@@ -61,8 +61,8 @@ export const FARMER_PROMISE = "Farmers never pay a commission. Questions to expe
 // Replace every [placeholder] before going live.
 export const BUSINESS = {
   name: "[Your registered business name]",
-  address: "[Registered address, city, PIN code]",
-  email: "[support email]",
+  address: "[Street address], Mysuru, Karnataka 570001",
+  email: "spandanamrajamani@gmail.com",
   phone: "[support phone]",
   grievanceOfficer: "[Name of grievance officer]",
   jurisdiction: "Mysuru, Karnataka",
