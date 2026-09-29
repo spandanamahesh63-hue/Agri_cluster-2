@@ -101,7 +101,13 @@ export function LoginPage() {
         <Button type="submit" className="w-full">
           Sign in
         </Button>
-        <InfoNote>Sign-in is simulated in this prototype — no OTP is sent and no account data leaves your browser.</InfoNote>
+        <InfoNote>
+          Sign-in is simulated in this prototype: no OTP is sent and no password is used. Please don't enter real personal details. See the{" "}
+          <Link to="/privacy" className="underline">
+            privacy policy
+          </Link>{" "}
+          for where demo data is saved.
+        </InfoNote>
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-muted">

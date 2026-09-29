@@ -145,6 +145,15 @@ Every new record and status change notifies the other side through `features/not
 
 AgriCluster never decides eligibility. The farmer's Support page explains why each option fits their plan, keeps a documents checklist, and sends "Ask for help applying" requests to the cluster office (`/cluster/support`). Both sides are notified as the request moves on. Re-check the facts and `LAST_CHECKED` before a real pilot.
 
+### Pricing, policies and commission
+
+- **Public pages:** `/pricing`, `/terms`, `/privacy`, `/refunds` and `/contact`, linked from the sign-in screen. The proposed plans, commission rates and business details all live in `src/data/pricing.ts`.
+- **Before going live:**
+  - replace the `[placeholders]` in `BUSINESS`
+  - have the policy pages reviewed
+  - add real sign-in and a payment gateway (for example Razorpay or Cashfree).
+- **Commission tracking:** the cluster office's **Revenue** page works out the proposed commission on confirmed bookings, agreed deals and paid consultations. It records no money; nothing is charged or collected.
+
 ### Privacy
 
 `features/shared/privacy.ts` decides who sees what. Buyers see only what the farmer approved on each listing (method, photos, village, name). They never see phone numbers, finances or documents. Labour sees the crop and village of the job. Experts see the message and chosen field.

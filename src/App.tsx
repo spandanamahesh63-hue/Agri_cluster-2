@@ -10,6 +10,7 @@ import { lazyPage } from "./utils/lazyPage";
 import { DemoGuideProvider } from "./features/demo/DemoGuide";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
+import { ContactPage, PricingPage, PrivacyPage, RefundsPage, TermsPage } from "./pages/public/PublicPages";
 import { PlannedPage } from "./pages/shared/PlannedPage";
 import { NotFoundPage } from "./pages/shared/NotFoundPage";
 const FarmerDashboard = lazyPage(() => import("./pages/farmer/FarmerDashboard"), "FarmerDashboard");
@@ -22,6 +23,7 @@ const UploadCropPage = lazyPage(() => import("./pages/farmer/UploadCropPage"), "
 const ResourcesPage = lazyPage(() => import("./pages/farmer/ResourcesPage"), "ResourcesPage");
 const ExpertsPage = lazyPage(() => import("./pages/farmer/ExpertsPage"), "ExpertsPage");
 const SupportPage = lazyPage(() => import("./pages/farmer/SupportPage"), "SupportPage");
+const ClusterRevenuePage = lazyPage(() => import("./pages/cluster/ClusterRevenuePage"), "ClusterRevenuePage");
 const ClusterSupportPage = lazyPage(() => import("./pages/cluster/ClusterSupportPage"), "ClusterSupportPage");
 const ProfilePage = lazyPage(() => import("./pages/farmer/ProfilePage"), "ProfilePage");
 const PlanOverviewPage = lazyPage(() => import("./pages/farmer/plan/PlanOverviewPage"), "PlanOverviewPage");
@@ -92,6 +94,7 @@ const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
     resources: <ClusterResourcesPage />,
     market: <ClusterMarketPage />,
     support: <ClusterSupportPage />,
+    revenue: <ClusterRevenuePage />,
     impact: <ClusterImpactPage />,
   },
   buyer: {
@@ -175,6 +178,11 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/refunds" element={<RefundsPage />} />
+            <Route path="/contact" element={<ContactPage />} />
 
             {roleList.map(({ role, nav }) => (
               <Route
