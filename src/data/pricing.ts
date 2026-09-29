@@ -65,7 +65,7 @@ export const BUSINESS = {
   email: "[support email]",
   phone: "[support phone]",
   grievanceOfficer: "[Name of grievance officer]",
-  jurisdiction: "[City], Karnataka",
+  jurisdiction: "Mysuru, Karnataka",
   lastUpdated: "2026-09-30",
 };
 
