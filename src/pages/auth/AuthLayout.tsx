@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { Logo } from "../../components/layout/Logo";
 import { cluster } from "../../data/mock/cluster";
 import { JOURNEY, PRINCIPLE, TAGLINE } from "../../data/brand";
-import { PublicFooterLinks } from "../public/PublicPages";
+import { FeedbackButton, PublicFooterLinks } from "../public/PublicPages";
 
 /** Two-pane auth layout: product story on the left, the form on the right. */
 export function AuthLayout({ children, title }: { children: ReactNode; title: string }) {
@@ -57,7 +57,10 @@ export function AuthLayout({ children, title }: { children: ReactNode; title: st
           <p className="mt-3 text-sm text-ink-muted">{TAGLINE}</p>
         </div>
         <div className="mx-auto w-full max-w-md">{children}</div>
-        <PublicFooterLinks className="mt-8" />
+        <div className="mx-auto mt-8 flex w-full max-w-md flex-col items-center gap-3">
+          <FeedbackButton />
+          <PublicFooterLinks />
+        </div>
       </section>
     </div>
   );

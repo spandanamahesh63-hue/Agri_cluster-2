@@ -154,6 +154,13 @@ AgriCluster never decides eligibility. The farmer's Support page explains why ea
   - add real sign-in and a payment gateway (for example Razorpay or Cashfree).
 - **Commission tracking:** the cluster office's **Revenue** page works out the proposed commission on confirmed bookings, agreed deals and paid consultations. It records no money; nothing is charged or collected.
 
+### Feedback
+
+- **Where it is:** `/feedback` is linked from the sign-in screen ("Share your feedback") and from the footer of the public pages.
+- **Anonymous:** no name, phone or demo-space id is sent. An email is sent only if the person asks for a reply.
+- **Where responses go:** into the `feedback` table in Supabase (run `supabase/feedback.sql` once). The website can insert rows but not read them; read them in the Supabase dashboard.
+- **Without a database** (offline file, embedded preview), the form offers "Copy my answers" and the support email instead of a Send button. Set `FALLBACK_FORM_URL` in `FeedbackPage.tsx` to use a Google Form instead.
+
 ### Privacy
 
 `features/shared/privacy.ts` decides who sees what. Buyers see only what the farmer approved on each listing (method, photos, village, name). They never see phone numbers, finances or documents. Labour sees the crop and village of the job. Experts see the message and chosen field.

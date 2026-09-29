@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { Suspense, type ReactElement } from "react";
 import { BrowserRouter, HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { Role } from "./types";
 import { AppStoreProvider, useAppStore } from "./store/AppStore";
@@ -11,6 +11,7 @@ import { DemoGuideProvider } from "./features/demo/DemoGuide";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { ContactPage, PricingPage, PrivacyPage, RefundsPage, TermsPage } from "./pages/public/PublicPages";
+const FeedbackPage = lazyPage(() => import("./pages/public/FeedbackPage"), "FeedbackPage");
 import { PlannedPage } from "./pages/shared/PlannedPage";
 import { NotFoundPage } from "./pages/shared/NotFoundPage";
 const FarmerDashboard = lazyPage(() => import("./pages/farmer/FarmerDashboard"), "FarmerDashboard");
@@ -183,6 +184,14 @@ export default function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/refunds" element={<RefundsPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route
+              path="/feedback"
+              element={
+                <Suspense fallback={<div className="min-h-dvh bg-canvas" aria-busy="true" />}>
+                  <FeedbackPage />
+                </Suspense>
+              }
+            />
 
             {roleList.map(({ role, nav }) => (
               <Route

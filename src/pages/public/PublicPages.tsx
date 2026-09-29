@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
 import clsx from "clsx";
-import { Check, FileWarning } from "lucide-react";
+import { Check, FileWarning, MessageSquareHeart } from "lucide-react";
 import { Logo } from "../../components/layout/Logo";
 import { Card } from "../../components/ui/Card";
 import { Badge, InfoNote } from "../../components/ui/Badge";
@@ -16,7 +16,17 @@ const links = [
   { to: "/privacy", label: "Privacy" },
   { to: "/refunds", label: "Refunds" },
   { to: "/contact", label: "Contact" },
+  { to: "/feedback", label: "Feedback" },
 ];
+
+/** The visible call to action that opens the feedback form. */
+export function FeedbackButton({ className }: { className?: string }) {
+  return (
+    <ButtonLink to="/feedback" variant="secondary" size="sm" className={className} icon={<MessageSquareHeart aria-hidden className="size-4" />}>
+      Share your feedback
+    </ButtonLink>
+  );
+}
 
 /** Links to the public pages, for the sign-in screen and page footers. */
 export function PublicFooterLinks({ className }: { className?: string }) {
@@ -31,7 +41,7 @@ export function PublicFooterLinks({ className }: { className?: string }) {
   );
 }
 
-function PublicLayout({ title, children }: { title: string; children: ReactNode }) {
+export function PublicLayout({ title, children }: { title: string; children: ReactNode }) {
   useEffect(() => {
     document.title = `${title} · AgriCluster`;
     window.scrollTo(0, 0);
@@ -66,6 +76,11 @@ function PublicLayout({ title, children }: { title: string; children: ReactNode 
       <footer className="border-t border-line py-6">
         <p className="mb-2 text-center text-[12px] text-ink-subtle">{TAGLINE}</p>
         <PublicFooterLinks />
+        {title !== "Share your feedback" && (
+          <div className="mt-4 flex justify-center">
+            <FeedbackButton />
+          </div>
+        )}
       </footer>
     </div>
   );

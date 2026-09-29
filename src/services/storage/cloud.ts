@@ -180,6 +180,29 @@ export async function saveWorkspace(ws: string, next: Snapshot, previous: Snapsh
   return next;
 }
 
+export interface FeedbackRow {
+  role: string;
+  rating: number;
+  ease: number | null;
+  usefulness: number | null;
+  features: string[];
+  experience: string | null;
+  suggestions: string | null;
+  contact_email: string | null;
+  source: string;
+}
+
+/**
+ * Send one anonymous feedback response (supabase/feedback.sql). No demo-space id
+ * or sign-in details are sent. Insert-only: the website can't read responses back.
+ */
+export async function sendFeedback(row: FeedbackRow): Promise<void> {
+  const h: Record<string, string> = { apikey: KEY!, "Content-Type": "application/json", Prefer: "return=minimal" };
+  if (!KEY!.startsWith("sb_")) h.Authorization = `Bearer ${KEY}`;
+  const res = await fetch(`${URL_}/rest/v1/feedback`, { method: "POST", headers: h, body: JSON.stringify(row) });
+  if (!res.ok) throw new Error(`Feedback not saved (${res.status}) ${(await res.text()).slice(0, 160)}`);
+}
+
 /** Delete a workspace and all its records (records cascade). */
 export async function deleteWorkspace(ws: string): Promise<void> {
   await call(ws, `workspaces?id=eq.${ws}`, { method: "DELETE" });
