@@ -60,11 +60,11 @@ export const FARMER_PROMISE = "Farmers never pay a commission. Questions to expe
 // Business details used on the Contact, Terms, Privacy and Refund pages.
 // Replace every [placeholder] before going live.
 export const BUSINESS = {
-  name: "[Your registered business name]",
+  name: "AgriCluster",
   address: "[Street address], Mysuru, Karnataka 570001",
   email: "spandanamrajamani@gmail.com",
   phone: "[support phone]",
-  grievanceOfficer: "[Name of grievance officer]",
+  grievanceOfficer: "Spandana",
   jurisdiction: "Mysuru, Karnataka",
   lastUpdated: "2026-09-30",
 };
