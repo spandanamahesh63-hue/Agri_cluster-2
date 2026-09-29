@@ -1,29 +1,31 @@
--- AgriCluster: feedback table.
+-- AgriCluster: feedback table (the version run on the live project).
 -- Run once in Supabase → SQL Editor → New query → paste → Run. Safe to run again.
 --
--- Anyone using the website can SEND feedback. Nobody can read it through the
--- website: there is no select policy. The AgriCluster team reads it in the
--- Supabase dashboard (Table Editor → feedback).
+-- Anyone using the website can SEND feedback. Nobody can read or delete it
+-- through the website: there is only an insert policy. The AgriCluster team
+-- reads responses in the Supabase dashboard (Table Editor → feedback).
+-- Lengths and the reply email are checked by the form before sending.
 
 create table if not exists public.feedback (
   id            uuid primary key default gen_random_uuid(),
   created_at    timestamptz not null default now(),
-  role          text not null check (char_length(role) between 1 and 40),
+  role          text not null,
   rating        smallint not null check (rating between 1 and 5),
   ease          smallint check (ease between 1 and 5),
   usefulness    smallint check (usefulness between 1 and 5),
-  features      text[] not null default '{}' check (cardinality(features) <= 12),
-  experience    text check (char_length(experience) <= 1000),
-  suggestions   text check (char_length(suggestions) <= 1000),
-  contact_email text check (contact_email is null or (char_length(contact_email) <= 120 and contact_email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$')),
-  source        text check (char_length(source) <= 20)
+  features      text[] not null default '{}',
+  experience    text,
+  suggestions   text,
+  contact_email text,
+  source        text
 );
 
 alter table public.feedback enable row level security;
 
 drop policy if exists "anyone can send feedback" on public.feedback;
-create policy "anyone can send feedback" on public.feedback
-  for insert to anon
+
+create policy "anyone can send feedback"
+  on public.feedback for insert to anon
   with check (true);
 
 grant insert on public.feedback to anon;
