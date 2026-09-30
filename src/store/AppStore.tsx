@@ -337,7 +337,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     }
   }, [state]);
 
-  // ---- Cloud database (Supabase). The browser copy above stays as an offline fallback.
+  // ---- Cloud database (MongoDB or Supabase, see services/storage/cloud.ts). The browser copy above stays as an offline fallback.
   const wsRef = useRef(cloudConfigured ? currentWorkspaceId() : "");
   const lastSaved = useRef<Snapshot | null>(null);
   const queue = useRef<Promise<void>>(Promise.resolve());

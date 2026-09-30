@@ -8,6 +8,7 @@ import { Badge, InfoNote } from "../../components/ui/Badge";
 import { ButtonLink } from "../../components/ui/Button";
 import { BUSINESS, FARMER_PROMISE, PRICING_STATUS, commissionRates, isPlaceholder, plans, type RevenueStream } from "../../data/pricing";
 import { TAGLINE } from "../../data/brand";
+import { databaseName } from "../../services/storage/cloud";
 import { formatDate, formatINR } from "../../utils/format";
 
 const links = [
@@ -261,7 +262,7 @@ export function PrivacyPage() {
           <ul>
             <li>In your browser's local storage on your device, so the app works offline.</li>
             <li>
-              On the hosted website, also in our cloud database (Supabase, PostgreSQL) under a random demo-space id. Database rules let a browser read and
+              On the hosted website, also in our cloud database ({databaseName}) under a random demo-space id. Database rules let a browser read and
               write only its own demo space. Anyone you give the share link to can open that space.
             </li>
             <li>The downloadable demo file and embedded previews keep data in your browser only.</li>
@@ -277,7 +278,7 @@ export function PrivacyPage() {
         <section>
           <h2>Service providers</h2>
           <p>
-            The website is hosted on Netlify and data is stored with Supabase. Fonts load from Google Fonts. These providers may keep standard technical
+            The website is hosted on Netlify and data is stored with {databaseName}. Fonts load from Google Fonts. These providers may keep standard technical
             logs (such as IP addresses). We don't sell your data or use advertising trackers.
           </p>
         </section>

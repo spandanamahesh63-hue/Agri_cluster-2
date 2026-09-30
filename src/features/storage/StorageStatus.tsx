@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Cloud, CloudOff, HardDrive, Link2, Loader2, RefreshCw } from "lucide-react";
 import { useAppStore } from "../../store/AppStore";
-import { cloudHost, shareLink } from "../../services/storage/cloud";
+import { cloudHost, databaseName, shareLink } from "../../services/storage/cloud";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { InfoNote } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -48,7 +48,7 @@ export function StorageCard() {
         {cloud ? (
           <>
             <p>
-              This demo space is saved in the AgriCluster database (Supabase, <span className="font-mono text-[12px]">{cloudHost}</span>). Each browser gets its
+              This demo space is saved in the AgriCluster database ({databaseName}, <span className="font-mono text-[12px]">{cloudHost}</span>). Each browser gets its
               own space, so other visitors don't see your changes.
             </p>
             {storage.status === "saved" && storage.savedAt && <p className="text-ink-muted">Last saved at {formatTime(storage.savedAt)}.</p>}

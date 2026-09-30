@@ -35,6 +35,13 @@ Sign in from the login screen with **Demo access**. Pick any of the seven roles:
 
 ## Where data is stored
 
+`VITE_DATABASE` picks the database: `mongodb`, `supabase` or `off` (see `.env.example`).
+
+- **With MongoDB** (`VITE_DATABASE=mongodb` plus the server-side `MONGODB_URI`), the app calls its own `/api`, served by the Netlify Function `netlify/functions/api.mts` (and by `npm run dev` locally).
+  - The connection string never reaches the browser.
+  - The function checks every request: a request only reaches the demo space whose id it sends, only known collections are accepted, and sizes are capped.
+  - Data goes in three collections: `workspaces`, `records` and `feedback`. Read feedback in Atlas → Browse Collections.
+  - Setup: create a free Atlas cluster, add a database user, allow network access from anywhere (`0.0.0.0/0`, since Netlify has no fixed IP), then set `VITE_DATABASE=mongodb` and `MONGODB_URI` in Netlify's environment variables and redeploy.
 - **With Supabase configured** (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, see `.env.example`), data is saved in a PostgreSQL database.
   - Each browser works in its own *demo space*. Settings and the plan go in a `workspaces` row, and every listing, request and notification is its own `records` row.
   - Profile → "Where your data is saved" shows the status and a share link that opens the same space on another device.
