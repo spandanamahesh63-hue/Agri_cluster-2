@@ -186,6 +186,12 @@ The cluster view (`features/cluster/useClusterView.ts`) layers this activity ont
   - the cluster map is one labelled image, with the farm list as its accessible equivalent.
 - **Responsive:** phones get a bottom tab bar and a "More" drawer rather than a shrunken sidebar.
 
+## Image credits
+
+- **Home page photo:** "Misty Morning Over Lush Rice Fields" by Sadek Husein on Unsplash ([photo page](https://unsplash.com/photos/a-lush-green-paddy-field-under-a-cloudy-sky-oS2AK15fCCI)), used under the Unsplash License.
+- **Files:** `src/assets/farm-hero-800.webp` (68 KB, phones and tablets) and `farm-hero-1600.webp` (186 KB, desktops). Only one is downloaded per visit.
+- **Section headings:** the crop-row motif on plan steps, Market, Resources and Support is CSS line art (`.agri-header` in `src/index.css`), with no image files.
+
 ## Legacy prototype
 
 The original single-file prototype (`public/index.html` + `public/server.js`, Express) is kept unchanged in `public/`. Because of that, Vite serves static assets from `static/`. A backup of the original is in `_backup/`.

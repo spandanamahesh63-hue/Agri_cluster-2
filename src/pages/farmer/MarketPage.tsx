@@ -28,6 +28,7 @@ export function MarketPage() {
 
   const header = (
     <PageHeader
+      decorated
       title="Market"
       description="Where can I sell my crop, and when?"
       actions={

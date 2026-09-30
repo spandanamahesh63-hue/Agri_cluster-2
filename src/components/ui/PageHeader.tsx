@@ -5,11 +5,13 @@ interface PageHeaderProps {
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
+  /** Add the subtle farming motif behind the heading (see .agri-header). */
+  decorated?: boolean;
 }
 
-export function PageHeader({ eyebrow, title, description, actions }: PageHeaderProps) {
+export function PageHeader({ eyebrow, title, description, actions, decorated }: PageHeaderProps) {
   return (
-    <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <header className={`mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between${decorated ? " agri-header" : ""}`}>
       <div className="min-w-0">
         {eyebrow && <div className="mb-1 text-[12px] font-medium text-ink-subtle">{eyebrow}</div>}
         <h1 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">{title}</h1>

@@ -35,7 +35,7 @@ export function ResourcesPage() {
   const tab = (params.get("tab") as Tab) ?? "machinery";
   const setTab = (t: Tab) => setParams({ tab: t }, { replace: true });
 
-  const header = <PageHeader title="Resources" description="What equipment, labour and technology can I use through the cluster?" />;
+  const header = <PageHeader decorated title="Resources" description="What equipment, labour and technology can I use through the cluster?" />;
   if (catalog.status === "loading") return <PageSkeleton />;
   if (catalog.status === "error")
     return (

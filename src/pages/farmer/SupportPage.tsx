@@ -43,7 +43,7 @@ export function SupportPage() {
 
   return (
     <>
-      <PageHeader title="Support" description="Which government schemes and private options could help, and who can help me apply?" />
+      <PageHeader decorated title="Support" description="Which government schemes and private options could help, and who can help me apply?" />
       <InfoNote className="mb-4">
         Government facts come from official sources, checked on {formatDate(LAST_CHECKED)}. Rules and amounts change, and AgriCluster doesn't decide who
         qualifies. Confirm with the office before you apply.

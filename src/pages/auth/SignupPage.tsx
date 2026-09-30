@@ -28,7 +28,7 @@ export function SignupPage() {
 
   return (
     <AuthLayout title="Join a cluster">
-      <h2 className="text-xl font-semibold tracking-tight">Join a cluster</h2>
+      <h1 className="text-xl font-semibold tracking-tight">Join a cluster</h1>
       <p className="mt-1 text-sm text-ink-muted">Two quick details now. Farm and crop details come later, one step at a time.</p>
 
       <form onSubmit={onSubmit} noValidate className="mt-6 space-y-5">

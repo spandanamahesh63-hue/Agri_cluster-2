@@ -36,7 +36,7 @@ export function LoginPage() {
     <AuthLayout title="Sign in">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Demo access</h2>
+          <h1 className="text-xl font-semibold tracking-tight">Demo access</h1>
           <p className="mt-1 text-sm text-ink-muted">Explore the prototype as any member of the Mysuru Vegetable Cluster.</p>
         </div>
         <DemoGuideButton label="Guided demo" />

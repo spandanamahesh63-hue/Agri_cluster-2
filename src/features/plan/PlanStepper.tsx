@@ -8,7 +8,9 @@ import type { PlanState } from "./usePlan";
 export function PlanStepper({ current, done }: { current: StepId; done: PlanState["done"] }) {
   const index = planSteps.findIndex((s) => s.id === current);
   return (
-    <nav aria-label="Planning steps" className="-mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    // `relative` keeps the visually-hidden labels inside this scroll area; without it they
+    // escape it and widen the whole page on phones.
+    <nav aria-label="Planning steps" className="relative -mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <p className="mb-2 text-[12px] text-ink-subtle">
         Step {index + 1} of {planSteps.length}
       </p>

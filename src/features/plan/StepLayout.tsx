@@ -31,7 +31,7 @@ export function StepLayout({ step, description, children, action, aside }: StepL
         Plan overview
       </Link>
       <PlanStepper current={step} done={done} />
-      <header className="mb-6">
+      <header className="agri-header mb-6">
         <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{meta.question}</h1>
         {description && <p className="mt-1 max-w-2xl text-sm text-ink-muted">{description}</p>}
       </header>

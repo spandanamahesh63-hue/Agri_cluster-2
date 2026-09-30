@@ -24,6 +24,7 @@ export function PlanOverviewPage() {
   return (
     <>
       <PageHeader
+        decorated
         title="My season plan"
         description="Farm → Goal → Crop → Method → Investment → Market → Plan → Resources. Your plan builds step by step."
         actions={
