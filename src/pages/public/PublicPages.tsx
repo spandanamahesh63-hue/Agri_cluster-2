@@ -63,7 +63,7 @@ export function PublicLayout({ title, children }: { title: string; children: Rea
                 {l.label}
               </NavLink>
             ))}
-            <Link to="/login" className="rounded-md px-2.5 py-1.5 font-medium text-brand-700 hover:underline">
+            <Link to="/" className="rounded-md px-2.5 py-1.5 font-medium text-brand-700 hover:underline">
               Open the app
             </Link>
           </nav>

@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import clsx from "clsx";
-import { Ellipsis, LogOut, Menu, Repeat, RotateCw, X } from "lucide-react";
+import { Ellipsis, LogOut, Menu, MessageSquareHeart, Repeat, RotateCw, X } from "lucide-react";
 import type { Role } from "../../types";
 import { navHref, roles, type NavItem } from "../navigation/navConfig";
 import { useAppStore } from "../../store/AppStore";
@@ -196,6 +196,9 @@ function AccountPanel({ role }: { role: Role }) {
         </div>
       </div>
       <div className="mt-1 space-y-0.5">
+        <AccountButton icon={MessageSquareHeart} onClick={() => navigate("/feedback")}>
+          Share feedback
+        </AccountButton>
         <AccountButton icon={Repeat} onClick={() => navigate("/login")}>
           Switch role
         </AccountButton>

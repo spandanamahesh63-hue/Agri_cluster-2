@@ -122,7 +122,8 @@ export function FeedbackPage() {
             The AgriCluster team reads every response. {wantsReply && email ? "We'll reply to the email you gave." : "Your response was sent anonymously."}
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <ButtonLink to="/login">Back to AgriCluster</ButtonLink>
+            {/* "/" returns a signed-in person to their dashboard, anyone else to sign-in. */}
+            <ButtonLink to="/">Back to AgriCluster</ButtonLink>
           </div>
         </Card>
       </PublicLayout>
