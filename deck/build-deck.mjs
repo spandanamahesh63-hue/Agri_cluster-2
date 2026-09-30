@@ -442,7 +442,7 @@ function para(s, runs, opts) {
   });
   s.addText("Pilot starts here", { x: 2.22, y: 4.25, w: 1.45, h: 0.5, fontFace: HEAD, fontSize: 11, color: C.field, align: "center", margin: 0 });
   const points = [
-    ["Real database, simulated sensors", "Runs today on a cloud database with row-level security. Sensor readings are simulated; real sensors plug into the same interfaces later."],
+    ["Real database, simulated sensors", "Runs today on a cloud database (MongoDB Atlas) that keeps each space private. Sensor readings are simulated; real sensors plug into the same interfaces later."],
     ["Same engine, every cluster", "A new cluster reuses the intelligence rules, roles and screens. Only local data changes."],
     ["Network effects", "Each new cluster brings more buyers, equipment providers and experts to every member."],
   ];

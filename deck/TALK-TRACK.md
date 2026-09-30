@@ -72,7 +72,7 @@ The guide panel shows what to press at every step. Say one line per step; don't 
 "The farms, sensors and prices are demonstration data, labelled on every screen. The government scheme facts are real, checked against official sources on 28 September 2026. What users do is stored in a real cloud database."
 
 **"Where is the data stored? Is it secure?"**
-"In a Supabase PostgreSQL database. Each demo space can read and write only its own rows; the database enforces that with row-level security, and we tested that one space can't read or change another. For real farmers we'd add phone-OTP sign-in and per-role permissions in the database. The design for that is already in the code."
+"In a MongoDB Atlas database. The browser never connects to it directly: our own server API holds the database password and checks every request. Each demo space can read and write only its own records, and we tested that one space can't read or change another. For real farmers we'd add phone-OTP sign-in and per-role permissions in that API."
 
 **"Does the app decide who is eligible for a scheme?"**
 "No. It shows why a scheme may fit and what documents are usually needed. The official office decides. The farmer can ask the cluster office for help applying."
