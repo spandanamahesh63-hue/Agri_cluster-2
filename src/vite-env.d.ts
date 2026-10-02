@@ -9,6 +9,8 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL?: string;
   /** Supabase public (anon / publishable) key. Never the service_role key. */
   readonly VITE_SUPABASE_ANON_KEY?: string;
+  /** "real" turns on phone sign-in and real accounts (supabase/accounts.sql). Anything else = demo only. */
+  readonly VITE_ACCOUNTS?: string;
 }
 
 interface ImportMeta {

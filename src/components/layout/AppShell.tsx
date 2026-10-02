@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import clsx from "clsx";
-import { Ellipsis, LogOut, Menu, MessageSquareHeart, Repeat, RotateCw, X } from "lucide-react";
+import { Ellipsis, LogOut, Menu, MessageSquareHeart, Repeat, RotateCw, UserCheck, X } from "lucide-react";
 import type { Role } from "../../types";
 import { navHref, roles, type NavItem } from "../navigation/navConfig";
 import { useAppStore } from "../../store/AppStore";
@@ -14,6 +14,7 @@ import { PageErrorBoundary } from "./PageErrorBoundary";
 import { NotificationBell } from "./NotificationBell";
 import { DemoGuideButton } from "../../features/demo/DemoGuide";
 import { StorageBadge } from "../../features/storage/StorageStatus";
+import { useAccount } from "../../features/accounts/AccountProvider";
 
 export function AppShell({ role }: { role: Role }) {
   const meta = roles[role];
@@ -176,7 +177,10 @@ function DemoClock() {
 
 function AccountPanel({ role }: { role: Role }) {
   const { session, signOut, resetDemo } = useAppStore();
+  const { account, signOut: signOutAccount } = useAccount();
   const navigate = useNavigate();
+  const real = session?.mode === "real";
+  const admin = real && account.status === "ready" && account.profile.is_admin;
   const meta = roles[role];
   const initials = (session?.name ?? "")
     .split(" ")
@@ -199,23 +203,35 @@ function AccountPanel({ role }: { role: Role }) {
         <AccountButton icon={MessageSquareHeart} onClick={() => navigate("/feedback")}>
           Share feedback
         </AccountButton>
-        <AccountButton icon={Repeat} onClick={() => navigate("/login")}>
-          Switch role
-        </AccountButton>
-        <AccountButton
-          icon={RotateCw}
-          onClick={() => {
-            resetDemo();
-            navigate("/login");
-          }}
-        >
-          Reset demo
-        </AccountButton>
+        {admin && (
+          <AccountButton icon={UserCheck} onClick={() => navigate("/cluster/people")}>
+            People
+          </AccountButton>
+        )}
+        {!real && (
+          <>
+            <AccountButton icon={Repeat} onClick={() => navigate("/login")}>
+              Switch role
+            </AccountButton>
+            <AccountButton
+              icon={RotateCw}
+              onClick={() => {
+                resetDemo();
+                navigate("/login");
+              }}
+            >
+              Reset demo
+            </AccountButton>
+          </>
+        )}
         <AccountButton
           icon={LogOut}
           onClick={() => {
-            signOut();
-            navigate("/login");
+            if (real) void signOutAccount().then(() => navigate("/login"));
+            else {
+              signOut();
+              navigate("/login");
+            }
           }}
         >
           Sign out

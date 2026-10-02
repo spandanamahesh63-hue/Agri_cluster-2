@@ -57,6 +57,8 @@ export interface Session {
   userId: string;
   role: Role;
   name: string;
+  /** "real": signed in with a phone number (services/auth/accounts.ts). Otherwise a demo role. */
+  mode?: "demo" | "real";
 }
 
 export interface Collections {
@@ -281,6 +283,8 @@ type NewRecord<T> = Omit<T, "id" | "createdAt" | "status">;
 interface AppStore extends State {
   signInAsDemo: (role: Role) => Session;
   signUp: (role: Role, name: string) => Session;
+  /** A real account finished signing in (features/accounts/AccountProvider.tsx). */
+  signInReal: (session: Omit<Session, "mode">) => void;
   signOut: () => void;
   decide: (recommendationId: string, status: DecisionStatus) => void;
   undoDecision: (recommendationId: string) => void;
@@ -440,16 +444,20 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
   const signInAsDemo = useCallback((role: Role) => {
     const user = demoUserForRole(role);
-    const session = { userId: user.id, role, name: user.name };
+    const session: Session = { userId: user.id, role, name: user.name, mode: "demo" };
     dispatch({ type: "signIn", session });
     return session;
+  }, []);
+
+  const signInReal = useCallback((s: Omit<Session, "mode">) => {
+    dispatch({ type: "signIn", session: { ...s, mode: "real" } });
   }, []);
 
   // Simulated sign-up: new accounts reuse the role's demo profile data so every
   // screen has coherent content, but keep the name the person entered.
   const signUp = useCallback((role: Role, name: string) => {
     const user = demoUserForRole(role);
-    const session = { userId: user.id, role, name: name.trim() || user.name };
+    const session: Session = { userId: user.id, role, name: name.trim() || user.name, mode: "demo" };
     dispatch({ type: "signIn", session, newFarmer: role === "farmer" });
     return session;
   }, []);
@@ -479,6 +487,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       ...state,
       signInAsDemo,
       signUp,
+      signInReal,
       signOut: () => dispatch({ type: "signOut" }),
       decide: (recommendationId, status) => dispatch({ type: "decide", recommendationId, status }),
       undoDecision: (recommendationId) => dispatch({ type: "undoDecision", recommendationId }),
@@ -540,7 +549,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       newDemoSpace,
       retryStorage,
     };
-  }, [state, signInAsDemo, signUp, storage, newDemoSpace, retryStorage]);
+  }, [state, signInAsDemo, signUp, signInReal, storage, newDemoSpace, retryStorage]);
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;
 }

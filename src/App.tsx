@@ -8,6 +8,8 @@ import { RequireRole } from "./components/layout/RequireRole";
 import { roleHome, roleList } from "./components/navigation/navConfig";
 import { lazyPage } from "./utils/lazyPage";
 import { DemoGuideProvider } from "./features/demo/DemoGuide";
+import { AccountProvider } from "./features/accounts/AccountProvider";
+import { accountsEnabled } from "./services/auth/accounts";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { ContactPage, PricingPage, PrivacyPage, RefundsPage, TermsPage } from "./pages/public/PublicPages";
@@ -69,6 +71,9 @@ const CommunityDashboard = lazyPage(() => import("./pages/community/CommunityDas
 const GroupsPage = lazyPage(() => import("./pages/community/GroupsPage"), "GroupsPage");
 const EventsPage = lazyPage(() => import("./pages/community/EventsPage"), "EventsPage");
 const CommunityPage = lazyPage(() => import("./pages/shared/CommunityPage"), "CommunityPage");
+const WelcomePage = lazyPage(() => import("./pages/account/WelcomePage"), "WelcomePage");
+const AccountStatusPage = lazyPage(() => import("./pages/account/AccountStatusPage"), "AccountStatusPage");
+const PeoplePage = lazyPage(() => import("./pages/account/PeoplePage"), "PeoplePage");
 const RoleProfilePage = lazyPage(() => import("./pages/shared/RoleProfilePage"), "RoleProfilePage");
 
 // Screens that are built. Any nav item not listed here renders <PlannedPage>.
@@ -153,6 +158,8 @@ const extraRoutes: Partial<Record<Role, { path: string; element: ReactElement }[
     { path: "intelligence/:id", element: <RecommendationDetailPage /> },
     { path: "market/upload", element: <UploadCropPage /> },
   ],
+  // Admins approve people here (real accounts only).
+  cluster: [{ path: "people", element: <PeoplePage /> }],
   buyer: [
     { path: "requirements/new", element: <NewRequirementPage /> },
     { path: "requirements/:id", element: <RequirementDetailPage /> },
@@ -174,11 +181,14 @@ export default function App() {
     <AppStoreProvider>
       <ToastProvider>
         <Router>
+          <AccountProvider>
           <DemoGuideProvider>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup" element={accountsEnabled ? <Navigate to="/login" replace /> : <SignupPage />} />
+            <Route path="/welcome" element={<Suspense fallback={<div className="min-h-dvh bg-canvas" aria-busy="true" />}><WelcomePage /></Suspense>} />
+            <Route path="/account/status" element={<Suspense fallback={<div className="min-h-dvh bg-canvas" aria-busy="true" />}><AccountStatusPage /></Suspense>} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
@@ -219,6 +229,7 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </DemoGuideProvider>
+          </AccountProvider>
         </Router>
       </ToastProvider>
     </AppStoreProvider>
