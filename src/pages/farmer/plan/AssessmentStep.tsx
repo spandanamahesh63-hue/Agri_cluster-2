@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { Lock } from "lucide-react";
-import type { FarmAssessment, Level } from "../../../types";
+import type { FarmAssessment, LandReport, Level } from "../../../types";
 import { StepLayout } from "../../../features/plan/StepLayout";
 import { usePlan } from "../../../features/plan/usePlan";
 import { useAppStore } from "../../../store/AppStore";
@@ -33,6 +33,18 @@ export function AssessmentStep() {
   const [error, setError] = useState<string | null>(null);
   const set = <K extends keyof FarmAssessment>(k: K, v: FarmAssessment[K]) => {
     setA((x) => ({ ...x, [k]: v }));
+    setError(null);
+  };
+  /** Fill in whatever the cluster office's land report recorded; keep the rest. */
+  const applyReport = (r: LandReport) => {
+    setA((x) => ({
+      ...x,
+      ...(r.soilType && { soilType: r.soilType }),
+      ...(r.water && { water: r.water }),
+      ...(r.irrigation && { irrigation: r.irrigation }),
+      ...(r.landAcres && { landAcres: r.landAcres }),
+      ...(r.soilTestDone !== undefined && { soilTestDone: r.soilTestDone }),
+    }));
     setError(null);
   };
 
@@ -206,7 +218,7 @@ export function AssessmentStep() {
               {error}
             </p>
           )}
-          {part < 2 && <LandDetailsHelp />}
+          {part < 2 && <LandDetailsHelp phone={a.contact} place={a.location} onApply={applyReport} />}
           <InfoNote>Answers are used only for rule-based suggestions in this prototype.</InfoNote>
         </Card>
       </form>

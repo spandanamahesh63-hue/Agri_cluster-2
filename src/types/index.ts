@@ -725,12 +725,32 @@ export interface SupportRequest extends Seedable {
   schemeId: string;
   requesterUserId: string;
   help: SupportHelp;
-  contact: "call" | "rsk-visit";
+  /** How the farmer wants to be reached: a call back, a meeting at the RSK, or a team visit to the farm. */
+  contact: SupportContact;
   note: string;
-  status: "requested" | "in-progress" | "documents-needed" | "submitted" | "closed";
+  status: "requested" | "in-progress" | "documents-needed" | "submitted" | "report-ready" | "closed";
   createdAt: ISODateTime;
   /** Latest note from the cluster office. */
   officeNote?: string;
+  /** Phone number for a call back or farm visit. Only the cluster office sees it. */
+  phone?: string;
+  /** Village or landmark for a farm visit. */
+  place?: string;
+  /** What the team found when it checked the farmer's land (land-details requests). */
+  landReport?: LandReport;
+}
+
+export type SupportContact = "call" | "rsk-visit" | "farm-visit";
+
+/** Land details measured or tested by the cluster office team. */
+export interface LandReport {
+  soilType?: FarmAssessment["soilType"];
+  water?: Level;
+  irrigation?: IrrigationType;
+  landAcres?: number;
+  soilTestDone?: boolean;
+  checkedOn: ISODate;
+  notes?: string;
 }
 
 // ---------------------------------------------------------------------------

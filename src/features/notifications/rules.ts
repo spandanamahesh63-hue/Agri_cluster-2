@@ -24,6 +24,7 @@ const supportStatusNotice: Partial<Record<SupportRequest["status"], string>> = {
   "in-progress": "the cluster office is helping you",
   "documents-needed": "documents needed",
   submitted: "application submitted",
+  "report-ready": "your land report is ready",
   closed: "request closed",
 };
 import type { State } from "../../store/AppStore";
@@ -146,8 +147,11 @@ export function onAdd(key: string, record: unknown, s: State): NewNotification[]
         {
           userId: "u-cluster-1",
           kind: "system",
-          title: `${farmLabelForUser(r.requesterUserId)} asked for help with ${scheme.name}`,
-          body: `${supportHelpLabels[r.help]}${r.note ? ` · “${r.note}”` : ""}`,
+          title:
+            r.contact === "farm-visit"
+              ? `${farmLabelForUser(r.requesterUserId)} asked for a farm visit: ${scheme.name.toLowerCase()}`
+              : `${farmLabelForUser(r.requesterUserId)} asked for help with ${scheme.name}`,
+          body: `${supportHelpLabels[r.help]}${r.place ? ` · ${r.place}` : ""}${r.note ? ` · “${r.note}”` : ""}`,
           link: "/cluster/support",
         },
       ];
@@ -272,7 +276,8 @@ export function onUpdate(key: string, before: unknown, patch: Record<string, unk
           kind: "system",
           title: `${scheme.name}: ${words}`,
           body: (patch.officeNote as string | undefined) ?? undefined,
-          link: "/farmer/support?tab=requests",
+          // A land report is applied from step 1 of the plan; everything else lives on Support.
+          link: status === "report-ready" ? "/farmer/plan/assessment" : "/farmer/support?tab=requests",
         },
       ];
     }

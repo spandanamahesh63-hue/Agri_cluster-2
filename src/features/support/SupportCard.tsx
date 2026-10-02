@@ -19,6 +19,7 @@ export const supportStatus: Record<SupportRequest["status"], { label: string; to
   "in-progress": { label: "Cluster office helping", tone: "brand" },
   "documents-needed": { label: "Documents needed", tone: "warning" },
   submitted: { label: "Application submitted", tone: "success" },
+  "report-ready": { label: "Land report ready", tone: "success" },
   closed: { label: "Closed", tone: "neutral" },
 };
 

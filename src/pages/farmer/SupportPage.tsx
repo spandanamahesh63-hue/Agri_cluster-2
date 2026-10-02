@@ -5,6 +5,7 @@ import { useAppStore } from "../../store/AppStore";
 import { usePlan } from "../../features/plan/usePlan";
 import { SupportCard, supportStatus } from "../../features/support/SupportCard";
 import { supportHelpLabels } from "../../features/notifications/rules";
+import { contactLabels, landReportRows } from "../../features/support/labels";
 import { LAST_CHECKED, needLabels, supportById } from "../../data/catalog/support";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
@@ -118,7 +119,7 @@ function RequestsList({ requests }: { requests: ReturnType<typeof useAppStore>["
               <div>
                 <div className="font-medium">{s?.name}</div>
                 <div className="text-ink-muted">
-                  {supportHelpLabels[r.help]} · {r.contact === "call" ? "Call me" : "Meet at the RSK"} · sent {formatDate(r.createdAt)}
+                  {supportHelpLabels[r.help]} · {contactLabels[r.contact].farmer} · sent {formatDate(r.createdAt)}
                 </div>
                 {r.note && <div className="text-ink-muted">“{r.note}”</div>}
                 {r.officeNote && (
@@ -126,6 +127,18 @@ function RequestsList({ requests }: { requests: ReturnType<typeof useAppStore>["
                     <span className="font-medium">Cluster office: </span>
                     {r.officeNote}
                   </p>
+                )}
+                {r.landReport && (
+                  <div className="mt-1 rounded-lg bg-canvas px-3 py-2">
+                    <span className="font-medium">Land report, {formatDate(r.landReport.checkedOn)}: </span>
+                    {landReportRows(r.landReport)
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join(" · ")}
+                    {r.landReport.notes && <div className="text-ink-muted">{r.landReport.notes}</div>}
+                    <ButtonLink to="/farmer/plan/assessment" size="sm" variant="secondary" className="mt-2">
+                      Use it in my plan
+                    </ButtonLink>
+                  </div>
                 )}
               </div>
               <Badge tone={st.tone} className="self-start">
