@@ -389,4 +389,30 @@ export const supportCatalogue: Entry[] = [
   },
 ];
 
-export const supportById = (id: string) => supportCatalogue.find((s) => s.id === id);
+/**
+ * Help from the cluster office for a farmer who doesn't know their land's details
+ * (soil, water, size or records), asked from step 1 of the plan. Not a scheme, so
+ * it isn't in the catalogue list; requests for it travel like any support request.
+ */
+export const landDetailsHelp: SupportScheme = {
+  id: "land-details",
+  name: "Help with my land details",
+  sector: "government",
+  level: "Cluster office",
+  provider: "AgriCluster cluster office, with the Raitha Samparka Kendra",
+  needs: ["soil-training"],
+  summary: "The cluster office helps you find your soil type, water and land size, and arranges a soil test if you need one.",
+  offers: [
+    "A call or a field visit to look at your land with you",
+    "A soil sample sent for testing (Soil Health Card), with the results explained",
+    "Help reading your land records (RTC / pahani) for the exact area",
+  ],
+  eligibility: "Any farmer in the cluster.",
+  documents: ["Land record (RTC / pahani), if you have it"],
+  howToApply: "Ask from step 1 of your plan. The cluster office calls you or meets you at the Raitha Samparka Kendra.",
+  source: { label: "AgriCluster cluster office" },
+  sourceChecked: false,
+};
+
+export const supportById = (id: string): SupportScheme | undefined =>
+  id === landDetailsHelp.id ? landDetailsHelp : supportCatalogue.find((s) => s.id === id);

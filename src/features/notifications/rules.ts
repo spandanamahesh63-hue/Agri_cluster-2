@@ -17,6 +17,7 @@ export const supportHelpLabels: Record<SupportHelp, string> = {
   application: "Help filling the application",
   documents: "Help collecting documents",
   compare: "Compare options",
+  "land-details": "Find out my land details",
 };
 
 const supportStatusNotice: Partial<Record<SupportRequest["status"], string>> = {

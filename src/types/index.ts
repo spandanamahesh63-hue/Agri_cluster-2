@@ -701,7 +701,7 @@ export interface SupportScheme {
   id: string;
   name: string;
   sector: SupportSector;
-  level: "Central government" | "Karnataka government" | "Private sector";
+  level: "Central government" | "Karnataka government" | "Private sector" | "Cluster office";
   provider: string;
   needs: SupportNeed[];
   summary: string;
@@ -717,7 +717,7 @@ export interface SupportScheme {
   sourceChecked: boolean;
 }
 
-export type SupportHelp = "eligibility" | "application" | "documents" | "compare";
+export type SupportHelp = "eligibility" | "application" | "documents" | "compare" | "land-details";
 
 /** A farmer asking the cluster office for help with one support option. */
 export interface SupportRequest extends Seedable {

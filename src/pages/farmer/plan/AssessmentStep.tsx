@@ -7,6 +7,7 @@ import { StepLayout } from "../../../features/plan/StepLayout";
 import { usePlan } from "../../../features/plan/usePlan";
 import { useAppStore } from "../../../store/AppStore";
 import { stepHref } from "../../../features/plan/steps";
+import { LandDetailsHelp } from "../../../features/support/LandDetailsHelp";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { InfoNote } from "../../../components/ui/Badge";
@@ -205,6 +206,7 @@ export function AssessmentStep() {
               {error}
             </p>
           )}
+          {part < 2 && <LandDetailsHelp />}
           <InfoNote>Answers are used only for rule-based suggestions in this prototype.</InfoNote>
         </Card>
       </form>
