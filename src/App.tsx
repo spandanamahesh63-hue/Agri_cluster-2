@@ -9,6 +9,7 @@ import { roleHome, roleList } from "./components/navigation/navConfig";
 import { lazyPage } from "./utils/lazyPage";
 import { DemoGuideProvider } from "./features/demo/DemoGuide";
 import { AccountProvider } from "./features/accounts/AccountProvider";
+import { SensorScreen } from "./features/farmer/NoSensorData";
 import { accountsEnabled } from "./services/auth/accounts";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
@@ -40,7 +41,7 @@ const ScheduleStep = lazyPage(() => import("./pages/farmer/plan/ScheduleStep"), 
 const ResourcesStep = lazyPage(() => import("./pages/farmer/plan/ResourcesStep"), "ResourcesStep");
 const WaterPage = lazyPage(() => import("./pages/farmer/WaterPage"), "WaterPage");
 const EnergyPage = lazyPage(() => import("./pages/farmer/EnergyPage"), "EnergyPage");
-const ClusterOverviewPage = lazyPage(() => import("./pages/cluster/ClusterOverviewPage"), "ClusterOverviewPage");
+const ClusterHome = lazyPage(() => import("./pages/cluster/ClusterHome"), "ClusterHome");
 const ClusterFarmsPage = lazyPage(() => import("./pages/cluster/ClusterFarmsPage"), "ClusterFarmsPage");
 const ClusterIntelligencePage = lazyPage(() => import("./pages/cluster/ClusterIntelligencePage"), "ClusterIntelligencePage");
 const ClusterWaterPage = lazyPage(() => import("./pages/cluster/ClusterWaterPage"), "ClusterWaterPage");
@@ -82,8 +83,8 @@ const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
     "": <FarmerDashboard />,
     plan: <PlanOverviewPage />,
     farm: <MyFarmPage />,
-    intelligence: <IntelligencePage />,
-    crops: <CropsPage />,
+    intelligence: <SensorScreen title="Intelligence" what="Suggestions here come from soil moisture, crop health and weather readings for your fields."><IntelligencePage /></SensorScreen>,
+    crops: <SensorScreen title="Crops" what="Crop progress here is tracked from field sensors and crop health readings."><CropsPage /></SensorScreen>,
     market: <MarketPage />,
     resources: <ResourcesPage />,
     experts: <ExpertsPage />,
@@ -91,17 +92,17 @@ const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
     profile: <ProfilePage />,
   },
   cluster: {
-    "": <ClusterOverviewPage />,
-    farms: <ClusterFarmsPage />,
-    intelligence: <ClusterIntelligencePage />,
-    water: <ClusterWaterPage />,
-    energy: <ClusterEnergyPage />,
-    crops: <ClusterCropsPage />,
-    resources: <ClusterResourcesPage />,
-    market: <ClusterMarketPage />,
+    "": <ClusterHome />,
+    farms: <SensorScreen title="Farms" what="The farm map and roster are built from member farms' sensor and crop data." cluster><ClusterFarmsPage /></SensorScreen>,
+    intelligence: <SensorScreen title="Intelligence" what="Cluster-wide suggestions combine every member farm's field readings." cluster><ClusterIntelligencePage /></SensorScreen>,
+    water: <SensorScreen title="Water" what="Water use across the cluster comes from member farms' sensors and pump meters." cluster><ClusterWaterPage /></SensorScreen>,
+    energy: <SensorScreen title="Energy" what="Energy use across the cluster comes from member farms' pump meters." cluster><ClusterEnergyPage /></SensorScreen>,
+    crops: <SensorScreen title="Crops" what="The cluster's crop calendar is built from member farms' crop data." cluster><ClusterCropsPage /></SensorScreen>,
+    resources: <SensorScreen title="Resources" what="Machinery and labour demand across the cluster is built from member farms' plans." cluster><ClusterResourcesPage /></SensorScreen>,
+    market: <SensorScreen title="Market" what="Expected supply across the cluster is built from member farms' crop data." cluster><ClusterMarketPage /></SensorScreen>,
     support: <ClusterSupportPage />,
     revenue: <ClusterRevenuePage />,
-    impact: <ClusterImpactPage />,
+    impact: <SensorScreen title="Impact" what="Impact figures compare member farms' measured water, energy and income." cluster><ClusterImpactPage /></SensorScreen>,
   },
   buyer: {
     "": <BuyerDashboard />,
@@ -155,7 +156,7 @@ const extraRoutes: Partial<Record<Role, { path: string; element: ReactElement }[
     { path: "plan/resources", element: <ResourcesStep /> },
     { path: "intelligence/water", element: <WaterPage /> },
     { path: "intelligence/energy", element: <EnergyPage /> },
-    { path: "intelligence/:id", element: <RecommendationDetailPage /> },
+    { path: "intelligence/:id", element: <SensorScreen title="Suggestion" what="Suggestions come from your fields' sensor readings."><RecommendationDetailPage /></SensorScreen> },
     { path: "market/upload", element: <UploadCropPage /> },
   ],
   // Admins approve people here (real accounts only).

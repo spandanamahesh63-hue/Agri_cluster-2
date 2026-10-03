@@ -7,9 +7,9 @@ import { useFarmerOverview } from "../../features/farmer/useFarmerOverview";
 import { useMarket } from "../../features/market/useMarket";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
+import { Button, ButtonLink } from "../../components/ui/Button";
 import { InfoNote } from "../../components/ui/Badge";
-import { ErrorState, PageSkeleton } from "../../components/ui/states";
+import { EmptyState, ErrorState, PageSkeleton } from "../../components/ui/states";
 import { FormField, SelectInput, TextArea, TextInput } from "../../components/forms/fields";
 import { usePlan } from "../../features/plan/usePlan";
 import { useToast } from "../../components/ui/Toast";
@@ -42,6 +42,25 @@ export function UploadCropPage() {
       <>
         {back}
         <ErrorState onRetry={overview.status === "error" ? overview.retry : market.status === "error" ? market.retry : undefined} />
+      </>
+    );
+
+  if (overview.data.cycles.length === 0)
+    return (
+      <>
+        {back}
+        <PageHeader title="Upload crop" description="Tell buyers what you expect to harvest, and when it will be ready." />
+        <Card>
+          <EmptyState
+            title="Pick your crop first"
+            description="Choose your crop and planting date in your plan. Then we can work out your harvest window and expected quantity for buyers."
+            action={
+              <ButtonLink to="/farmer/plan/crop" size="sm">
+                Choose my crop
+              </ButtonLink>
+            }
+          />
+        </Card>
       </>
     );
 

@@ -25,7 +25,7 @@ const levels: { id: Level; title: string }[] = [
 /** Step 1 — farm assessment (spec §6). Only questions that change a later recommendation. */
 export function AssessmentStep() {
   const p = usePlan();
-  const { updateProfile } = useAppStore();
+  const { session, updateProfile } = useAppStore();
   const navigate = useNavigate();
   const toast = useToast();
   const [part, setPart] = useState(0);
@@ -66,7 +66,11 @@ export function AssessmentStep() {
   return (
     <StepLayout
       step="assessment"
-      description="We only ask what changes a later recommendation. Sample answers for Spandana's farm are filled in; change anything."
+      description={
+        session?.mode === "real"
+          ? "We only ask what changes a later recommendation. Not sure about something? Fill in your best guess, or ask us for help below."
+          : "We only ask what changes a later recommendation. Sample answers for Spandana's farm are filled in; change anything."
+      }
       action={
         <div className="flex gap-2">
           {part > 0 && (

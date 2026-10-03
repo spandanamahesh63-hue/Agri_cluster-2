@@ -1,3 +1,5 @@
+import { isRealMode } from "../../services/mode";
+import { realFarmLabel } from "../../features/shared/people";
 import type { CropCycle, Farm, Field, IrrigationEvent } from "../../types";
 import { CLUSTER_ID } from "./users";
 
@@ -19,6 +21,7 @@ export const farms: Farm[] = [
 
 /** Public label of the farm owned by a user ("Farm #27"), never the person's name. */
 export function farmLabelForUser(userId: string): string {
+  if (isRealMode()) return realFarmLabel(userId);
   const detailed = farms.find((f) => f.ownerUserId === userId);
   if (detailed) return detailed.label;
   const n = /^u-farmer-(\d+)$/.exec(userId)?.[1];

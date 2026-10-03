@@ -1,5 +1,5 @@
 import type { BookingStatus, Machinery, ResourceKind } from "../../types";
-import { users } from "../../data/mock/users";
+import { personById } from "../shared/people";
 
 export const kindLabels: Record<ResourceKind, string> = {
   tractor: "Tractor",
@@ -23,6 +23,7 @@ export const bookingStatusLabel: Record<BookingStatus, { label: string; tone: "i
 
 /** Registered service businesses are shown by name; private owners only by village (privacy). */
 export function ownerLabel(m: Machinery): string {
-  const owner = users.find((u) => u.id === m.ownerUserId && u.role === "provider");
-  return owner ? owner.name : `Private owner · ${m.village}`;
+  const owner = personById(m.ownerUserId);
+  if (owner?.role !== "provider") return `Private owner · ${m.village}`;
+  return owner.name;
 }

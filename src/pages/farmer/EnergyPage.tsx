@@ -15,6 +15,7 @@ import { ChartCard } from "../../components/charts/ChartCard";
 import { ChartTooltip } from "../../components/charts/ChartTooltip";
 import { chrome, series, tickStyle } from "../../components/charts/palette";
 import { formatDate, formatHour } from "../../utils/format";
+import { NoSensorData } from "../../features/farmer/NoSensorData";
 
 export function EnergyPage() {
   const overview = useFarmerOverview();
@@ -35,7 +36,9 @@ export function EnergyPage() {
       </>
     );
 
-  const d = overview.data;
+  const { forecast } = overview.data;
+  if (!forecast) return <NoSensorData title="Energy" what="Pump timing advice needs your pump's power use and the sun forecast." back={{ to: "/farmer/plan", label: "Go to my plan" }} />;
+  const d = { ...overview.data, forecast };
   const [solarStart, solarEnd] = d.forecast.solarPeak;
   const rows = effectiveSchedule({
     farm: d.farm,

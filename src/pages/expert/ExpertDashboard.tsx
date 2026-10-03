@@ -10,6 +10,7 @@ import { expertCategoryLabels } from "../../data/mock/experts";
 import { DEMO_NOW } from "../../data/mock/clock";
 import { formatINR, greeting } from "../../utils/format";
 import { Link } from "react-router-dom";
+import { PublishProfileBanner } from "../../features/accounts/PublishProfileBanner";
 
 export function ExpertDashboard() {
   const { session } = useAppStore();
@@ -17,6 +18,7 @@ export function ExpertDashboard() {
   return (
     <>
       <PageHeader eyebrow={x.expert?.title} title={`${greeting(DEMO_NOW)}, ${session?.name}`} description="Which farmers need your help?" />
+      {!x.expert && session?.mode === "real" && <PublishProfileBanner what="expert profile (your area, what you help with, your fee)" to="/expert/profile" />}
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
           <StatTile label="New questions" value={x.inbox.length} status={x.inbox.length ? "moderate" : "healthy"} to="/expert/requests" />

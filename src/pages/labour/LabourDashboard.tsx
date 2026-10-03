@@ -10,6 +10,7 @@ import { Badge } from "../../components/ui/Badge";
 import { EmptyState } from "../../components/ui/states";
 import { DEMO_NOW } from "../../data/mock/clock";
 import { formatDate, formatINR, greeting } from "../../utils/format";
+import { PublishProfileBanner } from "../../features/accounts/PublishProfileBanner";
 
 export function LabourDashboard() {
   const { session } = useAppStore();
@@ -25,6 +26,7 @@ export function LabourDashboard() {
         title={`${greeting(DEMO_NOW)}, ${session?.name}`}
         description="What work is available for your crew?"
       />
+      {!p && session?.mode === "real" && <PublishProfileBanner what="crew profile (skills, crew size, wage)" to="/labour/profile" />}
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatTile label="New work requests" value={l.requests.length} status={l.requests.length ? "moderate" : "healthy"} to="/labour/jobs" />

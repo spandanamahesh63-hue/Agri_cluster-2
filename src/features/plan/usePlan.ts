@@ -20,6 +20,7 @@ import {
   resourceNeeds,
   typicalCost,
 } from "../../services/planning/planner";
+import { memberById } from "../../services/mode";
 
 /** Demo planting date for Spandana's tomato (matches Farm #27). */
 const DEMO_PLANT_DATE = "2026-06-28";
@@ -34,7 +35,8 @@ export function usePlan() {
   const machinery = useMachinery();
 
   return useMemo(() => {
-    const assessment: FarmAssessment = plan.assessment ?? { ...DEMO_ASSESSMENT, name: session?.name ?? DEMO_ASSESSMENT.name };
+    const assessment: FarmAssessment =
+      plan.assessment ?? (session?.mode === "real" ? blankAssessment(session.name, memberById(session.userId)?.location ?? "") : { ...DEMO_ASSESSMENT, name: session?.name ?? DEMO_ASSESSMENT.name });
     const vision: Vision = plan.vision ?? DEMO_VISION;
     const budget = plan.budget ? plan.budget.reduce((s, l) => s + l.amount, 0) : availableBudget(assessment, vision);
     const crops = recommendCrops(assessment, vision);
@@ -91,3 +93,28 @@ export function usePlan() {
 }
 
 export type PlanState = ReturnType<typeof usePlan>;
+
+/** A real farmer's first assessment: their name and village, everything else for them to fill in. */
+function blankAssessment(name: string, location: string): FarmAssessment {
+  return {
+    name,
+    contact: "",
+    location,
+    landAcres: 0,
+    tenure: "owned",
+    currentCrop: "",
+    previousCrop: "",
+    soilType: "red",
+    soilTestDone: false,
+    water: "moderate",
+    irrigation: "rainfed",
+    electricity: "limited",
+    solar: false,
+    ownsMachinery: false,
+    labourAvailable: "moderate",
+    investment: 0,
+    needsLoan: false,
+    experienceYears: 0,
+    techFamiliarity: "moderate",
+  };
+}

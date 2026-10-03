@@ -1,5 +1,5 @@
 import type { Machinery, ResourceKind, ServiceType, Technology } from "../../types";
-import { users } from "../../data/mock/users";
+import { personById } from "../shared/people";
 import { formatDate, formatHour, formatINR } from "../../utils/format";
 import { kindLabels, ownerLabel } from "./labels";
 
@@ -71,7 +71,7 @@ const techType: Record<Technology["category"], string> = {
 };
 
 export function techOffering(t: Technology): Offering {
-  const provider = users.find((u) => u.id === t.providerUserId);
+  const provider = personById(t.providerUserId);
   return {
     key: t.id,
     source: "technology",

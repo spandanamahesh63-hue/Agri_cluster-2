@@ -4,6 +4,7 @@ import { useAppStore } from "../../store/AppStore";
 import { useLabour } from "../../features/labour/useLabour";
 import { skillLabels } from "../../data/mock/labour";
 import { villageNames } from "../../data/mock/clusterFarms";
+import { DEMO_TODAY } from "../../data/mock/clock";
 import { cropCatalogue } from "../../data/catalog/crops";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Card } from "../../components/ui/Card";
@@ -14,18 +15,43 @@ import { ChoiceCards, FormField, SelectInput, TextInput } from "../../components
 import { useToast } from "../../components/ui/Toast";
 
 export function LabourProfilePage() {
+  const { session } = useAppStore();
   const { profile } = useLabour();
-  if (!profile) return <EmptyState title="No labour profile found" />;
+  // A real crew without a profile yet starts from a blank one and publishes it.
+  const starter = !profile && session?.mode === "real" ? blankCrew(session.userId, session.name) : undefined;
+  if (!profile && !starter) return <EmptyState title="No labour profile found" />;
   return (
     <>
-      <PageHeader title="Profile" description="Your skills, availability and location — this is what farmers see when they search." />
-      <ProfileForm profile={profile} />
+      <PageHeader
+        title="Profile"
+        description={starter ? "Publish your crew so farmers can find you: skills, crew size, wage and where you work." : "Your skills, availability and location — this is what farmers see when they search."}
+      />
+      <ProfileForm profile={profile ?? starter!} isNew={!profile} />
     </>
   );
 }
 
-function ProfileForm({ profile }: { profile: LabourProfile }) {
-  const { editLabour } = useAppStore();
+function blankCrew(userId: string, name: string): LabourProfile {
+  return {
+    id: "new",
+    userId,
+    label: "Field crew",
+    leadName: name,
+    skills: [],
+    crewSize: 1,
+    village: villageNames[0],
+    dailyWage: 0,
+    experienceYears: 0,
+    cropExperience: [],
+    transport: false,
+    availableFrom: DEMO_TODAY,
+    availability: "available",
+    source: "live",
+  };
+}
+
+function ProfileForm({ profile, isNew }: { profile: LabourProfile; isNew: boolean }) {
+  const { editLabour, addCrew } = useAppStore();
   const toast = useToast();
   const [skills, setSkills] = useState<LabourSkill[]>(profile.skills);
   const [crewSize, setCrewSize] = useState(String(profile.crewSize));
@@ -48,7 +74,7 @@ function ProfileForm({ profile }: { profile: LabourProfile }) {
     if (!(Number(crewSize) > 0)) return setError("Crew size must be at least 1.");
     if (!(Number(wage) > 0)) return setError("Enter a daily wage per worker.");
     setError(null);
-    editLabour(profile.id, {
+    const details = {
       skills,
       crewSize: Number(crewSize),
       dailyWage: Number(wage),
@@ -60,8 +86,14 @@ function ProfileForm({ profile }: { profile: LabourProfile }) {
       availability,
       availableFrom: from,
       label: `${skills.includes("harvesting") ? "Harvest crew" : "Field crew"} · ${village}`,
-    });
-    toast("Profile updated. Farmers now see your new details.");
+    };
+    if (isNew) {
+      addCrew({ ...profile, ...details, id: undefined } as Omit<LabourProfile, "id">);
+      toast("Crew profile published. Farmers can now find you.");
+    } else {
+      editLabour(profile.id, details);
+      toast("Profile updated. Farmers now see your new details.");
+    }
   };
 
   return (

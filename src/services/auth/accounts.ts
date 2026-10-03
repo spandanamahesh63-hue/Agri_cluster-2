@@ -120,3 +120,10 @@ export async function reviewProfile(id: string, patch: { status: ProfileStatus; 
   if (error) throw error;
   return data as Profile;
 }
+
+/** Change your own name or place. The database ignores any attempt to change role or approval here. */
+export async function updateMyProfile(id: string, patch: { name?: string; location?: string; organisation?: string }): Promise<Profile> {
+  const { data, error } = await supabase().from("profiles").update(patch).eq("id", id).select(COLUMNS).single();
+  if (error) throw error;
+  return data as Profile;
+}

@@ -37,6 +37,7 @@ import { machinery, resourceDemand } from "../../data/mock/resources";
 import { forecast, sensorHistory } from "../../data/mock/sensing";
 import { users } from "../../data/mock/users";
 import { analyzeCluster, analyzeFarm } from "../intelligence/engine";
+import { isRealMode } from "../mode";
 
 const LATENCY_MS = 350;
 const delay = <T,>(value: T) => new Promise<T>((resolve) => setTimeout(() => resolve(value), LATENCY_MS));
@@ -52,7 +53,8 @@ export interface FarmerOverview {
   irrigation: IrrigationEvent[];
   waterHistory: WaterDay[];
   energyHistory: EnergyDay[];
-  forecast: WeatherForecast;
+  /** Null for real accounts until a weather feed is connected. */
+  forecast: WeatherForecast | null;
   recommendations: Recommendation[];
   tractors: { total: number; booked: number };
 }
@@ -106,11 +108,14 @@ export interface ResourceCatalog {
   technologies: Technology[];
 }
 
+// Real accounts: no sample catalogues. Screens merge in what real members published (features/shared/useMerged).
 export async function getResourceCatalog(): Promise<ResourceCatalog> {
+  if (isRealMode()) return { machinery: [], demand: [], labour: [], technologies: [] };
   return delay({ machinery, demand: resourceDemand, labour: labourProfiles, technologies });
 }
 
 export async function getExperts(): Promise<Expert[]> {
+  if (isRealMode()) return [];
   return delay(experts);
 }
 
@@ -121,6 +126,7 @@ export interface MarketOverview {
 }
 
 export async function getMarketOverview(): Promise<MarketOverview> {
+  if (isRealMode()) return { requirements: [], channels: [], supply: [] };
   return delay({ requirements: buyerRequirements, channels: priceChannels, supply: clusterSupply });
 }
 
@@ -187,6 +193,7 @@ export interface HarvestOutlookRow {
 
 /** What active member farms expect to harvest, grouped by crop, grade and window (indicative). */
 export async function getHarvestOutlook(): Promise<HarvestOutlookRow[]> {
+  if (isRealMode()) return [];
   const groups = new Map<string, HarvestOutlookRow>();
   for (const f of clusterFarms.filter((x) => x.active)) {
     const key = `${f.crop}|${f.grade}|${f.harvestWindow.start}`;

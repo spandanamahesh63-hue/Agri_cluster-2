@@ -36,6 +36,8 @@ import { buyerRequirements } from "../../data/mock/market";
 import { farmers } from "../../data/mock/users";
 import { farmLabelForUser } from "../../data/mock/farms";
 import { formatDate } from "../../utils/format";
+import { isRealMode } from "../../services/mode";
+import { userForFarm } from "../shared/people";
 
 export type NewNotification = Omit<AppNotification, "id" | "createdAt" | "read">;
 
@@ -46,7 +48,16 @@ export type NewNotification = Omit<AppNotification, "id" | "createdAt" | "read">
  * notifies the other side without extra code.
  */
 
-const farmerOfFarm = (farmId: string) => farmers.find((f) => f.farmIds.includes(farmId))?.userId;
+// Real accounts look people up in real records; the demo in its sample data.
+const farmerOfFarm = (farmId: string) => (isRealMode() ? userForFarm(farmId) : farmers.find((f) => f.farmIds.includes(farmId))?.userId);
+const crewsOf = (s: State) => (isRealMode() ? s.crews : labourProfiles);
+const techOf = (s: State) => (isRealMode() ? s.technologies : technologies);
+const expertsOf = (s: State) => (isRealMode() ? s.experts : experts);
+/** Farmers who list a crop: their farms in the demo; real farmers with a listing for it. */
+const farmersGrowing = (s: State, crop: string) =>
+  isRealMode()
+    ? [...new Set(s.listings.filter((l) => l.crop === crop).map((l) => userForFarm(l.farmId)).filter((u): u is string => !!u))]
+    : farmers.filter((f) => f.farmIds.some((id) => crops(s, id).has(crop))).map((f) => f.userId);
 const machineOwner = (s: State, id: string) => [...machinery, ...s.equipment].find((m) => m.id === id);
 const requirementById = (s: State, id: string): BuyerRequirement | undefined => [...s.requirements, ...buyerRequirements].find((r) => r.id === id);
 const crops = (s: State, farmId: string) => new Set(s.listings.filter((l) => l.farmId === farmId).map((l) => l.crop).concat(farmId === "farm-27" ? ["Tomato"] : []));
@@ -69,7 +80,7 @@ export function onAdd(key: string, record: unknown, s: State): NewNotification[]
     }
     case "labourRequests": {
       const r = record as LabourRequest;
-      const crew = labourProfiles.find((p) => p.id === r.labourProfileId);
+      const crew = crewsOf(s).find((p) => p.id === r.labourProfileId);
       if (!crew) return [];
       return [
         {
@@ -83,7 +94,7 @@ export function onAdd(key: string, record: unknown, s: State): NewNotification[]
     }
     case "serviceRequests": {
       const r = record as ServiceRequest;
-      const t = technologies.find((x) => x.id === r.technologyId);
+      const t = techOf(s).find((x) => x.id === r.technologyId);
       if (!t) return [];
       return [
         {
@@ -97,7 +108,7 @@ export function onAdd(key: string, record: unknown, s: State): NewNotification[]
     }
     case "consultations": {
       const c = record as Consultation;
-      const ex = experts.find((e) => e.id === c.expertId);
+      const ex = expertsOf(s).find((e) => e.id === c.expertId);
       if (!ex) return [];
       return [
         {
@@ -158,10 +169,8 @@ export function onAdd(key: string, record: unknown, s: State): NewNotification[]
     }
     case "requirements": {
       const r = record as BuyerRequirement;
-      return farmers
-        .filter((f) => f.farmIds.some((id) => crops(s, id).has(r.crop)))
-        .map((f) => ({
-          userId: f.userId,
+      return farmersGrowing(s, r.crop).map((userId) => ({
+          userId,
           kind: "market" as const,
           title: `New buyer requirement matches your ${r.crop.toLowerCase()}`,
           body: `${r.buyerLabel} needs ${r.quantityTonnes} t of Grade ${r.grade} for ${formatDate(r.window.start)}–${formatDate(r.window.end)}.`,
@@ -202,7 +211,7 @@ export function onUpdate(key: string, before: unknown, patch: Record<string, unk
     }
     case "labourRequests": {
       const r = before as LabourRequest;
-      const crew = labourProfiles.find((p) => p.id === r.labourProfileId);
+      const crew = crewsOf(s).find((p) => p.id === r.labourProfileId);
       const words = changed
         ? ({ accepted: "accepted your labour request", declined: "declined your labour request", "in-progress": "started work", completed: "marked the work done" } as Record<string, string>)[status!]
         : undefined;
@@ -219,7 +228,7 @@ export function onUpdate(key: string, before: unknown, patch: Record<string, unk
     }
     case "consultations": {
       const c = before as Consultation;
-      const ex = experts.find((e) => e.id === c.expertId);
+      const ex = expertsOf(s).find((e) => e.id === c.expertId);
       if (!changed || !ex) return [];
       const title =
         status === "answered"
@@ -283,7 +292,7 @@ export function onUpdate(key: string, before: unknown, patch: Record<string, unk
     }
     case "serviceRequests": {
       const r = before as ServiceRequest;
-      const t = technologies.find((x) => x.id === r.technologyId);
+      const t = techOf(s).find((x) => x.id === r.technologyId);
       if (!changed || !t || status !== "scheduled") return [];
       return [{ userId: r.requesterUserId, kind: "machinery", title: `Your ${t.name.toLowerCase()} request was scheduled`, link: "/farmer/resources?tab=requests" }];
     }

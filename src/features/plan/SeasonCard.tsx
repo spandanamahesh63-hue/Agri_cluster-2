@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useAppStore } from "../../store/AppStore";
 import { usePlan } from "./usePlan";
+import { farmIdForUser } from "../shared/people";
 import { currentStep, planSteps, stepHref } from "./steps";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { ButtonLink } from "../../components/ui/Button";
@@ -11,13 +12,13 @@ import { daysBetween, formatDate, formatINR } from "../../utils/format";
 /** Farmer dashboard summary of the season plan (spec §22). */
 export function SeasonCard() {
   const p = usePlan();
-  const { listings, interests } = useAppStore();
+  const { session, listings, interests } = useAppStore();
   const doneCount = planSteps.filter((s) => p.done[s.id]).length;
   const complete = doneCount === planSteps.length;
   const next = currentStep(p.done);
   const task = p.calendar.find((t) => t.date >= DEMO_TODAY);
   const harvest = p.calendar.find((t) => t.title.startsWith("First harvest"));
-  const myListingIds = new Set(listings.filter((l) => l.farmId === "farm-27").map((l) => l.id));
+  const myListingIds = new Set(listings.filter((l) => l.farmId === farmIdForUser(session?.userId ?? "")).map((l) => l.id));
   const buyerRequests = interests.filter((i) => myListingIds.has(i.listingId) && i.status === "pending").length;
 
   return (

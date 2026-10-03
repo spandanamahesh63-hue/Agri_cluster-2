@@ -10,11 +10,13 @@ import { PageHeader } from "../../components/ui/PageHeader";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { StorageCard } from "../../features/storage/StorageStatus";
 import { Button } from "../../components/ui/Button";
+import { RealProfile } from "../../features/accounts/RealProfile";
 
 /** Account & public identity for roles without a dedicated profile editor. */
 export function RoleProfilePage({ role }: { role: Role }) {
   const { session, resetDemo } = useAppStore();
   const navigate = useNavigate();
+  if (session?.mode === "real") return <RealProfile role={role} />;
   const user = users.find((u) => u.id === session?.userId);
   const expert = experts.find((e) => e.userId === session?.userId);
 

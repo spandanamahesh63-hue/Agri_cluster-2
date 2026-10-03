@@ -25,6 +25,7 @@ import type {
   CropListing,
   Decision,
   DecisionStatus,
+  Expert,
   FarmerProfile,
   LabourProfile,
   LabourRequest,
@@ -32,7 +33,11 @@ import type {
   MarketInterest,
   Role,
   ServiceRequest,
+  Technology,
 } from "../types";
+import { isRealMode, setRealMembers, setRealMode } from "../services/mode";
+import { insertItem, loadReal, patchItem, saveUserState } from "../services/storage/realData";
+import { accessFor, CLUSTER_OFFICE } from "../features/accounts/access";
 import { demoUserForRole, farmers } from "../data/mock/users";
 import { DEMO_NOW } from "../data/mock/clock";
 import {
@@ -76,6 +81,10 @@ export interface Collections {
   groups: CommunityGroup[];
   events: CommunityEvent[];
   supportRequests: SupportRequest[];
+  /** Real accounts only: labour crews, expert profiles and technology offerings people publish. */
+  crews: LabourProfile[];
+  experts: Expert[];
+  technologies: Technology[];
 }
 export type CollectionKey = keyof Collections;
 type Item<K extends CollectionKey> = Collections[K][number];
@@ -97,6 +106,17 @@ export const COLLECTION_KEYS: CollectionKey[] = [
   "events",
   "supportRequests",
 ];
+
+/** Every collection a real account loads and saves (supabase/shared-data.sql item_rules). */
+export const ALL_COLLECTION_KEYS: CollectionKey[] = [...COLLECTION_KEYS, "crews", "experts", "technologies"];
+
+/** Private per-person data (user_state for real accounts). */
+const SETTINGS_KEYS = ["decisions", "farmerProfile", "machineryEdits", "labourEdits", "plan", "savedListings", "savedResources"] as const;
+const pickSettings = (s: State) => Object.fromEntries(SETTINGS_KEYS.map((k) => [k, s[k]]));
+
+/** Is this notification for the signed-in person (or their whole role, for the cluster office)? */
+export const isForMe = (n: AppNotification, session: Session | null) =>
+  !!session && (n.userId === session.userId || (session.role === "cluster" && (n.userId === CLUSTER_OFFICE || n.userId === "role:cluster")));
 
 export interface StorageStatus {
   mode: "cloud" | "local";
@@ -124,7 +144,7 @@ export interface State extends Collections {
 
 type Action =
   | { type: "signIn"; session: Session; newFarmer?: boolean }
-  | { type: "signOut" }
+  | { type: "signOut"; restore?: State }
   | { type: "decide"; recommendationId: string; status: DecisionStatus }
   | { type: "undoDecision"; recommendationId: string }
   | { type: "updateProfile"; patch: Partial<FarmerProfile> }
@@ -134,10 +154,11 @@ type Action =
   | { type: "editLabour"; id: string; patch: Partial<LabourProfile> }
   | { type: "updatePlan"; patch: Partial<FarmPlan> }
   | { type: "resetPlan" }
-  | { type: "markAllRead"; userId: string }
+  | { type: "markAllRead"; ids: string[] }
   | { type: "toggleSaved"; listingId: string }
   | { type: "toggleSavedResource"; key: string }
   | { type: "hydrate"; state: State }
+  | { type: "hydrateReal"; collections: Partial<Collections>; settings: Record<string, unknown> | null }
   | { type: "reset" };
 
 const STORAGE_KEY = "agricluster:v5";
@@ -168,6 +189,9 @@ const initialState: State = {
   groups: seedGroups,
   events: seedEvents,
   supportRequests: seedSupportRequests,
+  crews: [],
+  experts: [],
+  technologies: [],
   machineryEdits: {},
   labourEdits: {},
   plan: {},
@@ -175,9 +199,21 @@ const initialState: State = {
   savedResources: [],
 };
 
+/** A real account starts empty: only real people's records, loaded from the database. */
+const realInitialState: State = {
+  ...initialState,
+  ...(Object.fromEntries(ALL_COLLECTION_KEYS.map((k) => [k, []])) as unknown as Collections),
+  farmerProfile: { ...demoProfile, onboarded: false },
+};
+
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "signIn": {
+      if (action.session.mode === "real") {
+        // Same person (name or role refreshed): keep their data; otherwise start clean.
+        if (state.session?.mode === "real" && state.session.userId === action.session.userId) return { ...state, session: action.session };
+        return { ...realInitialState, session: action.session };
+      }
       const farmerProfile = action.newFarmer
         ? { ...demoProfile, onboarded: false }
         : action.session.role === "farmer" && !state.farmerProfile.onboarded
@@ -186,7 +222,7 @@ function reducer(state: State, action: Action): State {
       return { ...state, session: action.session, farmerProfile };
     }
     case "signOut":
-      return { ...state, session: null };
+      return { ...(action.restore ?? state), session: null };
     case "decide":
       return {
         ...state,
@@ -218,7 +254,7 @@ function reducer(state: State, action: Action): State {
     case "resetPlan":
       return { ...state, plan: {} };
     case "markAllRead":
-      return { ...state, notifications: state.notifications.map((n) => (n.userId === action.userId ? { ...n, read: true } : n)) };
+      return { ...state, notifications: state.notifications.map((n) => (action.ids.includes(n.id) ? { ...n, read: true } : n)) };
     case "toggleSaved":
       return {
         ...state,
@@ -236,6 +272,12 @@ function reducer(state: State, action: Action): State {
     case "hydrate":
       // Data loaded from the database; who is signed in stays per device.
       return { ...action.state, session: state.session };
+    case "hydrateReal":
+      return {
+        ...state,
+        ...action.collections,
+        ...(action.settings ? Object.fromEntries(SETTINGS_KEYS.filter((k) => k in action.settings!).map((k) => [k, action.settings![k]])) : {}),
+      };
     case "reset":
       return initialState;
   }
@@ -274,8 +316,8 @@ function loadState(): State {
 
 /** Id + timestamp for a new record (timestamps follow the demo clock). */
 const meta = (prefix: string) => ({
-  id: `${prefix}-${Math.random().toString(36).slice(2, 8)}`,
-  createdAt: DEMO_NOW.toISOString(),
+  id: `${prefix}-${Math.random().toString(36).slice(2, isRealMode() ? 12 : 8)}`,
+  createdAt: (isRealMode() ? new Date() : DEMO_NOW).toISOString(),
 });
 
 type NewRecord<T> = Omit<T, "id" | "createdAt" | "status">;
@@ -314,6 +356,9 @@ interface AppStore extends State {
   addGroup: (group: Omit<CommunityGroup, "id" | "createdAt">) => CommunityGroup;
   addEvent: (event: Omit<CommunityEvent, "id" | "createdAt">) => CommunityEvent;
   addSupportRequest: (request: NewRecord<SupportRequest>) => SupportRequest;
+  /** Real accounts: an expert publishes their profile; a labour crew its crew profile. */
+  addExpertProfile: (expert: Omit<Expert, "id">) => Expert;
+  addCrew: (crew: Omit<LabourProfile, "id">) => LabourProfile;
   /** Farmer accepts a buyer's interest: the listing is agreed with that buyer; other interests are declined. */
   acceptInterest: (interest: MarketInterest) => void;
   /** Buyer accepts a farmer's offer on their requirement. */
@@ -332,14 +377,21 @@ const AppStoreContext = createContext<AppStore | null>(null);
 
 export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, loadState);
+  const real = state.session?.mode === "real";
+  // Non-React modules (labels, clock, data API) follow the signed-in world.
+  if (isRealMode() !== real) setRealMode(real);
+  const realRef = useRef(real);
+  realRef.current = real;
 
   useEffect(() => {
+    // The browser copy is the demo's. A real account's data lives in the database only.
+    if (real) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
       // Storage unavailable (private mode, quota) — the demo still works in memory.
     }
-  }, [state]);
+  }, [state, real]);
 
   // ---- Cloud database (MongoDB or Supabase, see services/storage/cloud.ts). The browser copy above stays as an offline fallback.
   const wsRef = useRef(cloudConfigured ? currentWorkspaceId() : "");
@@ -369,7 +421,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         // the tab was closed or reloaded right after a change) win: keep them and
         // send them. Otherwise the database copy is newer (maybe from another device).
         const keepLocal = hasPendingChanges(wsRef.current) && localCopyIsFor(wsRef.current);
-        if (remote && !keepLocal) {
+        if (remote && !keepLocal && !realRef.current) {
           hydrating.current = true;
           dispatch({ type: "hydrate", state: fromSnapshot(remote) });
         }
@@ -386,7 +438,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   // Save changes shortly after they happen, one save at a time, only what changed.
   const changeSeq = useRef(0);
   useEffect(() => {
-    if (!cloudConfigured || !ready) return;
+    if (!cloudConfigured || !ready || real) return;
     // Remember on this device that there are changes not yet in the database
     // (not for data that just came from the database).
     const seq = ++changeSeq.current;
@@ -410,16 +462,16 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       });
     }, 600);
     return () => clearTimeout(t);
-  }, [state, ready]);
+  }, [state, ready, real]);
 
   // Coming back to the tab: pick up changes made on another device with the share link.
   useEffect(() => {
     if (!cloudConfigured) return;
     const onFocus = () => {
-      if (!ready || busy.current || hasPendingChanges(wsRef.current)) return;
+      if (!ready || busy.current || hasPendingChanges(wsRef.current) || realRef.current) return;
       loadWorkspace(wsRef.current)
         .then((remote) => {
-          if (!remote || busy.current || hasPendingChanges(wsRef.current)) return;
+          if (!remote || busy.current || hasPendingChanges(wsRef.current) || realRef.current) return;
           if (JSON.stringify(remote) === JSON.stringify(lastSaved.current)) return;
           lastSaved.current = remote;
           dispatch({ type: "hydrate", state: fromSnapshot(remote) });
@@ -440,7 +492,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "reset" });
     setAttempt((a) => a + 1);
   }, []);
-  const retryStorage = useCallback(() => setAttempt((a) => a + 1), []);
+  const retryStorage = useCallback(() => (isRealMode() ? setRealAttempt((a) => a + 1) : setAttempt((a) => a + 1)), []);
 
   const signInAsDemo = useCallback((role: Role) => {
     const user = demoUserForRole(role);
@@ -450,8 +502,89 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInReal = useCallback((s: Omit<Session, "mode">) => {
+    // Leave the demo copy signed out, so a reload never shows a demo role to a real account.
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...(JSON.parse(raw) as object), session: null }));
+    } catch {
+      /* storage unavailable */
+    }
     dispatch({ type: "signIn", session: { ...s, mode: "real" } });
   }, []);
+
+  // ---- Real accounts: shared records and private settings in the database (services/storage/realData.ts).
+  const realUser = real ? state.session!.userId : null;
+  const owners = useRef(new Map<string, string>());
+  const pendingWrites = useRef(0);
+  const realQueue = useRef<Promise<void>>(Promise.resolve());
+  const settingsReady = useRef(false);
+  const lastSettings = useRef("");
+  const [realAttempt, setRealAttempt] = useState(0);
+
+  const write = useCallback((fn: () => Promise<void>) => {
+    pendingWrites.current++;
+    setStorage((s) => ({ ...s, mode: "cloud", status: "saving" }));
+    realQueue.current = realQueue.current
+      .then(fn)
+      .then(() => setStorage((s) => ({ ...s, status: "saved", savedAt: new Date().toISOString(), error: undefined })))
+      .catch((e: Error) => setStorage((s) => ({ ...s, status: "offline", error: e.message })))
+      .finally(() => {
+        pendingWrites.current--;
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!realUser) {
+      settingsReady.current = false;
+      return;
+    }
+    let cancelled = false;
+    let first = true;
+    setStorage((s) => ({ ...s, mode: "cloud", status: "connecting", error: undefined }));
+    const load = () => {
+      // Never replace what is on screen while this device still has changes on the way.
+      if (pendingWrites.current > 0) return;
+      loadReal(realUser)
+        .then((snap) => {
+          if (cancelled || pendingWrites.current > 0) return;
+          owners.current = new Map(snap.items.map((i) => [`${i.collection}:${i.id}`, i.owner]));
+          setRealMembers(snap.members);
+          const collections = Object.fromEntries(ALL_COLLECTION_KEYS.map((k) => [k, [] as { id: string }[]])) as Record<string, { id: string }[]>;
+          for (const i of snap.items) collections[i.collection]?.push(i.data);
+          const settings = first ? snap.state : null;
+          if (first) {
+            lastSettings.current = JSON.stringify(pickSettings({ ...realInitialState, ...(snap.state ?? {}) } as State));
+            settingsReady.current = true;
+            first = false;
+          }
+          dispatch({ type: "hydrateReal", collections: collections as unknown as Partial<Collections>, settings });
+          setStorage((s) => ({ ...s, mode: "cloud", status: "saved", savedAt: new Date().toISOString(), error: undefined }));
+        })
+        .catch((e: Error) => !cancelled && setStorage((s) => ({ ...s, mode: "cloud", status: "offline", error: e.message })));
+    };
+    load();
+    // Other people's changes (a reply, an approval, a new listing) arrive within a minute, or on return to the tab.
+    const timer = setInterval(load, 30_000);
+    window.addEventListener("focus", load);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      window.removeEventListener("focus", load);
+    };
+  }, [realUser, realAttempt]);
+
+  // Private settings (plan, profile, decisions, saved items): saved shortly after they change.
+  const settingsJson = real ? JSON.stringify(pickSettings(state)) : "";
+  useEffect(() => {
+    if (!realUser || !settingsReady.current || settingsJson === lastSettings.current) return;
+    const t = setTimeout(() => {
+      lastSettings.current = settingsJson;
+      write(() => saveUserState(realUser, JSON.parse(settingsJson) as Record<string, unknown>));
+    }, 800);
+    return () => clearTimeout(t);
+  }, [settingsJson, realUser, write]);
+
+  const ownerOf = useCallback((collection: string, id: string) => owners.current.get(`${collection}:${id}`), []);
 
   // Simulated sign-up: new accounts reuse the role's demo profile data so every
   // screen has coherent content, but keep the name the person entered.
@@ -465,21 +598,31 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppStore>(() => {
     // Cross-role notifications (Phase 4): the rules decide who hears about a new
     // record or a status change; nobody is notified about their own action.
+    // Real accounts: every change also goes to the database, shared as access.ts decides.
+    const save = <K extends CollectionKey>(key: K, record: Item<K>) => {
+      if (!real) return;
+      owners.current.set(`${key}:${record.id}`, state.session!.userId);
+      const { viewers, editors } = accessFor(key, record as unknown as Record<string, unknown>, state, ownerOf);
+      write(() => insertItem(key, record, viewers, editors));
+    };
     const send = (list: NewNotification[]) =>
       list
-        .filter((n) => n.userId !== state.session?.userId)
+        .filter((n) => n.userId !== state.session?.userId && !(real && isForMe(n as AppNotification, state.session)))
         .forEach((n) => {
           const record: AppNotification = { ...n, ...meta("ntf"), read: false };
           dispatch({ type: "add", key: "notifications", record });
+          save("notifications", record);
         });
     const add = <K extends CollectionKey>(key: K, record: Item<K>) => {
       dispatch({ type: "add", key, record });
+      save(key, record);
       if (key !== "notifications") send(onAdd(key, record, state));
       return record;
     };
     const update = <K extends CollectionKey>(key: K, id: string, patch: Partial<Item<K>>) => {
       const before = (state[key] as { id: string }[]).find((r) => r.id === id);
       dispatch({ type: "update", key, id, patch });
+      if (real) write(() => patchItem(key, id, patch as Record<string, unknown>));
       if (key !== "notifications") send(onUpdate(key, before, patch as Record<string, unknown>, state));
     };
 
@@ -488,18 +631,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       signInAsDemo,
       signUp,
       signInReal,
-      signOut: () => dispatch({ type: "signOut" }),
+      // Leaving a real account brings back this browser's demo copy.
+      signOut: () => dispatch({ type: "signOut", restore: real ? { ...loadState(), session: null } : undefined }),
       decide: (recommendationId, status) => dispatch({ type: "decide", recommendationId, status }),
       undoDecision: (recommendationId) => dispatch({ type: "undoDecision", recommendationId }),
       updateProfile: (patch) => dispatch({ type: "updateProfile", patch }),
       update,
-      editMachinery: (id, patch) => dispatch({ type: "editMachinery", id, patch }),
-      editLabour: (id, patch) => dispatch({ type: "editLabour", id, patch }),
+      // Real accounts edit their own published records; the demo layers edits over sample data.
+      editMachinery: (id, patch) => (real ? update("equipment", id, patch) : dispatch({ type: "editMachinery", id, patch })),
+      editLabour: (id, patch) => (real ? update("crews", id, patch) : dispatch({ type: "editLabour", id, patch })),
       updatePlan: (patch) => dispatch({ type: "updatePlan", patch }),
       resetPlan: () => dispatch({ type: "resetPlan" }),
       notify: (n) => add("notifications", { ...n, ...meta("ntf"), read: false }),
       markRead: (id) => update("notifications", id, { read: true }),
-      markAllRead: (userId) => dispatch({ type: "markAllRead", userId }),
+      markAllRead: () => {
+        const ids = state.notifications.filter((n) => !n.read && isForMe(n, state.session)).map((n) => n.id);
+        dispatch({ type: "markAllRead", ids });
+        if (real) ids.forEach((id) => write(() => patchItem("notifications", id, { read: true })));
+      },
       toggleSaved: (listingId) => dispatch({ type: "toggleSaved", listingId }),
       toggleSavedResource: (key) => dispatch({ type: "toggleSavedResource", key }),
       addListing: (input) => add("listings", { ...input, ...meta("lst"), status: input.requirementId ? "offer-sent" : "listed" }),
@@ -522,6 +671,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       addGroup: (input) => add("groups", { ...input, ...meta("grp") }),
       addEvent: (input) => add("events", { ...input, ...meta("evt") }),
       addSupportRequest: (input) => add("supportRequests", { ...input, ...meta("sup"), status: "requested" }),
+      addExpertProfile: (input) => add("experts", { ...input, id: meta("ex").id }),
+      addCrew: (input) => add("crews", { ...input, id: meta("crew").id }),
       acceptInterest: (interest) => {
         state.interests
           .filter((i) => i.listingId === interest.listingId && i.id !== interest.id && i.status === "pending")
@@ -549,7 +700,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       newDemoSpace,
       retryStorage,
     };
-  }, [state, signInAsDemo, signUp, signInReal, storage, newDemoSpace, retryStorage]);
+  }, [state, real, write, ownerOf, signInAsDemo, signUp, signInReal, storage, newDemoSpace, retryStorage]);
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;
 }

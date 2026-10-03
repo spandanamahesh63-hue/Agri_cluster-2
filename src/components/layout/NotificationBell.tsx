@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { Bell, CheckCheck } from "lucide-react";
-import { useAppStore } from "../../store/AppStore";
+import { isForMe, useAppStore } from "../../store/AppStore";
 import { DEMO_TODAY } from "../../data/mock/clock";
 import { formatDate, formatTime } from "../../utils/format";
 
@@ -16,7 +16,7 @@ export function NotificationBell({ compact = false }: { compact?: boolean }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const mine = notifications
-    .filter((n) => n.userId === session?.userId)
+    .filter((n) => isForMe(n, session))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const unread = mine.filter((n) => !n.read).length;
 

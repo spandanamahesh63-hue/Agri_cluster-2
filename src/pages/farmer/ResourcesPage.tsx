@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { TriangleAlert, Users } from "lucide-react";
 import type { LabourProfile, LabourSkill, ResourceKind } from "../../types";
 import { useAppStore } from "../../store/AppStore";
-import { useLabourProfiles, useMachinery, useMyRequests } from "../../features/shared/useMerged";
+import { useLabourProfiles, useMachinery, useMyRequests, useTechnologies } from "../../features/shared/useMerged";
 import { useAsync } from "../../hooks/useAsync";
 import { getResourceCatalog, type ResourceCatalog } from "../../services/api/demoApi";
 import { RequestLabourDialog, RequestMachineryDialog, RequestTechnologyDialog } from "../../features/resources/RequestDialogs";
@@ -28,8 +28,9 @@ export function ResourcesPage() {
   const loaded = useAsync(getResourceCatalog, []);
   const machinery = useMachinery();
   const labour = useLabourProfiles();
+  const technologies = useTechnologies();
   // Merge owner/crew edits made in the app over the catalog.
-  const catalog = loaded.status === "success" ? { ...loaded, data: { ...loaded.data, machinery, labour } } : loaded;
+  const catalog = loaded.status === "success" ? { ...loaded, data: { ...loaded.data, machinery, labour, technologies } } : loaded;
   const { bookings, labourRequests, serviceRequests } = useMyRequests();
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as Tab) ?? "machinery";

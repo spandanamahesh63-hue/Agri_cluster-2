@@ -18,6 +18,7 @@ import { ChartTooltip } from "../../components/charts/ChartTooltip";
 import { chrome, series, tickStyle } from "../../components/charts/palette";
 import { formatDate, formatNumber, formatTime, hoursBetween } from "../../utils/format";
 import { DEMO_NOW } from "../../data/mock/clock";
+import { NoSensorData } from "../../features/farmer/NoSensorData";
 
 export function WaterPage() {
   const overview = useFarmerOverview();
@@ -38,7 +39,9 @@ export function WaterPage() {
       </>
     );
 
-  const d = overview.data;
+  const { forecast } = overview.data;
+  if (!forecast) return <NoSensorData title="Water" what="Irrigation advice needs soil-moisture readings and a rain forecast." back={{ to: "/farmer/plan", label: "Go to my plan" }} />;
+  const d = { ...overview.data, forecast };
   const rows = effectiveSchedule({
     farm: d.farm,
     fields: d.fields,

@@ -11,11 +11,13 @@ import { Card, CardHeader } from "../../components/ui/Card";
 import { StorageCard } from "../../features/storage/StorageStatus";
 import { Button } from "../../components/ui/Button";
 import { useToast } from "../../components/ui/Toast";
+import { RealProfile } from "../../features/accounts/RealProfile";
 
 export function ProfilePage() {
   const { session, farmerProfile, updateProfile, resetDemo } = useAppStore();
   const navigate = useNavigate();
   const toast = useToast();
+  if (session?.mode === "real") return <RealProfile role="farmer" />;
 
   return (
     <>

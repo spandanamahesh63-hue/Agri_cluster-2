@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useAppStore } from "../../store/AppStore";
 import { useMachinery } from "../shared/useMerged";
-import { experts } from "../../data/mock/experts";
+import { useExperts } from "../shared/useMerged";
 import { farmLabelForUser } from "../../data/mock/farms";
 import { commissionRates, type RevenueStream } from "../../data/pricing";
 
@@ -24,6 +24,7 @@ const round = (n: number) => Math.round(n);
  */
 export function useRevenue() {
   const { bookings, listings, consultations } = useAppStore();
+  const experts = useExperts();
   const machinery = useMachinery();
 
   return useMemo(() => {
@@ -86,5 +87,5 @@ export function useRevenue() {
       totalValue: rows.reduce((t, x) => t + x.value, 0),
       totalCommission: rows.reduce((t, x) => t + x.commission, 0),
     };
-  }, [bookings, listings, consultations, machinery]);
+  }, [bookings, listings, consultations, machinery, experts]);
 }

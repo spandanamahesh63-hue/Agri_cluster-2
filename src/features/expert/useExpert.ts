@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import { useAppStore } from "../../store/AppStore";
-import { experts } from "../../data/mock/experts";
+import { useExperts } from "../shared/useMerged";
 
 /** The signed-in expert and the questions / consultations addressed to them. */
 export function useExpert() {
   const { session, consultations } = useAppStore();
+  const experts = useExperts();
   return useMemo(() => {
     const expert = experts.find((e) => e.userId === session?.userId);
     const mine = consultations.filter((c) => c.expertId === expert?.id);
@@ -15,5 +16,5 @@ export function useExpert() {
       scheduled: mine.filter((c) => c.status === "scheduled").sort((a, b) => (a.scheduledAt ?? "").localeCompare(b.scheduledAt ?? "")),
       done: mine.filter((c) => c.status === "answered" || c.status === "completed"),
     };
-  }, [consultations, session]);
+  }, [experts, consultations, session]);
 }

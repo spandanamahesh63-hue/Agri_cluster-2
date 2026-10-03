@@ -7,6 +7,8 @@ import type { Consultation, Expert, ExpertCategory } from "../../types";
 import { useMyRequests } from "../../features/shared/useMerged";
 import { useAsync } from "../../hooks/useAsync";
 import { getExperts } from "../../services/api/demoApi";
+import { useAppStore } from "../../store/AppStore";
+import { useExperts } from "../../features/shared/useMerged";
 import { useFarmerOverview } from "../../features/farmer/useFarmerOverview";
 import { AskExpertDialog } from "../../features/experts/AskExpertDialog";
 import { expertCategoryLabels } from "../../data/mock/experts";
@@ -27,6 +29,8 @@ const statusLabel: Record<Consultation["status"], string> = {
 
 export function ExpertsPage() {
   const expertsState = useAsync(getExperts, []);
+  const realExperts = useExperts();
+  const real = useAppStore().session?.mode === "real";
   const overview = useFarmerOverview();
   const { consultations } = useMyRequests();
   const [params] = useSearchParams();
@@ -49,7 +53,7 @@ export function ExpertsPage() {
       </>
     );
 
-  const experts = expertsState.data;
+  const experts = real ? realExperts : expertsState.data;
   const { fields, cycles, sensorHistory } = overview.data;
   const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const visible = experts.filter(

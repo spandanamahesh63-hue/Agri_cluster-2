@@ -28,6 +28,8 @@ export function FarmerDashboard() {
 
   const data = overview.data;
   const { farm } = data;
+  // Real accounts have no sensor or weather feed yet: show their plan and requests instead.
+  if (!data.forecast) return <RealFarmerHome data={data} />;
   const recommendations = orderForObjective(data.recommendations, farmerProfile.objective);
   const pending = recommendations.filter((r) => !decisions[r.id] && r.priority !== "low");
   const firstName = (session?.name ?? "").split(" ")[0];
@@ -105,16 +107,81 @@ export function FarmerDashboard() {
 
         <aside className="space-y-4">
           <SeasonCard />
-          <WeatherCard forecast={data.forecast} />
-          <FieldsCard fields={data.fields} cycles={data.cycles} readings={data.latestReadings} />
-          <ClusterCard data={data} />
+          {data.forecast && <WeatherCard forecast={data.forecast} />}
+          {data.forecast && <FieldsCard fields={data.fields} cycles={data.cycles} readings={data.latestReadings} />}
+          {data.forecast && <ClusterCard data={data} />}
         </aside>
       </div>
     </>
   );
 }
 
-function WeatherCard({ forecast }: { forecast: FarmerOverview["forecast"] }) {
+function RealFarmerHome({ data }: { data: FarmerOverview }) {
+  const { session, farmerProfile, listings, interests, bookings, labourRequests, consultations, supportRequests } = useAppStore();
+  const me = session?.userId ?? "";
+  const firstName = (session?.name ?? "").split(" ")[0];
+  const myListings = listings.filter((l) => l.farmId === data.farm.id);
+  const open = (s: string) => !["closed", "completed", "declined", "withdrawn"].includes(s);
+  const rows = [
+    { label: "Buyer requests on my crops", count: interests.filter((i) => myListings.some((l) => l.id === i.listingId) && i.status === "pending").length, to: "/farmer/market" },
+    { label: "Crops I am selling", count: myListings.filter((l) => open(l.status)).length, to: "/farmer/market" },
+    { label: "Machinery and labour requests", count: [...bookings, ...labourRequests].filter((r) => r.requesterUserId === me && open(r.status)).length, to: "/farmer/resources?tab=requests" },
+    { label: "Questions to experts", count: consultations.filter((c) => c.requesterUserId === me && open(c.status)).length, to: "/farmer/experts" },
+    { label: "Help requests to the cluster office", count: supportRequests.filter((r) => r.requesterUserId === me && open(r.status)).length, to: "/farmer/support?tab=requests" },
+  ];
+  return (
+    <>
+      <PageHeader
+        eyebrow={[data.farm.label, data.farm.village, data.farm.totalAcres ? formatAcres(data.farm.totalAcres) : ""].filter(Boolean).join(" · ")}
+        title={`${greeting(new Date())}, ${firstName}`}
+        description="Your plan, your requests and what needs a reply, in one place."
+      />
+      {!farmerProfile.onboarded && (
+        <Card className="mb-6 flex flex-col gap-3 border-brand-200 bg-brand-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-sm font-medium text-brand-900">Start with your farm details</div>
+            <p className="text-[13px] text-brand-800">Step 1 of your plan: land, water and money. It takes about five minutes.</p>
+          </div>
+          <ButtonLink to="/farmer/plan/assessment" size="sm">
+            Start my plan
+          </ButtonLink>
+        </Card>
+      )}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section aria-labelledby="activity" className="lg:col-span-2">
+          <Card>
+            <CardHeader title="My activity" />
+            <ul className="divide-y divide-line px-5 pb-2 pt-1">
+              {rows.map((r) => (
+                <li key={r.label}>
+                  <Link to={r.to} className="flex items-center justify-between gap-3 py-3 text-[13px] hover:text-brand-700">
+                    <span>{r.label}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="font-medium tabular-nums">{r.count}</span>
+                      <ArrowRight aria-hidden className="size-3.5 text-ink-subtle" />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
+          <h2 id="activity" className="sr-only">
+            My activity
+          </h2>
+        </section>
+        <aside className="space-y-4">
+          <SeasonCard />
+          <Card className="p-5 text-[13px]">
+            <div className="font-medium">Field sensors</div>
+            <p className="mt-1 text-ink-muted">Daily water and crop-health suggestions start when sensors are connected on your farm. Ask the cluster office about the sensor pilot.</p>
+          </Card>
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function WeatherCard({ forecast }: { forecast: NonNullable<FarmerOverview["forecast"]> }) {
   return (
     <Card>
       <CardHeader title="Weather" action={<SourceBadge source={forecast.source} />} />

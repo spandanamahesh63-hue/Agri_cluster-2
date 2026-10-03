@@ -3,8 +3,8 @@ import { GraduationCap, HardHat, Landmark, Tractor, Wifi } from "lucide-react";
 import { StepLayout } from "../../../features/plan/StepLayout";
 import { usePlan } from "../../../features/plan/usePlan";
 import { useLabourProfiles, useMachinery } from "../../../features/shared/useMerged";
-import { experts, expertCategoryLabels } from "../../../data/mock/experts";
-import { technologies } from "../../../data/mock/technology";
+import { expertCategoryLabels } from "../../../data/mock/experts";
+import { useExperts, useTechnologies } from "../../../features/shared/useMerged";
 import { kindLabels } from "../../../features/resources/labels";
 import { Card, CardHeader } from "../../../components/ui/Card";
 import { Badge } from "../../../components/ui/Badge";
@@ -19,6 +19,8 @@ export function ResourcesStep() {
   const toast = useToast();
   const machinery = useMachinery();
   const crews = useLabourProfiles();
+  const experts = useExperts();
+  const technologies = useTechnologies();
   if (!p.needs) return <StepLayout step="resources">{null}</StepLayout>;
   const needs = p.needs;
 

@@ -15,9 +15,11 @@ import { NotificationBell } from "./NotificationBell";
 import { DemoGuideButton } from "../../features/demo/DemoGuide";
 import { StorageBadge } from "../../features/storage/StorageStatus";
 import { useAccount } from "../../features/accounts/AccountProvider";
+import { realMembers } from "../../services/mode";
 
 export function AppShell({ role }: { role: Role }) {
   const meta = roles[role];
+  const real = useAppStore().session?.mode === "real";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const location = useLocation();
@@ -70,7 +72,7 @@ export function AppShell({ role }: { role: Role }) {
         <Logo subtitle={false} />
         <div className="flex items-center gap-1">
           <NotificationBell compact />
-          <DemoGuideButton compact />
+          {!real && <DemoGuideButton compact />}
           <button
           type="button"
           aria-label="Open menu"
@@ -88,12 +90,12 @@ export function AppShell({ role }: { role: Role }) {
         <div className="text-[13px] text-ink-muted">
           <span className="font-medium text-ink">{meta.label}</span>
           <span className="mx-2 text-line-strong">/</span>
-          {cluster.name}
+          {real ? "AgriCluster" : cluster.name}
         </div>
         <div className="flex items-center gap-4">
-          <DemoClock />
+          {real ? <StorageBadge /> : <DemoClock />}
           <NotificationBell />
-          <DemoGuideButton />
+          {!real && <DemoGuideButton />}
         </div>
       </div>
 
@@ -103,9 +105,11 @@ export function AppShell({ role }: { role: Role }) {
         tabIndex={-1}
         className="mx-auto w-full max-w-6xl px-4 pb-28 pt-5 outline-none sm:px-6 lg:px-8 lg:pb-12 lg:pt-7"
       >
-        <div className="mb-4 lg:hidden">
-          <DemoClock />
-        </div>
+        {!real && (
+          <div className="mb-4 lg:hidden">
+            <DemoClock />
+          </div>
+        )}
         <PageErrorBoundary resetKey={location.pathname}>
           <Suspense fallback={<PageSkeleton />}>
             <Outlet />
@@ -144,6 +148,17 @@ function NavList({ role, items }: { role: Role; items: NavItem[] }) {
 }
 
 function ClusterChip() {
+  const { session } = useAppStore();
+  if (session?.mode === "real") {
+    const n = realMembers().length;
+    return (
+      <div className="mx-3 rounded-lg border border-line bg-canvas px-3 py-2.5">
+        <div className="text-[11px] font-medium uppercase tracking-wide text-ink-subtle">Cluster</div>
+        <div className="text-[13px] font-medium text-ink">AgriCluster · Mysuru</div>
+        <div className="text-[12px] text-ink-muted">{n === 1 ? "1 member" : `${n} members`}</div>
+      </div>
+    );
+  }
   return (
     <div className="mx-3 rounded-lg border border-line bg-canvas px-3 py-2.5">
       <div className="text-[11px] font-medium uppercase tracking-wide text-ink-subtle">Cluster</div>
