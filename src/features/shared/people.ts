@@ -16,7 +16,7 @@ export function personById(id: string | undefined): Person | undefined {
   if (!id) return undefined;
   if (!isRealMode()) return users.find((u) => u.id === id);
   const m = memberById(id);
-  return m && { id: m.id, role: m.role, name: m.name, displayLabel: m.organisation ?? m.name, location: m.location ?? "" };
+  return m && { id: m.id, role: m.role, name: m.name ?? "", displayLabel: m.organisation ?? m.name ?? "", location: m.location ?? "" };
 }
 
 /** Real farmers appear to others as "Farm #" and a short code from their id (never their name). */

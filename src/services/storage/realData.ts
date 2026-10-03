@@ -17,7 +17,8 @@ export interface ItemRow {
 
 export interface Member {
   id: string;
-  name: string;
+  /** Null for other farmers: they appear by farm number (supabase/shared-data.sql members()). */
+  name: string | null;
   role: Role;
   organisation: string | null;
   location: string | null;

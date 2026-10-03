@@ -34,7 +34,7 @@ export function useExperts(): Expert[] {
 
 export function useTechnologies(): Technology[] {
   const { session, technologies } = useAppStore();
-  return session?.mode === "real" ? technologies : baseTechnologies;
+  return useMemo(() => (session?.mode === "real" ? technologies : [...baseTechnologies, ...technologies]), [session?.mode, technologies]);
 }
 
 /** Requests made by the signed-in user (the store also holds other members' records). */

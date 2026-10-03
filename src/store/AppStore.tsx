@@ -359,6 +359,8 @@ interface AppStore extends State {
   /** Real accounts: an expert publishes their profile; a labour crew its crew profile. */
   addExpertProfile: (expert: Omit<Expert, "id">) => Expert;
   addCrew: (crew: Omit<LabourProfile, "id">) => LabourProfile;
+  /** A provider lists a technology service (drone spraying, soil testing…). */
+  addTechnology: (tech: Omit<Technology, "id">) => Technology;
   /** Farmer accepts a buyer's interest: the listing is agreed with that buyer; other interests are declined. */
   acceptInterest: (interest: MarketInterest) => void;
   /** Buyer accepts a farmer's offer on their requirement. */
@@ -673,6 +675,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       addSupportRequest: (input) => add("supportRequests", { ...input, ...meta("sup"), status: "requested" }),
       addExpertProfile: (input) => add("experts", { ...input, id: meta("ex").id }),
       addCrew: (input) => add("crews", { ...input, id: meta("crew").id }),
+      addTechnology: (input) => add("technologies", { ...input, id: meta("tech").id }),
       acceptInterest: (interest) => {
         state.interests
           .filter((i) => i.listingId === interest.listingId && i.id !== interest.id && i.status === "pending")

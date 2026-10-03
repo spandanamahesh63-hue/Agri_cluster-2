@@ -37,7 +37,7 @@ import { farmers } from "../../data/mock/users";
 import { farmLabelForUser } from "../../data/mock/farms";
 import { formatDate } from "../../utils/format";
 import { isRealMode } from "../../services/mode";
-import { userForFarm } from "../shared/people";
+import { personById, userForFarm } from "../shared/people";
 
 export type NewNotification = Omit<AppNotification, "id" | "createdAt" | "read">;
 
@@ -102,7 +102,7 @@ export function onAdd(key: string, record: unknown, s: State): NewNotification[]
           kind: "machinery",
           title: `${farmLabelForUser(r.requesterUserId)} requested ${t.name.toLowerCase()}`,
           body: r.note || undefined,
-          link: t.providerUserId.startsWith("u-cluster") ? "/cluster/resources" : "/provider",
+          link: t.providerUserId.startsWith("u-cluster") || personById(t.providerUserId)?.role === "cluster" ? "/cluster/resources" : "/provider/services",
         },
       ];
     }

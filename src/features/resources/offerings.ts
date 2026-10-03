@@ -62,7 +62,7 @@ export function machineOffering(m: Machinery): Offering {
   };
 }
 
-const techType: Record<Technology["category"], string> = {
+export const techTypeLabels: Record<Technology["category"], string> = {
   sensing: "Sensors",
   monitoring: "Farm monitoring",
   irrigation: "Irrigation system",
@@ -75,7 +75,7 @@ export function techOffering(t: Technology): Offering {
   return {
     key: t.id,
     source: "technology",
-    typeLabel: techType[t.category],
+    typeLabel: techTypeLabels[t.category],
     name: t.name,
     provider: provider?.role === "cluster" ? "Cluster office" : (provider?.name ?? "Cluster member"),
     providerUserId: t.providerUserId,

@@ -9,6 +9,7 @@ import { ButtonLink } from "../../components/ui/Button";
 import { BUSINESS, FARMER_PROMISE, PRICING_STATUS, commissionRates, isPlaceholder, plans, type RevenueStream } from "../../data/pricing";
 import { TAGLINE } from "../../data/brand";
 import { databaseName } from "../../services/storage/cloud";
+import { accountsEnabled } from "../../services/auth/accounts";
 import { formatDate, formatINR } from "../../utils/format";
 
 const links = [
@@ -189,13 +190,25 @@ export function TermsPage() {
             AgriCluster is operated by <B v={BUSINESS.name} />, <B v={BUSINESS.address} /> (“we”). These terms apply to the AgriCluster website and app.
           </p>
         </section>
-        <section>
-          <h2>2. A prototype, with demonstration data</h2>
-          <p>
-            AgriCluster is currently a prototype. Farms, sensor readings, prices and many listings are demonstration or simulated data and are labelled on
-            screen. Sign-in is simulated. Please don't enter real personal, financial or identity details.
-          </p>
-        </section>
+        {accountsEnabled ? (
+          <section>
+            <h2>2. Your account</h2>
+            <ul>
+              <li>You sign in with your mobile number and a one-time code sent by SMS. Keep your phone safe; anyone with it can sign in as you.</li>
+              <li>Farmers can join straight away. Cluster office, buyer, machinery, labour, expert and community accounts are checked by our team before they can see farmers' requests.</li>
+              <li>The “Try the demo” section uses sample farms and people. Nothing you do there belongs to an account.</li>
+              <li>We may suspend an account that gives false details, misuses other members' information or breaks these terms.</li>
+            </ul>
+          </section>
+        ) : (
+          <section>
+            <h2>2. A prototype, with demonstration data</h2>
+            <p>
+              AgriCluster is currently a prototype. Farms, sensor readings, prices and many listings are demonstration or simulated data and are labelled on
+              screen. Sign-in is simulated. Please don't enter real personal, financial or identity details.
+            </p>
+          </section>
+        )}
         <section>
           <h2>3. Suggestions, not advice or guarantees</h2>
           <ul>
@@ -218,7 +231,11 @@ export function TermsPage() {
           <ul>
             <li>Share only information you have the right to share, and keep it accurate.</li>
             <li>Don't misuse the service, interfere with it, or access other users' data.</li>
-            <li>Anyone with a demo space's share link can open and change it; share it only with people you trust.</li>
+            <li>
+              {accountsEnabled
+                ? "Use other members' details (such as a phone number shared in a request) only to deal with that request."
+                : "Anyone with a demo space's share link can open and change it; share it only with people you trust."}
+            </li>
           </ul>
         </section>
         <section>
@@ -245,6 +262,7 @@ export function TermsPage() {
 }
 
 export function PrivacyPage() {
+  if (accountsEnabled) return <AccountsPrivacyPage />;
   return (
     <PublicLayout title="Privacy policy">
       <DraftNotice />
@@ -296,6 +314,118 @@ export function PrivacyPage() {
         <section>
           <h2>Children</h2>
           <p>AgriCluster is not intended for people under 18.</p>
+        </section>
+      </Prose>
+    </PublicLayout>
+  );
+}
+
+/** The privacy policy once real accounts are on (phone sign-in, shared records). */
+function AccountsPrivacyPage() {
+  return (
+    <PublicLayout title="Privacy policy">
+      <DraftNotice />
+      <Prose>
+        <section>
+          <p>
+            This policy explains what personal data <B v={BUSINESS.name} /> collects when you use your AgriCluster account, why, who can see it, and your rights under
+            India's Digital Personal Data Protection Act, 2023. By creating an account you agree to this use of your data. You can withdraw that agreement at any
+            time by deleting your account (see “Your rights”).
+          </p>
+        </section>
+        <section>
+          <h2>What we collect, and why</h2>
+          <ul>
+            <li>
+              <strong>Your mobile number</strong>: to sign you in with a one-time SMS code, and so the cluster office can contact you when you ask for help.
+            </li>
+            <li>
+              <strong>Your name, role and village or town</strong>, and for non-farmers your organisation and a short description of your work: to set up your
+              account, to check accounts before approving them, and to show you to other members as described below.
+            </li>
+            <li>
+              <strong>Your farm details and season plan</strong> (land size, soil, water, irrigation, how much you can invest, whether you may need a loan,
+              experience): to suggest crops, methods, costs and support that fit your farm.
+            </li>
+            <li>
+              <strong>What you create</strong>: crop listings, buyer requirements, bookings, labour and service requests, questions to experts, help requests (with
+              any phone number and village you add for a farm visit), land reports, community posts and replies.
+            </li>
+            <li>We don't collect payment details, and we never ask for Aadhaar numbers. Please don't enter them.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Who can see it</h2>
+          <ul>
+            <li>
+              <strong>Only you</strong>: your farm details, season plan and settings.
+            </li>
+            <li>
+              <strong>The cluster office</strong>: your profile (including your mobile number), the help requests you send it, and the requests and listings you
+              share with other members, so it can support the cluster and handle problems.
+            </li>
+            <li>
+              <strong>Buyers</strong>: the crop listings you publish, shown by farm number (for example “Farm #6A32”), not your name or phone number.
+            </li>
+            <li>
+              <strong>A machinery owner, labour crew or expert</strong>: only the request or question you send them, from your farm number.
+            </li>
+            <li>
+              <strong>All approved members</strong>: community posts and replies, buyer requirements, and the names and places of cluster office staff, buyers,
+              providers, crews and experts. Farmers appear to other members by farm number only.
+            </li>
+            <li>Accounts waiting for approval can't see anyone's data. These rules are enforced by the database, not only by the screens.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Who processes it for us</h2>
+          <p>
+            Supabase stores the data and runs sign-in. Twilio sends the SMS codes. Netlify hosts the website. Fonts load from Google Fonts. They process data only
+            to provide these services and may keep standard technical logs (such as IP addresses). We don't sell your data, share it with advertisers or use
+            advertising trackers. We share it with others only if the law requires it.
+          </p>
+        </section>
+        <section>
+          <h2>How long we keep it</h2>
+          <p>
+            We keep your data while your account is open. When you delete your account we delete your profile, plan, settings and the records you created within
+            30 days, except anything the law requires us to keep. Copies in backups are removed as the backups expire.
+          </p>
+        </section>
+        <section>
+          <h2>Keeping it safe</h2>
+          <p>
+            Data travels over encrypted connections (HTTPS). Database rules limit each person to the records meant for them, and only approved accounts can read
+            shared records. If a breach affects your data, we will tell you and the Data Protection Board of India as the law requires.
+          </p>
+        </section>
+        <section>
+          <h2>Your rights</h2>
+          <ul>
+            <li>See a summary of your data and who it was shared with.</li>
+            <li>Correct it. You can edit your name and village on your Profile page; ask us for anything else.</li>
+            <li>Delete your account and your data, which also withdraws your agreement to this policy.</li>
+            <li>Nominate someone to use these rights for you if you die or can't act yourself.</li>
+            <li>
+              Raise a grievance with our grievance officer, <B v={BUSINESS.grievanceOfficer} />, at <B v={BUSINESS.email} />
+              {!isPlaceholder(BUSINESS.phone) && (
+                <>
+                  {" "}
+                  or <B v={BUSINESS.phone} />
+                </>
+              )}
+              . We reply within 30 days. If you are not satisfied, you can complain to the Data Protection Board of India.
+            </li>
+          </ul>
+          <p>Write from the mobile number on your account, or include it, so we can find your account.</p>
+        </section>
+        <section>
+          <h2>Children</h2>
+          <p>AgriCluster accounts are for people aged 18 or over.</p>
+        </section>
+        <section>
+          <h2>Changes</h2>
+          <p>If we change this policy in a way that affects you, we will tell you in the app before the change applies.</p>
         </section>
       </Prose>
     </PublicLayout>

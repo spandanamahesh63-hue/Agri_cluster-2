@@ -57,6 +57,7 @@ const RequirementDetailPage = lazyPage(() => import("./pages/buyer/RequirementDe
 const CropSupplyPage = lazyPage(() => import("./pages/buyer/CropSupplyPage"), "CropSupplyPage");
 const BuyerRequestsPage = lazyPage(() => import("./pages/buyer/BuyerRequestsPage"), "BuyerRequestsPage");
 const DealsPage = lazyPage(() => import("./pages/buyer/DealsPage"), "DealsPage");
+const ServicesPage = lazyPage(() => import("./pages/provider/ServicesPage"), "ServicesPage");
 const ProviderDashboard = lazyPage(() => import("./pages/provider/ProviderDashboard"), "ProviderDashboard");
 const EquipmentPage = lazyPage(() => import("./pages/provider/EquipmentPage"), "EquipmentPage");
 const BookingsPage = lazyPage(() => import("./pages/provider/BookingsPage"), "BookingsPage");
@@ -115,6 +116,7 @@ const implemented: Partial<Record<Role, Record<string, ReactElement>>> = {
     "": <ProviderDashboard />,
     equipment: <EquipmentPage />,
     bookings: <BookingsPage />,
+    services: <ServicesPage />,
   },
   labour: {
     "": <LabourDashboard />,

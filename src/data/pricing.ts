@@ -66,7 +66,7 @@ export const BUSINESS = {
   phone: "[support phone]",
   grievanceOfficer: "Spandana",
   jurisdiction: "Mysuru, Karnataka",
-  lastUpdated: "2026-09-30",
+  lastUpdated: "2026-10-03",
 };
 
 export const isPlaceholder = (v: string) => v.startsWith("[");

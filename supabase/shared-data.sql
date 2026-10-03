@@ -204,14 +204,22 @@ grant select, insert, update on public.user_state to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Member directory for approved people: no phone numbers, no approval notes.
+-- Farmers appear to others by farm number only: their name and village are
+-- returned just to themselves and the cluster office.
 create or replace function public.members()
 returns table (id uuid, name text, role text, organisation text, location text, joined timestamptz)
 language sql stable security definer set search_path = public
 as $$
-  select p.id, p.name, p.role, p.organisation, p.location, p.created_at
-  from public.profiles p
-  where p.status = 'approved' and cardinality(public.my_principals()) > 0
-  order by p.created_at
+  with me as (select public.my_principals() as p)
+  select pr.id,
+         case when pr.role <> 'farmer' or pr.id = auth.uid() or 'role:cluster' = any(me.p) or 'admin' = any(me.p) then pr.name end,
+         pr.role,
+         pr.organisation,
+         case when pr.role <> 'farmer' or pr.id = auth.uid() or 'role:cluster' = any(me.p) or 'admin' = any(me.p) then pr.location end,
+         pr.created_at
+  from public.profiles pr, me
+  where pr.status = 'approved' and cardinality(me.p) > 0
+  order by pr.created_at
 $$;
 revoke all on function public.members() from anon, public;
 grant execute on function public.members() to authenticated;
